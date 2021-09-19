@@ -1,0 +1,55 @@
+N=0
+while(N<5)
+{
+     Read number of subjects, N
+}
+num_s=0
+num_a=0
+for i in range N
+{
+M=0
+while(M<=0 or M>100)
+{
+Read mark for each subject, M
+}
+if(M>=90)
+    num_s=num_s+1
+else if(M>=80)
+    num_a=num_a+1
+}
+
+if(num_a>=2 and num_s>=2)
+print("Eligible for scholarship")
+else 
+print("Not eligible for scholarship")
+End
+
+
+
+
+
+
+
+
+
+
+
+
+
+Print("Enter the total number of students")
+n = int(input())
+for i in range(n):
+    print("Enter the marks obtained in subject")
+    x= input()
+    if x<=100:
+        if x>=90:
+            s=s+1
+        elif x>=80:
+            a=a+1
+    else:
+        print("Whooah Invalid input, Try again sir")
+if s>=2 and a>=2 :
+    print("Congrats Eligible for scholarship")
+else:
+    print("Sorry sir, Better luck next time")
+            

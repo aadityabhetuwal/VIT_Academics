@@ -1,0 +1,11 @@
+Start
+Get hour in 24h format as input (h24)
+Get minutes in 24h format as input (m)
+Get seconds in 24h format as input (s)
+Check if h24<24 and m<59 and s<59 ?
+if yes: check if h24<= 12? 
+			IF yes, h12 = h24
+			IF no,  h12 = h24 -12
+	display h12
+if no: display Wrong Input
+End

@@ -1,0 +1,9 @@
+GEt the price of a chocolate C
+get the total money the boy has  N
+Number of wrappers(x) =Number of chocolates(y) = N // c
+Check 1:
+	Check If x>=3?
+		If no display Bob gets to eat y number of chocolates and go to end
+		If yes, x = x-2, y= y+1, check if x>=3?
+                      If no  print He gets y chocolates and go to end
+                      If yes, go to initial check 1:             

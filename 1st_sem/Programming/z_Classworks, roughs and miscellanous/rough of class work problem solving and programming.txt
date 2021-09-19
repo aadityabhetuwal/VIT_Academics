@@ -1,0 +1,119 @@
+Algorithm for Real life problem
+Problem:
+Heat up  A CAN OF SOUP
+
+ALGORITHM:
+
+1 OPEN CAN USING A CAN OPENER
+2 POUR THE CONTENTS OF CAN INTO SAUCEPAN
+3 PLACE SAUCEPAN ON THE RING OF COOKER
+4 TURN ON CORRECT COOKER RING
+5 STIR SOUP UNTIL WARM
+
+MAY SEEM A BIT OF A SILLY EXAMPLE BUT IT SHOWS US HOW TO MAKE AN ALGORITHM
+TO SOLVE A PROBLEM AND THE IMPORTANCWE OF THE ORDER OF STEPS
+
+
+
+PROPERTIES OF ALGORITHM
+Finiteness 
+Must terminate after a finte number of steps.
+Definitiveness
+Action in each step to be carried out must be rigorously and unambiguously specified
+Input
+Has Zero or more inputs that are provided to it initially or dynamically.
+Output 
+Has one or  more inputs : quantities that have a specified
+
+
+
+PATTERNS IN ALGORITHMS
+Sequential 
+Executes the statements in the order in which they appear in the algorithm
+Selectional (Conditional)
+Controls the flow of statements execution based on certain conditions.
+Iterational (Loop)
+Used when a part of the algorithm is to be executed multiple times
+Recurtional
+The functional computed by the algorithm are expressed in terms of itself.
+
+
+SELECTIONAL ALGORITHMS (CONDITIONAL)
+Examples:
+
+
+Problem: To decide if a fire alarm shoul be sounded
+ALGORITHM:
+1 If fire is detected     (CONDITION)
+2. Then sound fire alarm  (ACTION)
+
+Another example is:-
+PROBLEM: To decide whether or not to go to school
+ALGORITHM:
+1. IF it is a weekday AND itis not a holiday
+2. THEM go to school
+3. ELSE stay at home
+
+
+Pass / Fail and average 
+
+Write an algorithm to find rhte average marks of a student.
+Also check whether the student has passed or failed. 
+For a student to be declared pass, average marks should not be less than 65
+Step 1 : Read Marks1, Marks2, Marks3
+Step 2: Total = Marks1 + Marks2 + Marks3
+Step 3: Average = Total / 3
+Step : Set output = "passed"
+Step 5: If Average =
+
+
+
+
+Problem : Write an algorithm to find whether it is a leap year or not
+
+Step 1: Read the number of days in year D
+step 2: set year =" not leap"
+step 3: If D= 366 then set year = "Leap"
+step 4: Diaplay D
+
+STEP 1:Read Year
+STEP 2:IF (( year% 4 = 0 and year % 100 != 0) or (Year % 400=0))
+             Display "Year is a leap year"
+         Else 
+             Display "Year is not a leap year"
+       END IF
+
+
+
+Algorithm for Iterative Problems
+This type of loop keeps on carrying out a commans or commands UNTIL a command
+is satisfied, the condition is given with the UNTIL command.
+
+Iterational algothms
+
+Find the average marks scored by N number of students
+
+Read the Number of Students
+let Counter = 1
+Read maks1, marks2, marks3
+Total = Marks1 + Marks2 + Marks3
+average = Total /3 
+Set Output = "student Passed"
+if (average <65) then set output = "failed "
+display output
+counter = counter + 1
+if (counter <= numberof students) then goto step 3g
+
+
+
+Bigger Problems 
+
+TOp Down Design 
+Top Down Design uses the same method to break a programming problem down into manageable steps.
+
+TOp down design for real Life problem
+Problem: To repair a puncture on a bike wheel 
+Algorithm:
+1. remove the tyre 
+   1.1 turn
+
