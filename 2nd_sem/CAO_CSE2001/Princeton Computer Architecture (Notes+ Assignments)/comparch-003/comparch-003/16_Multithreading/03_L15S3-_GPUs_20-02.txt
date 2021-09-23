@@ -1,0 +1,472 @@
+Okay. 
+So, we, we talked about vector 
+processors. 
+We introduced this sort of short vector 
+idea with single instruction multiple 
+data instructions. 
+And, 
+I wanted to talk a little bit about one 
+of the common places that you see 
+something that's like a vector processor, 
+but isn't quite a vector processor. 
+And that's in graphics processor units. 
+So, this is the graphics card in your 
+computer. 
+So, my laptop here has a ETI graphics 
+chip in it. 
+And it actually, I've, I've run on it 
+open CL code compiled to it, which is a 
+general purpose usage of a graphics 
+processor unit. 
+So, one of the things I wanted to kick 
+this off by was saying that these 
+architectures look strange from a 
+computer architecture perspective. 
+And it really goes back to the fact that 
+they were not designed to be general 
+purpose computing machines. 
+They were designed to render 3D graphics. 
+So, the early versions of these had very 
+fixed pipelines, and they had no 
+programmability. 
+So, you couldn't even use them to do 
+general purpose computation. 
+And then, they start to get a little bit 
+more flexibility. 
+So, an example of this actually was, the 
+original Nvidia chips had something 
+called pixel shaders. 
+So, the idea is, on per pixel basis, as 
+you render a three-dimensional picture 
+for like a game or something like that. 
+Each pixel, you could say, oh, I want you 
+have some little custom, customization on 
+how we render the pixel. 
+So, it's little, every, the game 
+programmer, for instance, got to write a 
+little program for each pixel as they, as 
+they got rendered to the screen. 
+So, ran, ran a little program. 
+But what's interesting about this, and, 
+and these pixel shaders, 
+there was actually a programming language 
+that developed for the pixel shaders. And 
+the first implementation of general 
+purpose computing on these was people 
+wrote pixel shaders to render on pixels, 
+but actually, did something else with it. 
+So, they went and computed some, some 
+other program using these pixel shaders. 
+So, you could try to do a matrix 
+multiplication and the result would be a 
+picture. 
+[LAUGH] Kind of a strange idea there. 
+It's like, well, we take one picture and 
+another picture, and we run some special 
+shading on it that makes it look sort of 
+like a 3D picture. 
+And all of a sudden, the output actually 
+is the result. 
+Well, the graphics people, the people who 
+made graphics per graphics processing 
+units got the bright idea that, well, 
+maybe we can make this a little bit 
+easier and increase our user base, just 
+beyond having graphics cards if we 
+encourage people to write programs on 
+these. 
+So, they start to make it more and more 
+general purpose. 
+So, instead of just being able to do a 
+pixel shader or work on one pixel at a 
+time, and have it very pixel oriented, or 
+graphics oriented, we'll rename 
+everything and we'll come up with some 
+programming model, and we'll expose some 
+of the architecture, it'll make the 
+architecture a little more general 
+purpose. And then, you might be able to 
+run some other programs on it. 
+So, this is, this is really what, what 
+happened. 
+And, and as I said, the, the, one of the 
+first people that tried use this and were 
+trying to program it in the, the pixel 
+shaders and the, the, the per vector per 
+vertex computations which were also sort 
+of baked into these original 
+architectures were very hard. 
+because you're basically trying to think 
+about everything as a picture in a frame, 
+and then sort of back compute what was 
+going on. 
+But as we've moved along a little bit, 
+we've started to see some new languages. 
+So, it's new program support, and the 
+architectures become more general 
+purpose. 
+So, this brings us to general purpose 
+graphics processing units. 
+So, it's, we still have GPU here, so it's 
+still special purpose. 
+But then, we stick GP in the front and we 
+call this GPGPUs, General Purpose 
+Graphics Processing Units. 
+So, a good example of this actually is 
+Nvidia decided to or, or came up with 
+this programming language called CUDA. 
+Now, this was not 
+the first sort of foray into this. 
+There are some research languages that 
+predated this, and some ideas that 
+predated this. 
+But, the I, the idea here well we'll talk 
+about that in a second actually. 
+But the, the GPGPUs 
+the programming model's a little bit 
+strange. 
+It's a, it's a threading model. 
+And we're going to talk about that in, in 
+a little bit more detail. 
+But, first of all, I wanted to point out 
+some differences between GPGPU and a true 
+vector processor. 
+So, in a GPGPU, there's a host CPU, which 
+is your X86 processor in your computer. 
+Then, you go across the bus, the PCIE 
+bus, or PCI bus, 
+or EGP bus out onto a graphics card. 
+So, there's no, there is a host 
+processor, but it's not, there's no 
+control processor like in our vector 
+processors that we had talked about last 
+lecture. 
+So, the scalar processor is really far 
+away, and doesn't drive everything as, as 
+strictly, it's basically having two 
+processors running, the host processor, 
+and then, the graphics processor unit. 
+And because of this, you actually have to 
+run all of your control code on the 
+vector unit, somehow. 
+So, 
+this this attached host processor model 
+does have some advantages. 
+You can actually run the data parallel 
+aspects of the program and then have the 
+host processor running something else, 
+or the SA6 processor, which is connected 
+to it across the bus have it running some 
+other, other program. 
+So, let's, let's dive into detail here 
+and talk about the Compute Unified Device 
+Architecture, which is what CUDA stands 
+for. 
+So, CUDA is, is the Nvidia way of 
+programming, or the Nvidia programming 
+model for the graphics processors. 
+And, there's a broader industrial 
+accepted way to program these, which uses 
+roughly a similar programming model 
+called Open CL which is, the name there 
+is designed to evoke notions of open GL, 
+which is the, the graphics language that 
+is widely used for 3D rendering. 
+So, 
+you have to suspend disbelief here for a 
+second. 
+And, and this, this model is a little bit 
+odd, I think. 
+But, let's, let's, let's talk about what, 
+what CUDA is. 
+So, in CUDA, 
+let's say, we have a loop here. 
+let's, let's say, a non-CUDA program 
+first. 
+It's the upper portion of this code. 
+We're trying to take y plus or, or y of i 
+plus x of i times some scalar value. 
+So, this is the traditional A times 
+another vector plus a third vector. 
+This is actually a inner loop of this 
+shows up an inner loop of impact. 
+So, is that, which is a, a benchmark that 
+a lot of people run. 
+So, pretty soon what we were doing 
+before. You're adding one vector to 
+another vector, except that you're taking 
+one of the vectors and multiplying by a 
+scalar. 
+Pretty, pretty simple. 
+So, in CUDA, the, the basic idea is that 
+you don't do a lot of operation, you 
+don't do a lot of work per, what we're 
+going to call threads. 
+So, what we're going to do here is we're 
+going to define a block of data, 
+and we use some special tabs on here to 
+say what's going on. 
+And, [COUGH] this block has some size. 
+And then, what we do is, we define a 
+thread that can operate in parallel times 
+these 256, or there's 256 data values and 
+256 threads. 
+So, what's going to happen here is we're 
+basically going to do the same operation 
+here, y times y of i plus a times x of i, 
+and we're going to store it into here. 
+But, let's look where i comes from. 
+i comes from some special keywords here 
+where it computes which thread number you 
+are or which index number you effectively 
+are in this thread block. 
+[COUGH] And then, this if statement here 
+is the moral equivalent of our strip 
+mining loop. 
+So, this says, if we get above how ever 
+many, however much work we're trying to 
+do, don't do anymore work. 
+So, we can block it into, let's say, some 
+number of threads. 
+And then, we can actually pass into an n 
+where n is the amount of work to actually 
+do or the length of the vector, and we 
+can check that along the way. 
+What I find interesting about this is, if 
+you look at this on first view, it looks 
+like each of these threads, oops, is 
+completely independent. 
+So, that is the programming model, is 
+that each of the threads are independent. 
+Unfortunately, the computer architecture 
+that this is going to run on, each of the 
+threads are not independent. 
+So, in CUDA, you don't want to have these 
+diverge. 
+It's allowed to have them diverge. 
+So, for instance, there's a, there's a if 
+statement in here. 
+So, you're going to have one go into the 
+if statement, and one, one, a different 
+thread follow through on the if 
+statement. 
+So, it is, it is allowed. 
+But if you do that, you're basically just 
+not using one of the pipelines for a 
+while. 
+So, I should of come back to this. 
+Lets, let's talk about how this 
+programming model shows up. 
+So, the programming model is having lots 
+of different little threads and the idea 
+is you make sort of these micro threads. 
+And then, you want to take these micro 
+threads and the run time system plus the 
+compiler, the CUDA compiler, will put it 
+together. 
+And actually put all the threads 
+together, and actually have them operate 
+on the exact same instructions at the 
+same time. 
+So, they're hiding a single instruction 
+multiple data architecture under the hood 
+of these threads. 
+So, if we look at our example here, we do 
+a load. 
+So, multiply a different load add in the 
+store, 
+and that's, that's our a, x 
+a times x plus y operation going on here. 
+And, across the other way, 
+these are all these threads are doing the 
+same operation or effectively the same 
+operation. 
+So, they call these single instruction, 
+multiple thread, which is kind of a funny 
+idea. 
+In reality, it's actually single 
+instruction multiple data. 
+But, they introduced this notion of 
+threads with predication into the thread 
+in, in, into the single structure 
+multiple data to allow, effectively, one 
+pipe, one microthread here to do 
+something slightly different, 
+by predication. 
+So, what is the implications of the 
+single instruction multiple thread? 
+Well, 
+strangely enough, because you have it's 
+hard to control the order of the threads 
+relative to each other with the data, the 
+memory system has to support all 
+different notions and all different 
+alignments of scatter-gather operations. 
+So, they don't actually try to control 
+the addressing because each of the 
+threads could potentially try to do some 
+scatter operation. 
+So instead, what they do is, they have 
+some really smart intelligence that takes 
+all the addresses that come out of the 
+execution units. 
+And they say, oh, these look like they 
+should line up and we'll issue these at 
+the same time. 
+So, if you happen to have threads which 
+all try to do, let's say, 
+a of i, we'll say, where i is a thread 
+number, 
+then you have units trying operations. 
+If you try to pack them all together and 
+the hardware actually goes and tries to 
+figure this out. 
+And, as I had mentioned before, if you, 
+you have to use predication here if you 
+have different control flow. 
+So, you need strong, strong use of 
+predication to allow threads to go 
+different directions. 
+So, things get even more complicated in 
+these architectures. These GPU, general 
+purpose GPU architectures 
+and take the word warp here and replace 
+it with thread. 
+so unfortunately, if you, if you go read 
+your textbook, they have a nice table 
+which translates GPGPU nomenclature to 
+the whole rest of computer architecture 
+nomenclature. 
+But, the GPU people came up with 
+completely different names for everything 
+which is just kind of annoying. 
+Because names already existed for 
+everything. 
+So, 
+if you go look inside of one these GPUs, 
+they actually are a massively parallel 
+architecture with multiple lanes, like 
+our vector architecture. 
+And then, on top of that, they are a 
+multi-threaded architecture. 
+Typically, these architectures don't have 
+caches. So, to hide a lot of the memory 
+latency what they'll do is you'll take 
+all the threads that are active in the 
+machine, and this is part of the reason 
+they have this threading model, is you'll 
+take all the threads that are active in 
+the machine and you'll schedule one 
+thread. And if that thread, let's say, 
+misses out to memory, 
+you'll time slice it out and then 
+schedule a different thread. 
+So, that actually we'll fine grain 
+interweave threads on a functional unit. 
+So, it's a strange idea here mixing 
+multi-string with SIM D at the same time. 
+So, lots of different parallels and 
+aspects coming together in these GPGPUs. 
+I don't want to go into that much detail 
+because then you have a whole class on 
+how to program GPGPU's. 
+But basic idea I wanted to get across is 
+that they are a multi-threaded single 
+instruction multiple-data machine, but 
+they overlay on top of that, this strange 
+notion of threads. 
+And, but, the threads don't do exactly 
+the same work because it's a SIM D 
+machine. 
+you basically just end up wasting slots. 
+So, these have a lot of performance. 
+So, some examples of this 
+the Nvidia, 
+this is actually the modern day, Nvidia 
+computer archi, or GPU architecture you 
+can go buy. 
+They call it the Fermi. 
+this is in that card I showed last time 
+with the, the, the Tesla. 
+let's zoom in on one of these and talk 
+about what's inside of here. 
+So, roughly what's going on is they 
+actually have, 
+well, first of all, let's see the stuff 
+that's not programmable, which is 
+actually a significant portion of the 
+design here. 
+If you look down here, they have vertex 
+shaders and tessellation units and 
+texture mapping units, 
+texture, texture caches And really, what 
+this is all for, is this if for graphics 
+processing. 
+[LAUGH] And then, [LAUGH] we sort of 
+smush onto that, some array of general 
+purpose units or mildly general purpose 
+units. 
+And inside of each one of these cores 
+here, there's a floating point unit and 
+an integer unit. 
+And if you cut this way, that's actually 
+each one of these here what they call 
+core, is effectively a lane. 
+So, they're replicated in that direction. 
+And then, one, two, three, four, five, 
+six, seven, eight, this direction is SIM 
+D. 
+So, they basically have a SIM D 
+architecture with multiple lanes. 
+So, lots of parallelism going on. 
+And then, at the top here, they have what 
+they call the warp scheduler which is the 
+thread scheduler, which will assign 
+instructions down into the different 
+parallel units. 
+So, lots of, lots of interesting things 
+going on in parallel here on these 
+machines. 
+So, I wanted to stop here on GPUs because 
+we could have a whole another lecture on 
+that. 
+I, I don't really want to go into that 
+level of detail on GPUs. 
+But, let's switch topics and start 
+talking about multi-threading. 
+Actually, before we go off this thing, 
+I'm sure people have questions about 
+GPUs. 
+But I'll take one or two of them, but I 
+don't want to go into that much detail. 
+I just want to sort of introduce the idea 
+that you could use graphics processors. 
+They have some similarity to vectors, but 
+they're kind of the degenerate case of 
+vector processors. 
+Actually, a quick show of hands. 
+Who, who, who has a ATI video card in 
+their machine? 
+Okay. Who has Nvidia? 
+Okay. Who has Intel? 
+Aha. So, so, interesting tidbit here. 
+Everyone always thinks about ATI and 
+Nvidia as being the sort of leaders in 
+these 
+fancy graphics cards. 
+But in reality, 
+Intel sells the most number of graphics 
+processors in the world today. 
+And it's partially because they kind of 
+give them away for free, and they've 
+effectively integrated them onto all the 
+Intel chips now. 
+So, 
+it's kind of a funny thing that the least 
+innovative the, the, the least exciting 
+graphics processors out there are, are 
+kind of there not because they're good, 
+but because they're cheap. 
+Lots of, lots of things in the world work 
+like that. 
+

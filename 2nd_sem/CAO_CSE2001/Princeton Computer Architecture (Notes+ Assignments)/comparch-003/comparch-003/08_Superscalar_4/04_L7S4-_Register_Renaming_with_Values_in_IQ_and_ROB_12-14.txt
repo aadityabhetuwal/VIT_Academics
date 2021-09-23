@@ -1,0 +1,287 @@
+Let's move on to our second scheme.
+So our second scheme if you go back to
+the, the earlier slide.
+We said that you can either store pointers
+in the instruction queue and have pointers
+in the reorder buffer.
+Or we can just store the values.
+And if you go read the original
+reservation station paper by Thomas
+[inaudible].
+He actually stored the values in the
+reservation station, or what we're calling
+the instruction queue and the reorder
+buffer.
+Okay, so a couple, a couple things change
+when you do this.
+One structure is missing.
+First of all, there is no physical
+register file.
+We removed that.
+We're going to store in flight
+instructions in a merged reorder buffer
+physical register file effectively.
+The second thing that's changed here is we
+no longer have a free list.
+And we'll see in a minute why we don't
+need the free list.
+But instead we're basically just going to
+use different reorder buffer and entries
+to keep track of our free list.
+And we're going to have to modobot, modify
+a bunch of stuff here.
+We're going to actually keep values in a
+reorder buffer instead of a pointer.
+Our renaming tables can be modified, our
+instruction ques now going to be able to
+keep track of actual data values.
+And our physical register file as I said
+before has gotten merged into our reorder
+buffer.
+For completeness here let's take a look at
+the where things get red and green in the
+pipeline and one, one notable change I
+wanted to say here is the architecture
+register file.
+Which in previous architectures was only
+written.
+We didn't do reading of it, except on
+rollback.
+We now, actually read from it, because we
+might need to be able to go find some
+canonical state in this architecture.
+So we, we add a R there to denote that.
+Okay, so let's look at how we have to
+modify the reorder buffer.
+Still looks like our reorder buffer from
+before.
+We need to know for the same reason in
+the, pointer-based design.
+We still need to know the architectural
+register number for the particular
+instruction.
+So this is when we go to write to the
+architectural register file.
+Where do we write to it?
+Because we did renaming, so we have more
+physical registers.
+We can't just have an identity map there
+anymore.
+And now, we got rid of a lot of that other
+complexity we had, but we, we added a
+bunch more bits to go do this.
+We now actually can store values in our
+reorder buffer.
+So what this is, is instead of values
+waiting in the physical register file to
+be committed, they're just gonna store,
+they're just gonna stick around in the
+reorder buffer entry.
+Which is, which is interesting.
+And so its gonna stick around here while
+it's waiting, while its pending, and then
+it's actually gonna write to the
+artificial register file when it gets the
+when it get committed.
+Okay, so we also modify the instruction
+queue.
+So this is gonna tell us where to go get
+the values, and we're gonna go execute.
+It's also gonna store the values now.
+So what's, what's interesting about this
+is, if you go back and look at the Thomas
+[inaudible] algorithm paper.
+They broadcast, commits that are
+happening, and those commits end up in the
+reservation station of the actual value.
+So we're actually going to store in these
+two source operants here, the values.
+If we get a, instruction which commits.
+If the instruction is pending, it's in
+flight, we can't go and just, get the
+values.
+Because the value doesn't exist.
+It's being calculated.
+And we have this dependent instruction
+sitting waiting for something, [ah, ].
+[Couch], so instead, if it's pending, our
+source field.
+We're not going to store the value in
+here, but we're going to store a,
+identifier into the reorder buffer.
+And that, what it's going to do is it's
+going to name the exact instruction that
+has to complete in order for this value to
+be ready to execute.
+So if you think about this from sort of
+from the sort of Thomas [inaudible]
+perspective.
+That these sort of broadcasts coming back.
+And what this is going to allow us to do
+is say oh, there's a broadcast reorder
+buffer entry, seven, just committed.
+Or actually we probably don't even need
+that.
+We probably just need it to, get, stop
+being, pending.
+We just need to get it, to be finished,
+because it will then be deposited in the
+reorder buffer.
+We can go pick that value out, at that
+point and store it here.
+And then, we can basically, we have the
+other instructions that, that are renaming
+and executing which, go and blow away that
+value.
+But because we store the value here, we
+have the most up to date value for that
+register and we know its no longer pending
+and its valid and ready to go, at least
+this one, and we might have to wait for
+both of these to get ready in order for an
+instruction to leave the instruction
+queue.
+Okay.
+So the rename table, also changes a little
+bit.
+Not, not, not as much as the other one of
+the other structure.
+Structures.
+It's still indexed you know by the
+register.
+We're looking for register two, we'll say.
+It will tell us whether, Where, where to
+go look for that.
+There is a couple different places where
+it's going to tell us to go look for it.
+It's going to tell us either, it's in
+flight, and it's gonna put it the,
+identifier into the reorder buffer.
+So it's going to say when that value gets
+into the reorder buffer and the
+instruction transitions to finish but
+maybe not yet committed. It's gonna tell
+us to where to go get it.
+And that's important for subsequent
+instructions that are going read the
+rename table to go find the value.
+Or it's possible that the most up to date
+value is actually in the architecture
+register file, and we need to go look
+there.
+So, let's say the reorder buffer you
+haven't written let's say to register two
+in a very long time.
+And lots of other instructions execute,
+and the reorder buffer get's filled up
+with other things for other instructions
+for different destination registers.
+It's very possible that the economical
+place to go look for the value.
+Is in the, architectural register file and
+we need to track that.
+So we sort of have two bits here.
+It's sort of just say where to go look for
+it.
+Either it's in the architectural register
+file or whether it's in flight, and then
+if it's in flight we have to go look down
+here and if it's in flight that means that
+and if P is, let's say one.
+It's actually in flight and if it's, it's
+zero.
+Well it's in the reorder buffer waiting to
+retire.
+This is just gonna tell us where to go to
+find the actual value for subsequent
+instructions that want to go read the
+rename table to go find the value.
+Okay, well, we'll, we'll move on and we'll
+look at the eye chart here again.
+[laugh] and what's interesting about this
+is we no longer have a free list.
+We got rid of that structure, so you don't
+have to worry.
+Our renaming table instead of having
+actual physical registers is going to have
+reorder buffer entries.
+We're going, we'll call that physical
+register we'll basically merge our
+physical registers and reorder buffer
+together.
+And similar sorts of analogues happen too
+when something becomes free.
+But it looks a little bit different.
+So when something becomes free, we're
+going to actually.
+Change the, valid bits in the rename table
+to a zero, and that's, that's effectively
+the same thing as becoming free.
+And those, those analogs there between
+these two designs, they're, they're almost
+exactly the same from that perspective,
+from a logical perspective.
+But [inaudible] when.
+You be, you become free, you basically can
+remove it from the, the table.
+So, so how do we do the mapping from the
+architectural register to the physical
+register, yeah it could be random.
+In, in this design its a little bit
+different because you're basically going
+to re-pulling out of the, reorder buffer
+in order to some extent.
+You're going to, your physical register
+number is going to be reorder, buffer
+entry slot number.
+And because we want to retire in order,
+we're basically going to allocate from
+that in order.
+So it's not really random.
+It's just sort of the next reorder buffer
+entry.
+Let's see what are the other points I
+wanted to make here?
+Actually, okay.
+I want to, I want to make a point.
+It's around, okay so, I think what I
+[inaudible].
+Okay, what I said was a little bit, little
+bit confusing.
+So I want to, I want to clarify this.
+When do you deallocate a reorder buffer
+entry?
+It's a little bit different than
+deallocating a physical register entry.
+You, you apply the same algorithm applied
+before.
+When you go to actually commit the
+instruction to the architectural register
+file.
+That's when it's becoming free.
+It's basically stopping, stopping being
+used here.
+That's a little bit different than the
+there's analogs to, to before.
+But we're effectively moving it out of the
+reorder buffer into the architectural
+register file.
+And at that point it becomes free.
+So, I want to actually strike what I said
+before about it, it's exactly the same.
+It's, it's different but subtly that when
+you go to write.
+When you go to actually commit the
+instruction, you're moving it to the
+access register file.
+And you've effectively deallocated that
+reorder buffer entry, and you've updated
+the, the rename table.
+So that's, that's, that's subtle.
+That's actually subtle there.
+So we're actually, when it, when it
+commits, it stops, it stops being used.
+This, which is different than a later
+instruction issue writing that.
+So that is quite a bit different.
+Sorry about that.

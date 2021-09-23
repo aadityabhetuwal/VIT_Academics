@@ -1,0 +1,396 @@
+Okay, so now we start talking about 
+performance of our networks, and there's 
+two. 
+Main thoughts I want to get across here, 
+there are two really godo ways to measure 
+our networks, bef, when we talked about 
+performance here we were talking about 
+parameters rather of the toplogy now 
+we're going to look at the overall 
+network performance. 
+First thing is, bandwidth. 
+So bandwidth is the rate of data that can 
+be transmitted over a given network link, 
+divided by amount of time. 
+Okay, that sounds pretty reasonable. 
+Latency is how long it takes to 
+communicate. 
+And send a completed message between a 
+sender and a receiver, in seconds. 
+So, the unit on this is seconds, 
+the unit on this is something like bits 
+per second, or bytes per second, 
+so the amount of data per second. 
+These two things are linked. 
+So, if we take a look at something like 
+bandwidth, it can actually effect our 
+layency. 
+And the reason for this is, [COUGH], if 
+you increase the bandwidth, 
+you are, are going to have to send fewer 
+pieces of data for a long message. 
+Because you can send it in wider chunks, 
+or faster chunks, 
+or something like that. 
+So it can actually help with latency. 
+It can also help with latency because it 
+can help reduce your congestion on your 
+network. 
+Now we haven't talked about congestion 
+yet, we'll talk about it in a few more 
+slides. 
+But by having more bandwidth it will, you 
+can effectively reduce the load of your 
+network and that will decrease your 
+will decrease the load in the network, 
+and then increase the probability you're 
+actually going to have two different 
+messages contending for a same, link in 
+the network. 
+Leniency can actually affect our 
+bandwidth, 
+which is, interesting, 
+or rather it can affect our delivered 
+bandwidth. 
+It's not going to make our, 
+if we change the latency, it's not 
+going to make our lengths wider or our 
+clock speed of our latency faster, 
+but if you make the delivered bandwidth 
+higher. 
+Now how this can happen is let's say you 
+have something like a round-trip Your 
+trying to communicate from point A to 
+point B, 
+back to point A. 
+And, this is pretty common, you want to 
+send a message from one node to another 
+node, it's going to do some math on it. 
+It's going to do some work it and it's 
+going to send back the reply, and if you 
+can't cover that latency, 
+if the latency were to get longer, the 
+sender will sit there and just stall 
+more, 
+and it will effectively increase the it 
+will decrease the bandwidth of the amount 
+of data that can be sent. 
+[COUGH] Now if you are good at hiding 
+the, this latency by doing other work, 
+that may not happen. 
+You may not be limited by latency. 
+But then, another good example is if you 
+are worried about end to end flow 
+control. 
+So a good example of this is in TCP/IP 
+networks. 
+So like our ethernet networks. 
+There's actually a round trip flow 
+control between the two end points, which 
+rates limits, the, the bandwidth. 
+And it's actually tied to the latency. 
+Because you need to have, more, traffic 
+in flight to cover the round trip lanes 
+see, and this starts to get, in j, starts 
+to be called, what's called the ben with 
+delay product, where you multiply your 
+been with by the delay or the latency of 
+your network, and if you increase the 
+latency. 
+The bandwidth will effectively go down if 
+you do not allow for more traffic in 
+flight before you wait, before you can 
+hear a float control response. 
+[COUGH]. 
+So you'll see this if you have, let's 
+say, two points on the internet. 
+And you put'em farther apart. 
+And you have the same amount of in 
+flight, data, or what's called, the 
+window is the same. 
+[COUGH]. 
+The bandwidth is going to go down as you 
+increase the latency. 
+But, if you were to increase the window, 
+it would actually, stay high. 
+because bandwidth delayed, probably. 
+And the reason for that is you'd be 
+waiting for acts to come back from the, 
+the receive side. 
+Okay, so let's take a look at, an example 
+here, to understand these different 
+parameters. 
+We have a four node omega network here, 
+with two inputs, two output, routers. 
+Each of these circles here, represents 
+input nodes, 
+and these are the output nodes, and they 
+basically wrap around, they're the same 
+sort of thing, [COUGH]. 
+We have little slashes here, which we'll 
+represent as serializers and 
+deserializers. 
+So what this means is, you're 
+transmitting some long piece of data, and 
+it gets sent as smaller fits, if you 
+will. 
+So we're setting let's say a 32 bit word, 
+and it gets serialized into four 8-bit 
+chunks across our network, across the 
+links, because the links in the network 
+are only four, or excuse me, eight bits 
+wide, 
+we'll say. 
+[COUGH]. 
+And in this network we're going to have 
+our latencies be, non, non-unit. 
+So let's say our link traversal here, 
+each link here takes two cycles, 
+takes L0 and L1. 
+And our routers take three cycles. 
+R0, R1, and R2. 
+And, to go from any point to any other 
+point in this network, you have to go 
+through two routers and one link. 
+So we can draw a pipeline diagram for 
+this. 
+So for a given packet, 
+we can see, let's say, it can split into 
+four fits here, of the head fit, two body 
+fits and a tail fit. 
+We started the source and we sent, well 
+it takes three cycles to make a routing 
+decision through here, two cycles across 
+the link, three cycles across one of 
+these routers here and then we get to the 
+destination. 
+And if we look at this in time, it's 
+pipelined. 
+We can have multiple of these things go 
+down at the same time. 
+So if you have the next FLITs one cycle 
+off, or one cycle delayed. 
+And the reason we want to draw this, is 
+we want to look at what our latency is 
+for. 
+This send sending this one packet. 
+because it's a little bit hard to reason 
+about, because we're effectively, have a 
+pipeline here. 
+We're overlapping different things. 
+And we'll see that one of the things 
+you'd think would be up there doesn't 
+show up down here. 
+So first let's take a look at this, we 
+have four cycles here at the beginning 
+which is just our serialization of a to z 
+or the length of the packet divided by 
+the bandwidth of the packet. 
+If you were to increase the bandwidth 
+here, the serialization latency would go 
+down. 
+[COUGH] Then we have, time in the router, 
+which is our, router pipeline latency. 
+So it's three cycles here, 
+and another three cycles in the second, 
+router. 
+And if we have more hops, this will go 
+up. 
+And then two cycles here for the channel 
+latency which we'll tall, call t c. 
+So, you can see that it's the summation 
+of all of these different latencies, 
+is our latency, but what is interesting 
+to see is that there is no 
+deserialization latency here. 
+So, that's the one that's missing, and 
+it's because we've overlapped that 
+because it's pipelined, we're counting 
+that in the serialization latency. 
+Questions about that so far. 
+Okay, so now let's take a look at our 
+message latency, and go into a little 
+more detail here. 
+If you look at our overall latency which 
+we'll denote as t, it's the latency for 
+the head to get to the receiver, so 
+that's all of this stuff here, plus the 
+serialization latency. 
+Now, T head has our TC and our TR, and a 
+number of hops, 
+but it also has something here that is a 
+contention, 
+which we haven't shown. 
+So, in this number here, there was no 
+contention. 
+This is an unloaded network. 
+There was not multiple nodes or multiple 
+messages trying to use one outbound link 
+or use any one given link in this design. 
+But it can happen. 
+Let's say these two nodes here send at 
+the same time and they both need to use 
+this link. 
+You're going to get contention, 
+and that will increase our latency. 
+But if we, if we rule out the contention 
+for a little bit of time, 
+we'll start to see the unloaded latency 
+here. 
+And we just decompose this into sort of 
+sub-components here that we have the 
+[COUGH] routing time, times the number of 
+router hops that we need to go, 
+plus the channel latency times the number 
+of channel links we need to hop across, 
+plus the serialization latency. 
+And the reason we decomposed this, is 
+this lets us reason about how to make 
+networks faster. 
+So we can see that there's a couple 
+different ways to make our networks 
+faster. 
+First thing we do is we make shorter 
+routes. 
+That'll decrease both these upper case 
+H's here. 
+The reason I have two different upper 
+case H's is it's. 
+As you can see here, 
+In this example, we basically went two 
+router hops and one link hop. 
+usually, they're connected, though. 
+If you have to go farther, you need more 
+links, and you need more router hops. 
+You can make the routers faster. 
+So you can either increase the clock 
+frequency of the routers, you can make 
+them wider if they take multiple cycles. 
+[COUGH]. 
+Now, if they're already, sort of, as fast 
+as you can go, it may be hard. 
+You might be able to increase the clock 
+frequency somehow, but it is, it could 
+start to get hard at some point, 
+if there are already wide channels, and 
+wide muxes, and have a fast clock rate. 
+Faster channels. 
+So if you go in between multiple chips, 
+usually you're limited sort of by the 
+signal integrity of the communication 
+links between the different chips. 
+And this sometimes even happens on chip. 
+So you have to think about that, that 
+going to a higher clock frequency could 
+be, could be problematic. 
+But if you make a faster channel, your 
+latency's going to go down, 
+and then, finally, 
+this is our serialization sort of cost 
+here. 
+And we bake into it here either wider 
+channels or shorter messages. 
+Maybe you have a lot of overhead on each 
+message. 
+You have a, a, a really big header for 
+the message. 
+If you try to shrink that, that'll make 
+your network go faster and reduce your 
+latency. 
+Just by sending less work, 
+or sending less data, 
+but that may not always be possible. 
+but I'll give you an example of this. 
+If you look at something like, TCP on top 
+of IP networks, 
+in sort of our internet class networks, 
+people have proposed a whole bunch of, 
+revisions to that, 
+where they try to sort of squeeze out 
+some bytes. 
+Or use some sort of encoding standards to 
+reduce the amount of data in the headers. 
+Because TCP header's pretty, pretty long, 
+for instance. 
+And you already see a good example of 
+that, 
+they actually have an optional field in 
+TCP headers, which you, is typically not 
+sent, 
+thereby reducing that in the common case. 
+Okay, so now let's talk about the effects 
+of congestion. 
+[COUGH], so what I, what I drew here is. 
+A plot of our latency versus the amount 
+of bandwidth that is achieved, or offer 
+bandwidth. 
+And this is for a given network. 
+So it's pretty common that as you 
+increase the bandwidth that you're using 
+at any given network, 
+the latency of the network goes up 
+because you start to see more congestion 
+in the network. 
+So the probability that any two points 
+are can, are contended for will go up as 
+you get closer to the maximum amount of 
+maximum achieve in the bandwidth in the 
+bandwidth. 
+[COUGH] Now there are some networks that 
+people build where this is not the graph 
+does not look like this [COUGH] or does 
+not look like that. 
+So for instance, if you have a start 
+apology, you don't have any congestion. 
+So, you're going to get something that 
+looks much more like an ideal plot here 
+where if you're going to have a straight 
+line and another straight line. 
+Because as you increase your load to the 
+network, everyone can send to everyone 
+else, so it's not going to be congestion 
+in the network. 
+And I have a few lines here that sort of 
+show interesting things that sort of hack 
+down at this. 
+So, in a perfect world you'd have your 
+zero load latency, so this is the latency 
+of the unloaded network, and as you 
+increase the bandwidth. 
+It wouldn't change. 
+On our unloaded network. 
+And with so. 
+And, and if you had no, no conjecture in 
+the network. 
+But we start and, and but that's, that's 
+not usually what you see on, on real 
+world networks. 
+Couple of things sort of, also, decrease 
+or increase the latency and decrease the 
+bandwidth of a network. 
+Usually, you have some routing delay that 
+gets introduced into the network. 
+And that's going to basically push us 
+away from higher bandwidth and lower 
+latency. 
+So you want to be farther down in this 
+plot, 'cause that's lower latency. 
+[COUGH]. 
+And also, if you have flow control in the 
+network. 
+So, local flow control. 
+That also looks like, some form of 
+congestion. 
+It'll actually slow down your network in 
+certain cases. 
+But I just wanted to give you guys the 
+idea here that. 
+For any, real world network it usually. 
+Looks something like this. 
+And as you get closer and closer, to 
+using the whole network. 
+You're using all the bits available, by 
+the network. 
+The latency starts to shoot 
+asymptotically, through the roof. 
+

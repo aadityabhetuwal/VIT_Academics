@@ -1,0 +1,17 @@
+﻿L2S2:
+
+In Lecture Quiz 1:
+Time: 20:20
+
+Question:
+In a multi-cycle, pipelined datapath, but unpipelined control processor, what is the CPI and the cycle time?
+
+Choices:
+
+A. 1, short
+
+B. 1,long
+
+C. >1, short
+
+D. >1, long

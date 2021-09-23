@@ -1,0 +1,6 @@
+Assignment 1:
+1. Print the student details
+2. print the interger values
+3. print area of circle
+4. print the prime number
+5. Print the a number which is the largest our of given 3 numbers

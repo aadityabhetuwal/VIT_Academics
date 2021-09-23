@@ -1,0 +1,390 @@
+So let's look at some techniques to deal
+with outcome prediction for branches, and
+we're gonna look at this mostly, first of
+all, in the static domain.
+So things that are not trying to watch the
+genetic instruction sequence, but instead
+are, can, basically statically analyze the
+instruction sequence and with some high
+probability, we'll say, try to predict the
+location.
+The first technique is actually not a
+prediction at all.
+The first technique, we had talked about
+this a few lectures ago, or we, actually
+we talked about this in lecture, two
+adding delay slots.
+So, instead of, I don't know, having that
+time just be dead cycles, when we're
+trying to resolve the branch.
+We, let's say we put a, if we don't
+resolve the branch 'til here, we have what
+say one delay slot, two delay slots, three
+delay slots, and we have three
+instructions, we'll say.
+Or maybe you can redirect at this point
+out of X and you have two branched delay
+slots, depending on how you sort of wire
+that in if you can make the cycle time.
+Let's say if two branch delay slots, what
+ends up happening is you have instruction
+EEQZ here.
+Let's say that is at address 100.
+Then you have two instructions which
+execute no matter whether the branch is
+taken or not taken, that follow it.
+So these instructions are in the delay
+slots of the branch, and you know, if you
+have architectures have which have things
+like load delay slots and other things
+like that.
+But for right now we'll talk about
+branches.
+And we can force these instructions always
+to execute.
+Unfortunately, if you go look at the sort
+of percentages of probability that you can
+actually fill these delay slots, it's
+pretty low.
+It's, always not easy to find work to, to
+shove down here, 'cuz you're basically
+taking work that was above the branch, and
+in the compiler, reordering the code to
+put the, instructions that were before the
+branch, after the branch.
+Hm.
+Okay.
+Well, this is good.
+I mean, if you can actually make this work
+out, this is, this is great.
+One of the problems with this, though, is
+the probability of filling one branch
+delay slot, let's say is 70%.
+The probability to filling two branch
+delay slots is even lower than that.
+It's maybe, 50ish to 40ish%.
+As we said before, if you have a monkey
+pulling out of a, a hat, or just some
+random process pulling out of a hat,
+you're going to do 50%, correct.
+So.
+And as we'll see today, if you use some
+more fancy branch prediction, or the
+outcome prediction techniques, you can get
+the prediction accuracy of a branch all
+the way up into the sort of 95, 96, 97
+percent probability.
+And all the way people have built, if you
+look at your sort of out of order
+super-scaler on your desktop, your core,
+or I-7 these days from Intel, that's
+probably somewhere in the neighborhood of
+98 to 99 percent correct.
+So, being able to fill these delay slots,
+with some probability which is less than
+98%, is not a good, good trade off.
+You would've better been served possibly
+by allowing some fancier prediction
+mechanism trying to fill it, if you care
+about performance.
+Now if you care about complexity, or
+reducing complexity in area, a static
+prediction might be a good, good way to
+go.
+So let's, let's look at some basic rules
+of thumb here about static prediction.
+So the, the overall probability of branch
+is taken with say out of something like
+spec int is 60 to 70%.
+But it's not equally distributed.
+Backwards branches have a much higher
+probability of being taken than forward
+branches.
+Okay.
+So, we got a question coming up here.
+Why is this?
+Yes, so, so loops with high probability or
+by definition, to be a loop, you don't
+have to jump backwards.
+You jump forwards, it's, it's pretty hard
+to loop.
+So you jump backwards, it's a loop.
+And in fact, people like to execute loops,
+loops, and stay in loops for a while,
+'cause that's where a lot of work is done.
+So if you're seeing a loop, and you're
+just spinning in this, this is increasing
+the probability that the backwards branch
+is taken, and that says a high
+probability.
+Such that this half forward branches 50%.
+Hm.
+Can we, what's, what's going on there?
+Forward branch, 50 percent going forward.
+These are usually some swarm of data
+dependent branches, like an if then else
+clause.
+So that's why the probability of this is
+much, much lower.
+You sit in loops for long periods of time,
+forward branches typically sort of, are if
+then else's, and there's you're checking
+some data value and then you're either
+executing or not.
+Now this gets a little trickier with some
+more advanced compiler techniques.
+Cuz sometimes with advanced compiler
+techniques, you'll actually, effectively
+convert a loop with an with an if then
+else into it, and a condition check at the
+end into a unconditional backwards branch
+and then a little sort of branch that goes
+around the, the, piece of code which
+checks the loop sensible or checks the,
+the whether the loop is completing or not.
+But even that's actually not a horrible
+thing, cause at least that backwards
+branch will always be predicted to take in
+a hundred percent, cause its just turned
+into a jump.
+So that's not bad for a performance.
+It just, you know, might change these
+percentages a little bit.
+But things do like to sit in loops, is
+what you should take away from this slide.
+Okay, so let's think about a technique to
+try to take advantage of this.
+So one technique they didn't take
+advantage of this with is actually to add
+extra bits to your instruction set, and
+allow the compiler to hint to the
+architecture whether the branch is taken
+or not taken.
+Now just a little hint, if it get's it
+wrong, we still won't get correct
+execution, so if it takes a branch, we
+still want to go correct, we still want to
+execute the right piece of code, but the
+performance might just be worse.
+So let's take a look at two branches here.
+We have branch .T, and branch .NT.
+Branch .T is a branch which is taken or
+predicted taken, and branch .NT is a
+branch that's predicted not taken.
+So what do I want to say about this?
+Well, architectures do have this.
+I was gonna say the itanium architecture
+actually has static branch prediction
+completely.
+Some things have sort of intermediary
+things with this, for instance the
+Motorola 68K kind of has something like
+this but not, you can't do with all
+branches.
+So this, this exist in real architectures
+and one of the, the things is that this
+could actually be very accurate,
+especially if you profile your code.
+So if you run the code once and you log
+the compiler to C, which way the branch
+was taken, it can do quite good.
+And some of the insight here is there's a
+lot of branches in a program which are
+there just to check error cases.
+And the probability that they actually are
+taken or not taken, one way or the other
+is, can basically almost be statically
+determined at compile time.
+And definitely if you have feedback
+information, of execution of the program
+once, that's, that's a, a very good
+indicator.
+So for instance if you had a loop you
+would, as a compiler would denote that the
+backwards branch is, is taken.
+So we put a br.t and if it's let's say
+some piece of code which jumps over an
+error case and checks an error condition
+and 99 percent of the time that never
+falls into that.
+It would predict that taken.
+So we jump over that little piece of code.
+So you can actually have very high
+prediction accuracy.
+Now we're not, we're not up into the, 99
+percent here yet, or something like that.
+This isn't, this isn't great.
+We're still doing static things here.
+And, you know, at this point, it may
+actually make sense still to have, a delay
+slot, 'cuz we're still not over our, 70th
+percen-, or, or, or, or sort of a close
+trade-off here.
+You have to get the stack creation correct
+and your delay slot might actually still
+be a better approach at this, depending on
+sort of how, how this accuracy compares up
+to how many times you can fill the delay
+slot.
+But let's take a look at what happens in
+the pipeline here.
+So here we have branch taken and it's been
+taken to this target.
+We still end up with a dead cycle here
+because we do not know where that target
+is until we've effectively decoded the
+instruction.
+So that in the sort of intermediate time
+here we just have fetched let's say the
+fall through case or something like that.
+But, because we predicted a taken, we can,
+we can do better here.
+We don't have to have two delay slots, or
+two dead cycles.
+We can fill it.
+We can actually get the, the correct next
+instruction, in here.
+For the target.
+This branch not taken, let's say we
+speculatively execute the fall through.
+We, we don't actually have any penalty for
+a correctly predicted branch here.
+So if we predict this branch not taken,
+that's the fall through case, we can just
+fetch p c plus four, p c plus eight and
+just keep executing.
+And we have no, no penalty there.
+Okay, so if we get the hint wrong.
+What are we gonna do?
+Well, we have effectively taken a
+mis-predict penalty here.
+And if you look at the branch take-in case
+and you take a mis-predict penalty.
+What's gonna happen here is you are
+actually going to end up having two, two
+dead cycles, cuz we don't actually
+determine whether we took the mis-predict
+or not until this execute stage.
+And that's the, the soonest we can go
+redirect the front of the pipe.
+Now, if you look at this, and squint
+really hard, you can see that we actually
+fetched op A twice here.
+This was the fall through instruction.
+It is hypothetically possible that you
+might be able to not hold off killing this
+instruction if you will, and in this case
+you sort of have the pipe do something
+special and actually end up getting the
+instruction after op A or op B here, if
+you will.
+But that's pretty hard to do.
+So, for the base case we'll just say that
+you end up with an extra cycle, a
+mispredict penalty, when you mispredict.
+Yeah, so just to reiterate that, what I
+was trying to say here is that, well, if a
+branch taken, we fetch the subsequent
+instruction in the follow through case.
+We fetch the target of the branch.
+We try to kill this, but, lo and behold,
+we end up fetching the exact same
+instruction again.
+So, you could, if you really wanted, to
+try to optimize run that and not fetch
+this twice, but then you are kind of
+having things out of order in the pipe
+here.
+Because, you'd have this instruction.
+This instruction is dead and you have to
+figure out how to kill, sort of,
+sub-portions of your pipe or things out of
+order in your pipe.
+That gets pretty, pretty hard to do.
+But this does really quite well if we do
+static software based branch production
+Okay, so let's look at hardware branch
+prediction.
+Now when we say hardware branch
+prediction, that does not necessarily mean
+dynamic hardware branch prediction.
+This could just mean that you have the
+hardware do either prediction without any
+hints from the software.
+And we have a couple different cases we
+can try to implement.
+Heuristics, if you will, in hardware.
+The first one here always predicts not
+taken.
+This is what we've done so far in all of
+our pipelines that we've designed.
+We've predict, we predict fallthrough
+effectively, and we just fetch PC plus
+four.
+We didn't put a name on it, this, but this
+is actually what we were doing.
+We were doing speculative execution with a
+static harbor branch prediction of PC plus
+four.
+It's pretty simple to implement.
+It's what you guys have done in your labs
+so far.
+You know the fall-through early.
+Accuracy is not very good.
+You get all your loops wrong.
+All your backward branches and your loops
+just are always predicted wrong.
+Okay, let's, let's do the inverse here.
+Predict taken, let's have that be our
+static strategy in hardware.
+Well, kinda hard to do here because we
+don't really know the target of this
+branch in D code.
+So it's like going back to here.
+If we predict everything taken, what do
+we, what do we fetch in this cycle?
+Well, I don't know.
+It's a big question mark there.
+It doesn't do super well on,
+if-then-elses, cuz a lot of times those
+are forward branches over things, or, or
+some, it depends on how you structure it.
+Some architectures which have things like
+these static prediction techniques will
+actually restructure their code, such that
+the compiler will figure out the
+probability of a branch being taken or not
+taken, and then work the code around it,
+to make it work out.
+That's actually pretty common the, the
+Motorola 68K had something similar to that
+and they, the compilers there actually try
+to work around it.
+So, hmm, well, this is definitely a bummer
+here.
+Maybe we can fix that.
+Like, like we said, this is the second
+part of today's lecture is trying to fix
+this problem.
+Okay, how about we use a heuristic, that
+all backwards branches are taken and the
+forward branches are not taken.
+Okay so this does a lot better.
+This is her, our heuristic of what we were
+saying before, that loops and things like
+that will get caught up in this.
+So forward branch is not part of the loop.
+It'll, we'll predict that not taken, we'll
+predict the fall through.
+Backward branch we'll predict taken.
+This does pretty good.
+It's better accuracy.
+It's still nowhere near the sort of 80
+percent accuracy that we had if the
+compiler were to get involved, cuz that's
+effectively, the compiler case that we
+were talking about before could actually
+implement this entire algorithm in
+software.
+Or something much more sophisticated and
+that's usually what ends up happening.

@@ -1,0 +1,21 @@
+﻿L17S3:
+
+In Lecture Quiz 1:
+Time: 11:57
+
+Question:
+What happens if a thread is swapped out while inside of a critical section?
+
+Choices:
+
+A. The system can immediately run other threads.
+
+B. The system can directly release the lock.
+
+C. The system can hang, freeze, or block other threads from acquiring the lock indefinitely.
+
+D. All of the above
+
+
+
+

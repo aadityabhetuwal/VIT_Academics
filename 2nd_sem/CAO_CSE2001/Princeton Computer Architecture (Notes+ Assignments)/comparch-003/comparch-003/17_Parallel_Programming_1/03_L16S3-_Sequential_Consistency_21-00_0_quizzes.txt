@@ -1,0 +1,31 @@
+﻿L16S3:
+
+In Lecture Quiz 1:
+Time: 4:33
+
+Question:
+Why is sequential consistency almost never implemented in real processors?
+
+Choices:
+
+A. This model is not accurate enough to guarantee correctness
+
+B. It incurs large overhead
+
+C. Reordering Loads and Stores is good for performance because it can hide latency
+
+D. All of the above
+
+In Lecture Quiz 2:
+Time: 18:21
+
+Question:
+Does (can) a computing system with caches or out-of-order execution capability provide a sequentially consistent view of memory?
+
+Choices:
+
+A. Yes
+
+B. Probably not
+
+

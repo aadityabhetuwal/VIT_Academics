@@ -1,0 +1,454 @@
+Okay.
+So that gets us out of the outcome, part
+of today's lecture.
+Let's start talking about how to figure
+out where we're going.
+So it brings us back to this picture and I
+took some stuff off this picture now.
+Well now what we need to do is we need to
+know the targets, the role of targets.
+And I said we don't know the target for
+branch, a jump, a jump and link until we
+actually do PCE plus the offset
+calculation somewhere in the decode stage
+and until we at least get the instruction.
+From jump registers and jump [inaudible]
+registers, we don't know that until later.
+But this is peeking out, this is not
+looking at the, the outcome, this is just
+looking at when do we know the value.
+But this is important because, even though
+we have the prediction of where we're
+whether it's taken or not taken.
+And we can do that let's say, with 99
+percent accuracy.
+This is the harder one, we're trying to
+pick from two to the 32 possible numbers.
+Can we actually do a good job here.
+So something not on the slides, but
+something I wanted to talked about briefly
+here is we can use a static algorithm
+similar to what we have seen with the
+other predictors to do this calculation
+through the compiler if you will.
+So there's been a few architectures, one
+example actually is the Hitachi, or now
+Renaissance SH5 architecture which is sort
+of a, a media processor, we'll say.
+And they actually have, an instruction.
+Which loads the target of a future branch.
+So they decouple the branch into two
+instructions, the actual branch and a
+prepared branch, which has data to execute
+earlier in their instruction sequence and
+says, I'm playing to do a branch and its
+address something.
+It's actually called prepared target, is
+the name of there, of this instruction, or
+PTA.
+Under architecture and because of this,
+they don't have this problem.
+They, all they need to do is actually do
+the branch.
+So, they know the target of branch.
+In the fetch stage, they can actually just
+go because they have this instruction that
+says, load up this special register with
+a, a, my target to the branch, and then we
+decouple the actual taking of the branch
+sometimes in the future.
+So this is a, a, an interesting idea.
+I thought I am pretty sure there was
+actually a, a one of the CDC machines that
+controls the [inaudible] machine.
+Did this a long time ago also but I
+couldn't find the reference in time for
+today's lecture.
+But I know the SH it's actually SH5
+actually.
+Definitely has this instruction.
+So all I want to try to get at here is
+that there are static software ways to go
+about doing this.
+In addition now let's talk about something
+[inaudible].
+Okay.
+So, the most common way to go do this is
+to implement something called a branch
+target buffer.
+In a branch target buffer, you actually do
+in parallel with both the branch
+prediction outcome or the branch outcome
+prediction and the PC plus four.
+So you, you put into it.
+The current PC and it's going to tell you
+somehow one out of two to the 32 possible
+targets.
+How does it do this?
+Well, what it does is it actually just
+keeps a table of where that branch has
+gone in the past.
+So the first time it executes, it just
+gets it wrong.
+But then the second time it exe, but given
+that first time it executes, it's actually
+gonna load the table.
+With a predicted target.
+So we're gonna load the predicted target,
+based on where this branch went in the
+past.
+We're gonna index into this table, based
+on our current program counter, and then
+we're going to check, to see that we
+actually match.
+So we're gonna take the whole PC, we're
+gonna do a tag check, very similar to our
+cache, cause this is effectively a cache.
+And if.
+Are, we hitting this, small cache here, of
+targets.
+We have, the new program counter.
+If we predicted, taken.
+If we predicted, not taken, we
+[inaudible], we just wanna use PC plus
+four.
+So, in effect here, we can actually
+Predict the target of the branch based on
+where this branch has gone in the past.
+What, that is a lot easier, I thought this
+was gonna be really hard.
+Well, it's actually not that bad.
+One thing I should say is the size of this
+table kind of matters.
+If you alias too many places into here you
+may end up just pulling out wrong data or
+you end up might having a miss quite
+often.
+So you want to size this table
+appropriately.
+But you don't want to make it too big,
+because you're, you're carrying the entire
+program counter in here.
+And that can get big.
+So the data in here is quite, quite large.
+So one way to solve this actually is
+typically people try to make these things
+set associative.
+So you'll actually have multiple.
+Pcs and predicted targets because that is
+actually a little better performance if
+you can check multiple and parallel versus
+making it larger.
+I mean you could just make it larger but
+typically having a little bit of
+associativity helps with this.
+But you're really executing this in
+parallel with the PC plus four logic.
+One thing that also makes this a little
+better here is the branch target buffer
+does not hold every instruction.
+If it's not a branch or a jump, don't put
+it in this table.
+So, you really only put in.
+Instructions that are branches into this
+table.
+Which helps, save a lot of space.
+Okay, so, we have a question here.
+How do we achieve this effect without
+decoding the instruction?
+So, we have a french target buffer, we
+don't wanna code the instruction.
+Can we just look in the branch, branch
+target buffer.
+Is this good enough?
+Is all the information we need in that
+table?
+Cuz we are executing it in parallel both
+the PC plus four.
+We haven't fetched the current
+instruction.
+Is, is that good enough or are we missing
+something?
+Yeah, this is kinda what I was trying to
+get at is that because we check the, the
+program counter here into a full bit with
+match this is good enough.
+We don't actually need to look anything
+else.
+One thing I this, this, this comment was
+here to make a point to about something
+called a line predictor.
+Sometimes, you wanna get rid of this valid
+bit and PC from before.
+And then you just have, coming out of
+here, instead of predicting the program
+counter, you don't really need to know the
+program counter, you just need to know
+where to get it from your cache.
+Sort of, which entry in the cache to go
+fetch, and this is called line predictor.
+So a full branch target buffer will give
+you an actual PC.
+At some point, you actually do need to
+know the PC.
+But you can wait to actually know the PC
+until later down the pike.
+Well, we, all we really need to know is
+which line in the cache, we wanna go fetch
+the next cycle.
+And we can do that, actually by just sort
+of removing this check.
+And just, ad hoc, just having it fetch
+whatever it gets pointed to from here.
+Which might be wrong.
+We have to check that.
+So anyway this is a, this a trick
+question.
+We can achieve this with a full BTB.
+A full branch target buffer.
+If we don't have.
+This check, it turns into something called
+line predictor.
+So we're predicting which line in the
+instruction memory or which line in the
+instruction cache to go fetch from.
+[inaudible].
+Okay.
+So, this brings us to jump, jump register.
+So, jump register.
+Hm.
+This one gets harder to train.
+We can try and train it the same way.
+We can try to use the BTB.
+So let's look at these different cases.
+So what is a jump register used for?
+It's used for switch statements.
+It's used for C++ virtual function
+pointers, or dynamic function calls.
+So if you're doing a jump through function
+pointer.
+And it's used for returns from
+sub-routines.
+So how long does a BTB work in these
+different cases.
+So for, switch statements, if you use the
+same switch statement and the same case
+gets lit up, this works pretty well.
+It's kind of like training on any other
+predictor.
+If, if, the probability that you're
+actually choosing something out of the
+switch statement is data dependent, or
+highly data dependent, you're probably not
+gonna predict it very well.
+And, you're not gonna do very, there's,
+there's probably no great solution to this
+There's some people that do sort of, data,
+prediction and try to look at the register
+values to try to do this a little better,
+but it gets very hard.
+[inaudible] Function calls.
+Well, this works very well.
+So if you, if you're in a C++ function.
+In C++ they have function pointers all
+over the place.
+And this is to implement polymorphism.
+And this is how when you in C++ you sort
+of do a method access on some sort of a
+function your actually indexing through a
+jump table inside the data structure And
+it just so happens that.
+This is basically always, always correct
+unless you actually reassign that object
+to something else or if that object
+changes to a different type So, an example
+of that is if you have.
+Class animals.
+And you have, you know, dogs and cats,
+which subclass from animals.
+And you have a pointer to a animal.
+And you have a cat and a dog.
+And let's say you assign a cat to this
+function, or excuse me, this object
+pointer which is an animal.
+And you call some method on it, like run.
+Well that's going to train up very well,
+but all of a sudden if you change that cat
+to a dog.
+The virtual function pointer cause of what
+you actually execute on a catch when you
+run, run the function run on the catch
+versus running the function run on a
+dog.They do different things.
+Cat's like to sleep a lot.
+Dogs like to run around and bark.
+So you know that this the code in the
+middle of the run function of the cat and
+dog are different so.
+We, we no longer, jump to the same
+location so our BTB would be wrong but it
+will train up pretty fast, because you
+probably not changing the object pointer
+very often.
+So that's, that's, that's decent.
+Okay.
+So subroutine return calls.
+Jump registers are used there a lot.
+So you call into a function.
+You do it with a jump in link.
+To come back out, you come out with a jump
+register.
+Well.
+Btbs are okay, if the place that you are
+returning or excuse me, the place that you
+call from.
+You calling from that location locked.
+But, if you're calling a function from
+different locations, quite often.
+Effectively, what's gonna happen here is
+the one function is gonna be called from
+lots of different locations and you're not
+going to be able to predict the return
+location very accurately.
+So if one leaf function gets called from
+lots of different locations that's not,
+that's not particularly very good for BTB.
+One, One interesting thing about the
+subroutine return.
+Case, is that.
+The jump register the n of our leaf
+function.
+The program counter for that for that jump
+register, is not quarterly it's the
+function which called into it.
+So effectively when you go to index the
+BTB you're using the address of the jump
+register and it might point to some func,
+other function it had called it in the
+past.
+And then you have no correlation if
+somebody calls it in the future.
+And that's why this is really hard to do.
+So can we, can we do better for jump
+registers.
+Yes so the idea of a sub routine return
+call stack or sub routine return stack and
+the idea here is you have a small
+predictor specifically just for jump
+register or sub routine returns.
+And what you do is you track.
+Function calls, and you push the return
+address onto a stack.
+And then when you do a return, you use
+that prediction.
+So let's say we have these three functions
+here.
+We have function A which calls function B,
+function B which calls function C,
+function C calls function D.
+As denoted here.
+We have some stack that we're going to
+push entries onto, when we do, jump in
+links.
+So we, we know that there's something of a
+link to load this predictor with.
+So, when the function call gets executed,
+or the jump-in link gets executed, we're
+going to push.
+The address.
+Of, what is after, effectively, the
+function call site.
+So, I'll denote it here by the address of
+FB.
+So, that's for when we call, when FA calls
+into FB.
+In reality, it's probably like, the
+instruction write after that, is what
+we're gonna return to.
+Like lies.
+When FC then calls FC, we are going to
+push the return location after FC.
+And when FC calls FD, we're gonna push
+that.
+And these come off in the retur-, in the
+inverse order cuz it's a stack.
+So when we try to pull of this we're
+actually gonna pop return addresses.
+Tup, tup, tup, like that.
+So we are gonna pop off the FD, FC and FB,
+or the address after Fiii, FD, FC and FB.
+And we are actually gonna predict the
+return for this function or the leaf
+function, correctly, every single time.
+Where this gets a little hard, is if we
+have our call depth, be deeper, or
+recursion depth, if you will, be deeper,
+than how many entries we have in our
+return step predictor.
+Then we are gonna start predicting wrong.
+But otherwise we can do pretty well with
+this.
+In fact some architectures make this
+little bit easier on the hardware and
+it'll actually have a special instruction
+for the jump in link or the call in
+instruction.
+So for instances XA60 they, they have the
+call that tells the code basically or
+tells, excuse me tells the hardware to
+load the predictor.
+Because otherwise, a jump and link,
+there's too many other uses for a jump and
+link.
+It doesn't, it's not always a, function
+call.
+It's almost always a function call, but
+it's always a function call.
+But, for a call instruction on XA6, that's
+basically always a call.
+So you know to load this.
+And then, on XA6, there's a return
+instruction, which, is always a return
+from a function.
+You know?
+That's, that, the semantics of it aren't
+tied very well.
+Okay.
+So there's actually one other topic I want
+to talk about.
+Today that's not in the notes And this
+correlates to line prediction.
+We talked about line prediction.
+The one other thing I wanted to talk about
+is wave prediction.
+We haven't talked about this yet but is
+you have a let's say two way instruction
+cache.
+We talked about where to go look, of which
+line to go look at in the instruction
+cache, but one of the things that's just
+as hard is if you have two-way instruction
+cache, and you're trying to fetch the next
+instruction, which way do you go and shove
+into the decode stage of your pipe?
+Weigh zero or weigh one?
+Stuff you don't know.
+So this is one of the reasons why people
+would build direct map instruction caches.
+It's very hard to know which way is the
+correct way.
+But a predictors just like our branch
+predictors helps with this.
+We can build a way predictor.
+So we can have the same prediction
+architecture we've talked about today, in
+today's lecture.
+Dynamic, multi-level predictors, sometimes
+even baked into the, the branch predictor.
+And then that can be used to predict
+whether we choose from, let's say, way
+zero or way one.
+Or if we have a 4-way associative
+cache-way zero, one, two or three.
+Anyway the, that's what I wanted to talk
+about today and let's wrap up for here for

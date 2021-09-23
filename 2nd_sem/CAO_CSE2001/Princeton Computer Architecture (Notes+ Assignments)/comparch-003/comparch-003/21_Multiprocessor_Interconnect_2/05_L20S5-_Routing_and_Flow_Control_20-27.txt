@@ -1,0 +1,535 @@
+Okay. 
+So now, let's briefly touch on routing 
+protocols. 
+There's lots of different routing 
+protocols, protocols out there. 
+And roughly let's, let's split them into 
+two different categories. 
+Oblivious routing protocols where the 
+routing path through the network is 
+independent of the state of the network. 
+And the second one is adaptive routing. 
+So these are sort of smarter networks. 
+They look for 
+they somehow look at the state of the 
+network, and make some decisions. 
+And if you build a good adaptive routing 
+network, what you're going to try and do 
+is look for the hot spots in the routing 
+network, and route around them. 
+And this is where that path independence, 
+or multi path 
+networks comm, commit. 
+If you only have one route from any point 
+to any other given point, the routing is 
+basically deterministic. 
+You can't, can't go route in the wrong, 
+you can't go route someplace else because 
+you'll never be able to get to your 
+destination. 
+Where this becomes interesting is if you, 
+if you look at just the basic mesh 
+network. Our basic mesh network has made 
+it from points between, or many different 
+routes between any two points. So, if we 
+have let's say bre, four by four grid you 
+can just sort of go across the top and 
+then along the side, let's say if you're 
+going from the top to the bottom or you 
+can sort of zigzag along the middle or go 
+the other way. 
+Go Y and then X, or X and then Y, just 
+lots of different choices along, along 
+there. 
+So that's where we start to get to decide 
+about different routing networks. under 
+oblivious newtorks, there's, there's two 
+sort of sub points here. 
+One is deterministic which basically 
+says, do the same thing all the time, 
+versus a non-deterministic design. 
+And, you might say, what is, what is a 
+non-deterministic oblivious routing 
+algorithm? 
+Well, it's typically a randomized routing 
+algorithm. 
+And these can actually do slightly better 
+than the deterministic oblivious routing 
+algorithms. 
+So let's take an example of this 
+non-deterministic, but still doesn't look 
+at the state of the network. So, let's, 
+an example of this is something where 
+you, let's say, choose some node in the 
+system at random and you route there 
+first. 
+And then, once you've routed there, you 
+route X and then Y to the destination. 
+I would say, why would you want to do 
+this? 
+Well, it's actually sort of scatters your 
+traffic around the network and actually 
+route in different directions and 
+potentially could increase the delivered 
+aggregate bandwidth through your network 
+by doing this randomized choice at the 
+beginning where you choose some other 
+node. 
+Which might be routing a wrong, the wrong 
+direction first, but then you'll have 
+more aggregate balance, let's say to a 
+destination. 
+So, you can actually have 
+non-deterministic oblivious routing. 
+[COUGH] Adaptive routing, I'm going to 
+sort of not talk about in this class 
+because there's a, it's a very active 
+research area and I recommend you take 
+588 if you want to learn more about that 
+because that's, that's a very broad topic 
+where you try to look for congestions 
+network and route around the congestion. 
+And if you try to do that, you have to 
+make sure you're network doesn't deadlock 
+or have other bad conditions that happen. 
+And to some extend usually these networks 
+trade off let's say ease of analysis at 
+least for performance. 
+I wanted to talk about one quick 
+deterministic oblivious routing algorithm 
+on a mesh. 
+So let's, let's draw a mesh here. 
+[SOUND] Okay. 
+So, we have our sixteen node, four array, 
+two cube here. 
+And we wan to route let's say from A to 
+B. 
+The most basic, or one of the more basic 
+routing algorithms that we're going to be 
+looking at here we're going to call 
+dimension ordered routing. 
+[COUGH] And it's called dimension ordered 
+routing because there's actually two 
+dimensions here. 
+We'll label this as let's say X 
+increasing, 
+we'll label this as Y increasing. 
+And, [COUGH] and dimension order routing 
+says that we order the dimensions in 
+which we route. 
+So, we always route it in one of the 
+dimensions before we go to route in the 
+other dimension. 
+So, if we want to get from here to here, 
+and let's say we have X then Y is our 
+routing, 
+we're going to route this way, from A to 
+B first. So, now we've matched our X 
+location to where B is, and then we're 
+going to route down. 
+So, this is X and Y. 
+This is oblivious. 
+It doesn't matter about the traffic. 
+And it has some bad problems that show up 
+if you do this. 
+[COUGH] If we have let's say C and D, 
+and it's trying to route from C to D, 
+it needs to share this link with traffic 
+going from A to B. 
+And it can't route around it. 
+It can't like, I don't use those links or 
+something else. 
+It's just not allowed in our oblivious 
+routing algorithm, 
+and definitely not allowed in our 
+dimension ordered. 
+Now, dimension ordered, 
+there's networks that are, let's say, X 
+and then Y and you can also have, let's 
+say, Y and then X. 
+You can, this also generalizes to three 
+dimensional n-dimensional sort of spaces. 
+You do, let's say X, then Y, then Z. 
+Or W, then X, then Y and then Z or 
+something like that in a four dimensional 
+cube. 
+[COUGH] But one of the good properties of 
+dimension order routing is it's not going 
+to deadlock. 
+And we'll talk about that in a few 
+slides. 
+But the network itself is never going to 
+deadlock. 
+That doesn't mean you can't get message 
+dependent deadlock. 
+But if you wormhole through the network 
+here, you can actually come up with a 
+proof that shows that [COUGH] you will 
+not ever deadlock this network. 
+And the, the rough sketch of the proof 
+look goes like this. 
+[COUGH] By only using X links first and 
+then using Y links, 
+[COUGH] you only ever acquire an X link, 
+and then acquire a Y link, 
+and then release an X link, 
+and then release a Y link. 
+So, you'll never actually grab a resource 
+that you have needed, you have needed 
+before. 
+And everyone else is doing that same 
+algorithm so they will never try to grab 
+a resource in order that is, is, is 
+faulty also. 
+So, if we go back to our sort of dining 
+philosophers problem here, you're 
+guaranteed that you're going to acquire 
+resource one and then acquire resource 
+two. 
+And everyone's doing that same algorithm 
+so they will always acquire resource one 
+or block, waiting to acquire resource one 
+and then you acquire resource two. 
+But you'll never see a cycle. 
+So, because of that, you'll next acquire 
+X, and then Y, and then X in this 
+dimension order of routing. 
+So, you'll never get a cycle in your 
+dependency graph. 
+That's the rough sketch. 
+And the, the, the full sketch is a little 
+more complicated. 
+Usually, you have these two dimensional 
+mesh networks without end around, or 
+without a taurus. 
+You have to sort of prove it in this 
+direction and in that direction. 
+And then, sort of it, decomposes into 
+sort of X from west to east, and X from 
+east to west, and vice versa. 
+But, that's the rough sketch of the 
+proof. 
+But, I just want to get across that. 
+It's a basic routing algorithm, but 
+there's lots of other choices here. 
+as I sort of said there was this 
+non-deterministic one, there's adaptive 
+routing algorithms. 
+So, a good adaptive one, sometimes called 
+hot potato routing, is that if you, you 
+don't have any buffering in the network, 
+so you can't buffer along the way. If you 
+get to a node which has a link which is 
+congested, you just choose randomly some 
+other direction, and you route that 
+direction. 
+[COUGH] And the, the thinking here is 
+that some point you will actually be able 
+to choose again and route towards the 
+right direction and slowly you'll move 
+your, your traffic or your packet will 
+move to the end point. 
+But, it allows you to sort of go around 
+traffic congestion points. 
+But, I don't want to go into too much 
+detail on this because this is a whole 
+lecture in itself. 
+Okay. 
+So, let's talk about flow control. 
+This is a aspect of networking that I 
+really enjoy, actually. 
+So, flow control is making sure that you 
+don't drop data. 
+Making sure that you have back pressure 
+in your networks so that you don't lose, 
+lose data in your network. 
+And, this flow control can either be 
+local on a link by link or hop by hop 
+basis, or it could be round trip. 
+So a good example of round-trip flow 
+control is going back to something like 
+TCP/IP. 
+You actually want to rate-limit the 
+round-trip flow control so you don't 
+flood the network if a given link is, is 
+too small. 
+So there's actually a protocol in there 
+which will rate-limit the round-trip flow 
+control. 
+Or a good example, actually, on a on-chip 
+network, so something like a mini-core, 
+[COUGH] is if you're trying to guarantee 
+that you do not overrun a buffer in the 
+memory controller. 
+But lots of different nodes are trying to 
+route to the memory controller. 
+You can actually have some sort of 
+counter, which effectively is a round 
+trip flow control to the far away end 
+point node and say, okay, you are allowed 
+to have five outstanding memory 
+transactions to the memory controller. 
+But if you try to send a sixth, you need 
+to wait for the app to come back. 
+So, this is a end to end or long distance 
+flow control, but each of the hops along 
+network themselves may have localized 
+full control also. 
+So, you can actually layer these two 
+things together. 
+And typically, sort of, for on chip 
+networks, we would like some properties 
+and even in computer system networks, 
+we typically like the networks to be 
+resilient. 
+so we don't want sort of data to be 
+dropped. 
+But that's not, not necessarily 
+guaranteed. 
+People have built networks where links 
+can drop, can drop data. 
+So that's another option is, you can drop 
+the data and try to retransmit it if you 
+want reliable transmission from one point 
+to another. 
+Okay. 
+So, let's look at a quick example here of 
+flow control in our networks. This is not 
+in your handouts. so you just, pay 
+attention. so the first type of flow 
+control we're going to look at is 
+basically a stall wire, 
+or a big stop sign. 
+So here or is what we have, is we have a 
+sender, with a Q. 
+So Q sub sender and Q sub R, or Q sub 
+receiver. 
+And we've named sort of all the points 
+along here. 
+let's say, in this network we have a 
+register in between the sender and the 
+receiver and this is in our link. 
+This is sort of our link cost. 
+Takes a cycle and we pipeline the wire. 
+[COUGH] Okay. So now, 
+data arrives here into D, which is our 
+sort of receive point into the receiver. 
+And at some point it decides, I can't 
+take any more data. 
+I can't, can't read that data. 
+I need to go process some of it. 
+So, I need to stall the network. 
+So it says, stop. 
+So it says stop here. 
+And in a perfect world, this goes through 
+some combinational logic. 
+Just completely, just like in your 
+pipeline stalls this point in the pipe 
+stalls. This flip flop stalls that Q, 
+stalls the, going this way. 
+Stalls A, stalls the sender, 
+tells it not to actually send any more 
+data. 
+So it's a stall. 
+We stop in D. 
+C stops, B stops, A stops 
+instantaneously. 
+At some point, D unstalls because it's 
+going to go read data more again and the 
+network keep flowing again. 
+So, sorry. 
+What this is showing is, these are 
+packets. 
+These are not FITS. 
+These are complete packets getting sent, 
+or complete FLITS getting sent. 
+This is our flow control unit. 
+So we're looking at each one of these A, 
+B's, and C's here, and D's are, are 
+uniquely flow controllable units. 
+So that's on/off flow control for 
+combinational stall single. Now, the 
+problem with this is, it took us a cycle 
+to send data this wire because we had a 
+flip flp going that way, but our stall 
+wire runs all the way back. 
+well, that's not, that's not good from a 
+cycle time perspective. 
+because if you look at the combinational 
+sort of path now, you're going to see 
+well, maybe you have an output of this 
+which says this data available that goes 
+through some logic in D and that 
+generates a stall signal. 
+And then, has to propagate physically a 
+long distance away and go into lots of 
+other logic. 
+And after having designed a couple of 
+these sorts of networks, 
+you're never going to be able to build 
+that. 
+That's, 
+if you want to have a high performance 
+network, 
+that time is, is, is, is too long. 
+because if your cycle time is anywhere 
+near the length of wire, of the delay of 
+length wire you have, you're not going to 
+be able to build them. 
+Okay. 
+So now, we start to look at, we, we 
+switch to something and say, let's try to 
+solve that and put a pipeline flop in 
+here on the receive on the return path of 
+the stall wire, of the stall signal. 
+Okay. 
+So, what, what happens? 
+Well, if we look at this for packet zero, 
+one, two, three, at some point d decides 
+to stall. 
+But, 
+[COUGH] that is not able to stop let's 
+say, R from sending the cycle before. 
+Because we now have a flip flop in this 
+path. 
+So, it doesn't know about that. 
+Likewise, it doesn't know, it can't stop 
+B and A from moving forward one cycle 
+either. 
+So, if we look at the pipeline diagram, 
+what that really means is these arrows 
+here, we can't stall this on a dime. 
+We have to wait and we actually are not 
+able to stall until the next packet. 
+Likewise, we're not able to stall B and A 
+until later. 
+And this can even be worse if you have 
+multiple pipeline registers going 
+backwards here, which is pretty common. 
+Now, the implication of this is, 
+you were not able to stall C at all. 
+So, like it or not, the data's coming 
+this direction from our D, 
+Q sub R. 
+Huh. 
+So, what do you go about doing at this 
+point? 
+So, this is a tough one. 
+you could either drop the data. 
+That's probably not very advantageous 
+because you're just going to drop random 
+data in your network. 
+Networks like to actually deliver data. 
+A better thing to do is to have extra 
+buffering in Q sub R, 
+and we'll call this skid buffering. 
+So that the data, 
+it's called skid buffering because it's 
+kind of like in a car. 
+When you hit the stop pedal or you hit 
+the, hit the, the brake pedal, 
+you need some runway to, to skid into 
+before you can actually stop. 
+So, you hit the brake, 
+and you're a sort of skid to a stop and 
+you need that, that extra area. 
+So, we budget that into this Q here and 
+you can actually build a network 
+build a flow control system where you 
+have extra space in Q sub R to skid into. 
+And then when you unstall, 
+you'll see actually that there's 
+basically that should be a D, 
+sorry. 
+it takes a cycle to unstall also. 
+So that's, that's kind of not good. 
+Conveniently, you have something to feed 
+at that point because we have that extra 
+value in Q sub R. 
+But there are cases that you can come up 
+to with, where you stall and then not 
+stall. 
+And then stall and then not stall. 
+Where you can actually accidentally 
+introduce bubbles with this type of flow 
+control. 
+And I don't have a, a diagram of that 
+here. 
+But that would show up as basically a 
+bubble throughout the entire pipe and no 
+data being read. 
+But that's, you can construct that with a 
+sort of on/off flow control pipe line 
+flow control. 
+[COUGH] So, you could also think about 
+having on/off flow control of partial 
+pipeline stall control. 
+So what I mean by that is, instead of 
+feeding up into this register here, 
+now we need two skid buffer entries over 
+there because we can't stop B flowing 
+into here or C flowing into there. 
+So we can't stop any of this stuff and we 
+need two entries now in that skid buffer. 
+And we're running out of time, but I 
+wanted to try to finish this flow control 
+notion up here. 
+A good solution to this is called 
+Credit-Based flow control. 
+So, in credit-based flow control, 
+you put a counter in the center and the 
+counter counts how many entries there are 
+in the receive FIFO. 
+And what it does is it starts sending 
+data. 
+And whenever data is removed from this 
+FIFO, a credit gets sent back. 
+And it can be, 
+if, 
+like it can be pipelines multiple levels 
+deep here on the return, point. 
+When the credit comes back, you increment 
+the counter. But when you send a word, 
+you decrement the counter. 
+And if the counter ever reaches zero, you 
+stop sending. 
+This is actually ends up being superior 
+than this order design because you don't 
+have funny stutters on the receive side 
+when you go to build a credit-based flow 
+control system. 
+That's a little bit beyond, showing that 
+proof is a little beyond this course. 
+But I did want to say here that when you 
+compute this, you need to compute how 
+large the credit needs to be and how big 
+this receive FIFO needs to be. 
+And they need to be sized appropriately. 
+[COUGH] If you size one of them wrong, 
+in this case, if you size one of them 
+wrong in the on/off flow control, 
+you're actually going to end up losing 
+data. 
+If you skid into your skid buffer and you 
+need two skid entry slots, 
+and you only have one skid entry slot, 
+you're going to lose data. 
+In the credit-based flow control system, 
+the counter just reaches zero. 
+So, just impact your bandwidth, but 
+you're not going to lose data. 
+Now, having said that, you should, if you 
+want high performance through this 
+network, you should size this and this 
+counter to be the same. And you should 
+size it big to take into account the 
+entire round trip latency of this, this 
+communication. 
+lets stop here for today. 
+I'll briefly finish up deadlock next 
+time. 
+And then, we'll move on to building large 
+mini core systems or large multi-core 
+systems, and coherence protocols for them 
+next lecture. 
+

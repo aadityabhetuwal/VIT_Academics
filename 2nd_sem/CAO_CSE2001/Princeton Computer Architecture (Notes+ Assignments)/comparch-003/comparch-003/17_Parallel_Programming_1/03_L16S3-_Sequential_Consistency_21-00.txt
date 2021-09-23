@@ -1,0 +1,435 @@
+Okay. 
+So, let's introduce a model of, and 
+introduce some semantics to describe 
+ordering of memory operations between 
+different processors. 
+One of the most common ones that you're 
+going to see is called Sequential 
+Consistencies by gnoming the only one out 
+there. 
+This is a very strong ordering. 
+compared to any of the processors you 
+guys run on your computers today, this is 
+extremely strong. 
+None of your computers actually implement 
+this strong of an ordering. 
+But, it's a good basis to think reason 
+about and reason about parallel programs. 
+So, we're going to study sequential 
+consistency sums. 
+So, up here, we have one, two, three, 
+four, five processors, one big memory, 
+still very basic model. 
+We don't have, we've not introduced any 
+caches or anything crazy like that yet 
+because that makes all these things a 
+little bit harder. 
+Either caches are out of order. 
+And, what sequential consistency is, is 
+the idea that you take all of the 
+instructions and all of the programs 
+executing on all of the processors, 
+and you guarantee that the execution 
+sequence that is seen by all of the 
+processors is some valid in order 
+interleaving of those instructions of the 
+relative processors themselves at the 
+beginning. 
+So, to give you an example. 
+If you have processor one, 
+[SOUND] [COUGH] and processor two. 
+And processor one goes one, two, three, 
+four. 
+And processor two goes execution 
+instruction five, six, seven, eight, 
+you're guaranteed that some intervening 
+here is what happened in sequential 
+consistency. 
+So, let's say, 
+one and two happens. 
+And then, five happens, 
+and then three happens, 
+and then six happens, 
+and then seven, and then eight, and then 
+four. 
+That is a valid sequential consistent 
+order. 
+Likewise, another one is easier to reason 
+out is one, two, three, four, five, six, 
+seven, eight. 
+That's valid in sequential consistent, 
+sequential consistency. 
+Likewise, 
+I'm going to say five, six, seven, one, 
+two, three, four, eight is valid order. 
+What is not valid is going to be 
+something like [SOUND] five, one, 
+I don't know. 
+Three, two, four, seven, eight. 
+I see it's missing one. 
+five. 
+No, five, six, no, six. 
+Okay. 
+We'll put six in there. 
+Because we've reordered one of the 
+individual address sequences, two and 
+three should be ordered. 
+So, 
+this gives us some guarantees. 
+so the, the basic idea is that, 
+it's an arbitrary, order-preserving 
+interweaving. So, each processors 
+addresses' are preserved in order, but 
+can be interweaved in between the 
+different threads arbitrarily. 
+Okay. I want that to sink in for a 
+second. 
+Anyone have questions about what the 
+model is? Or, why this is a good model? 
+[SOUND] Okay. I'm going to, I'm going to 
+ask a few questions here. 
+Why is this a model that almost no one 
+ever implements? 
+
+So, the reason no one actually goes to 
+try to do this is as all the things we 
+talked about when we try out of our 
+processors, you want to try to re-order 
+your lows in stores for performance 
+reasons. 
+and the second, you try to introduce 
+something like cache into your processor, 
+this gets very hard because communication 
+becomes a real bottleneck. 
+You might have one processor that did a, 
+for instance, a store into its cache and 
+not everyone has seen that value update. 
+So, unless you actually want to have one 
+monolithic memory that you play all loads 
+and stores against in some interleaved 
+yet in order to the processor order, 
+and everyone sees that exact ordering, 
+you're not going to want to actually 
+implement that. That's very hard to do. 
+Okay. So, 
+[SOUND] fun, funny example here of 
+sequential consistency. 
+Let's look at two threads, T1 and T2. 
+And two variables, actually, we'll talk 
+four variables here. 
+X, Y, X prime, and Y prime. 
+X prime and Y prime are the outputs here 
+so we do stores to those. 
+[COUGH] At the beginning of time, 
+we are going to say X and Y are 
+initialized to zero and ten, 
+respectively as shown. 
+Okay. Let's, let's talk about what our 
+valid sequential consistent outcomes here 
+for X prime and Y prime. 
+Now, this is not actually easy to detect 
+right off the get go. 
+Does anyone know which of these four, I 
+think the answer is on your sheet, but 
+don't go look at it. 
+it's not actually easy to detect which 
+one is sequentially consistent, which one 
+is not sequentially consistent. 
+So, let's, let's walk through a few 
+interweavings here to see what happens. 
+
+Okay. So, we're going to have thread one, 
+thread two, X, Y and X, Y primes. 
+Let's say, we execute T1, 
+and then T2 in time. 
+So we're, we'll draw time this way. 
+So we do, 
+we do a store of one. 
+We do a store word eleven. 
+And then, we do a load word of Y. A store 
+word of Y prime, 
+load word of X and a store word of X 
+prime. 
+We do this store here. 
+at the beginning of time, as I said, X 
+has zero and Y has ten. 
+We do a store here and this is going to 
+be storing to X one, so we're going to 
+update the value of X there. 
+Now, we're going to store eleven to Y. 
+Okay. So, eleven gets loaded there in 
+time. 
+[SOUND] We do this load. 
+Nothing, no, nothing changes. 
+We do a store here to Y prime and we look 
+at what we got when we did this load of 
+Y. 
+We loaded eleven and we're going to store 
+eleven to Y prime, at this point. 
+Then, we do a load of X which has one in 
+it now, and we do a store to X prime. 
+It's going to have one. 
+So, to sum up, you have eleven and one. 
+Okay. 
+That's this one. 
+That's a valid output. 
+And what's interesting to see here is, 
+even with the stitch memory model, 
+we're going to end up with different 
+possible outcomes. 
+There's not only one possible outcome. 
+There's actually multiple possible valid 
+outcomes here. 
+Okay. So, let's look at another. 
+Let's use the, the same columns at the 
+top here and let's say we have these two 
+split so that the first store happens 
+here and the second, the second store 
+from thread one happens there. 
+Still sequentially consistent because 
+they're being ordered inside of the 
+respective threads, and it's a global 
+ordering that everyone sees. 
+Okay. So, let's, let's go do that one. 
+So we do store word of one. 
+Then, we execute in thread two load word 
+of R1, 
+Y. 
+Store word of R1, Y prime. 
+Okay. 
+So, let's go to the store here. 
+The store's going to, 
+oh well, 
+actually, we'll finish writing it first. 
+Load word of R2 from X store word R2, X 
+prime. 
+And then finally, we, we finish off here 
+writing the store word of one to X. 
+
+Okay. 
+Oops, it is wrong. 
+Yep. 
+[SOUND] That's what I do. 
+Okay. 
+Store word's going to happen here first. 
+And, remember we started out with zero 
+and ten, and zero in, in X and Y. 
+So store word of one is going to happen. 
+It's going to update X to be one. 
+We do this load and it's going to be at 
+ten now. 
+And we store ten into Y prime. 
+We do a load word here of X, 
+or we're basically going to store that 
+back into X prime. 
+So, what was X? 
+We look back at this column. 
+Most up to date value was one. 
+Okay. 
+So we come over here, and we say, that's 
+one. 
+And then finally, we do a store word of 
+eleven into Y. 
+Okay? 
+Or Y to Y, 
+so it gets two, eleven into Y. 
+But what's the output here? 
+Well, the output is one and ten. 
+And this value, this store, 
+didn't do anything. 
+I mean, it updated the value of Y but it 
+didn't effect Y prime or X prime in any 
+way, shape, or form. 
+Okay. 
+So that ends up being one in ten is a 
+valid sequentially consistent output. 
+Let's try a non-sequentially consistent 
+execution order and see what happens. 
+[SOUND] Let's say, I don't know, which is 
+a good one to execute. 
+there's a couple different ways to get 
+this. 
+Let's execute this instruction here 
+first. 
+So, to store to Y. 
+And we're going to reorder that with a 
+stored X. 
+And, we're going to execute thread two in 
+between those two operations. 
+So, 
+
+we use store word of eleven to Y. 
+So, we've out of, let's say, T1 is an out 
+of order processor here, for instance. 
+Then, we're going to execute all of 
+thread two, and we'll execute all of 
+thread two in order. 
+[SOUND] And then finally, we're going to 
+come back and thread one here and do the 
+store of let's say, one to X. 
+Okay. 
+So, X and Y start out with zero and 
+eleven, or excuse me, zero and ten, 
+rather. 
+Store of eleven of to Y, okay that's 
+going to update. 
+This could be eleven. 
+We're going to load Y now, 
+so we're going to load this eleven into 
+R1. 
+And then, we're going to store up to Y 
+prime eleven. 
+Then we're going to load, let's say, X 
+here. 
+Well, X is just the initial value, so 
+we're going to get zero into R2, then 
+we're going to store our zero into X 
+prime there. 
+And then finally, here, we're going to do 
+a store of one to X. 
+So, what's our output? 
+Well, 
+our output is zero and eleven. 
+And, but we had a non-sequentially 
+consistent, this is a non-sequentially 
+consistent output here. 
+So, there's no way we can work through 
+all the different possible combinations. 
+But the only way you're possibly going to 
+get a zero for X prime and eleven for Y 
+prime is if you execute non-sequentially 
+consistent execution sequence. 
+And this was a, because we flipped the 
+ordering of these two instructions, 
+that made this not sequentially 
+consistent. 
+So, we have a big X over it. 
+We could work through all the other 
+possible combinations here. 
+But, there's actually another, 
+interestingly enough, there's actually 
+another way, another interweaving that 
+gets you this same non sequentially 
+consistently output from a different 
+sequentially consistent ordering of these 
+instructions. 
+Or, or a different non-sequentially 
+consistent ordering of the instructions. 
+So that, that can't be true. 
+Okay. So, what this is really trying to 
+say is that, in our processors we've 
+looked at up to this point, 
+we've had some arcs. 
+And example of an arc here is that if you 
+do a load into R1 and then use the value 
+of R1 to do the store, 
+sorry these should be order flipped for 
+MIPs compatibility. 
+Yeah. 
+I flipped them there, I missed here. 
+Okay. 
+for this store here to happen, it needs 
+to wait for the value of R1. 
+So, just simple read after write 
+dependence. 
+Likewise, here you have a read after 
+write dependence. 
+And it's sequential consistency you can 
+have other dependencies. 
+So for instance, if you do a load in the 
+store and their to the same address, 
+there needs to be order between those. 
+Which we've already talked about in this 
+class. 
+What we've not talked about is additional 
+sequential consistency requirements. 
+So, if you want to have additional 
+sequential consistency requirements, what 
+it looks like is every memory operation 
+is dependent on the prior memory 
+operations in its own thread. 
+So, we're going to draw that as a red arc 
+here. 
+And you can sort of see it here, but 
+also, this is dependent on this, and this 
+is dependent on that, and that is 
+dependent on that, but sort of through 
+transitivity they, they don't draw all 
+the arcs. 
+So, some, something to think about. 
+Okay. So, we've got a question that comes 
+up here. 
+I think we already asked this question 
+but, 
+does a system of caches and out-of-order 
+processors provide a sequentially 
+consistent unit of memory? 
+[SOUND] Answer's probably not. 
+It's pretty hard to do. 
+You could potentially try to build a 
+processor which is out of order and, and 
+do this. 
+But, we talked about breaking and 
+reordering all of these instructions in 
+an out of order processor. 
+So, we're going to try to think about 
+what is the current, correct model if you 
+cannot go for full sequential 
+consistency. 
+You're asking me, is that the Java 
+compiler to guarantee this ordering. 
+Okay. So, what we're actually talking 
+about here is the hardware breaking the 
+ordering And just reorder these randomly 
+that the compiler can possibly never be 
+able to try to control. 
+That's, the, the programmer is at fault 
+there. 
+The programmer should not be assuming 
+that. 
+[LAUGH] The programmer assumes, assumes 
+some, 
+basically, programmers try to assume 
+something like sequential consistency. 
+And what we're saying is that none of the 
+hardware out there implements sequential 
+consistency. 
+So the programmer can't assume that, 
+it was a bad assumption on the 
+programmer's perspective. 
+so the compiler, for instance, the reason 
+why the programmer assumes that is 
+because it's kind of a rational thing to 
+do. 
+It's like the, the reasonable rational 
+thing to do. 
+But, it's really hard to implement 
+something fast under those constraints. 
+So, instead what people do is they try to 
+come up with something weaker than that 
+which still gives the programmer some 
+simblence of programmability. 
+And that's what we are going to be 
+talking about the rest of today's lecture 
+and next lecture what are those 
+simblences of rationality that we can 
+give the programmer. 
+But, this is one program and this is 
+another program. 
+Or this is one thread and this is another 
+thread in the same program. 
+But the compiler cannot guarantee this 
+ordering because the out of order 
+processor will just move things around, 
+disregards the compiler. 
+We already talked about the out of load 
+processors moving loads past storers and 
+storers past loads in the hardware. 
+So, and what we're saying here is if you 
+want to actually implement full 
+sequential consistency, all those 
+optimizations that the hardware out of 
+order processor want to do are invalid. 
+We don't want to really do that. 
+okay. So, that's sequential consistency. 
+

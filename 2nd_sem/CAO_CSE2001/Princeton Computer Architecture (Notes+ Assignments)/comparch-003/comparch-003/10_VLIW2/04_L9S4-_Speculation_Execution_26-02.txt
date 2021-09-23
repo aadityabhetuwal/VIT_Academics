@@ -1,0 +1,697 @@
+Okay.
+So, now let's start talking about how to,
+leverage different, more techniques to get
+a lot of the performance, that we
+received, in, out of our superscalar, but
+in a VLIW processor setting.
+I want to break this sort of into two, two
+different things.
+Dynamic events, so things that happen in
+the processor that you can't necessarily,
+or you can't really do anything about
+statically.
+It's really hard to do anything statically
+about.
+You just don't know what's going to
+happen, you know, something like a, a,
+interrupt or an exception happening.
+How can a compiler know where the
+exceptions are going to happen?
+It's just not really possible.
+And then we'll talk about speculation
+which an out-of-order superscalar does and
+a lot of things have fallen to this case.
+Actually we can add things to classical
+VLIWs to get us closer to getting, that
+those, those performance improvements or
+the instructional parallelism improvements
+they can get from speculation.
+And we're talking about sort of two
+different types of speculation, today.
+We're going to talk about how to move or
+speculatively move instructions over
+branches.
+So, in particular, this is going to get
+really interesting with loads moving
+across branches.
+Because you, you have a load and you want
+to move the load as early as possible.
+You want to pull the load up early into
+your program so that if it misses in the
+cache.
+Or it has to go out to main memory, you
+can hide the latency while you're doing
+other things.
+We're also going to talk about speculation
+of speculating that two memory addresses,
+one of a load, let's say, one of a store,
+or you could also think about this as
+loads with loads and stores with stores.
+Well, we want to reorder those.
+Similarly, because we want to get, sort
+of, loads started early and stores started
+as late as possible, so we have enough
+time to do the computation we have when we
+do the scheduling.
+And remember in VLIWs, we're doing all
+this scheduling statically in the
+compiler.
+And as you may recall, from an
+out-of-order superscalar perspective, when
+you try to do load store speculation and
+try to reorder loads and stores
+dynamically in an out-of-order superscalar
+or some sort of, superscalar processor.
+You're actually, you need an extra
+structure to figure out when you made a
+mistake.
+When you reordered something, it was not a
+valid reordering.
+And we have to add that same structure
+into our VLIW processor or very similar
+structure.
+So let's, let's start off by talking
+about, what the compiler has to do, or how
+the compiler even starts to think about
+this speculation.
+So, I want to introduce a topic here, from
+compilers.
+And this is sort of an introduction to how
+we schedule for VLIW, the nitty gritty of
+what the instruction schedule or the back
+end of the compiler is going to be doing.
+So, here're two pieces of code.
+We have before code motion and after code
+motion.
+So what is code motion?
+Well, code motion is reordering of
+instructions in order to, tolerate the
+latencies of the instructions, or to do
+something good.
+So, it may not as, might not as just be
+tolerating the latencies of instructions,
+it might also be, reordering for alignment
+issues sometimes.
+Sometimes branches can only happen on
+certain alignments or the performance is
+better.
+So, but roughly, we are trying to reorder
+the code.
+Or pro, do valid reorderings of the code.
+We can't just move, a read after right
+dependence, and move it someplace else.
+We can't say, you know, instruction A
+reads the instruction, the result of
+instruction B.
+We can't move A before B, because it just
+wouldn't make any sense.
+A lot of times, the compiler has some
+flexibility, in what, what it can move
+around.
+Okay.
+So let's, let's look at this example case
+here.
+We have, got a little bit of code, and
+what we're going to try to do here.
+Well, two things to note.
+One, this branch at the end is dependent
+on register sixteen.
+Register sixteen of.
+Where does it get computed?
+Does it actually get computed anywhere in
+here?
+No.
+We're also saving away register sixteen,
+okay.
+So, does register sixteen get computed?
+Maybe not, but we probably want to, give
+it as much time to be computed as
+possible.
+Some of the other things we have on here.
+We have a load.
+Okay.
+Well, the load.
+What if load cache misses?
+Well.
+Well, this next instruction here is
+directly dependent on that load.
+So, we probably want to give it as much
+time as possible to execute.
+So, traditionally in code motion, you want
+to push the loads up and push the stores
+down.
+What we are going to do this if we were to
+push the loads as high up as possible and
+the stores down as possible.
+We are going to move a load and a store
+past each other.
+And the question comes up what if this
+value and this value is two addresses are
+the same.
+Hm, well so let's, let's assume that they
+are not.
+And let's assume the compiler can prove
+they're not.
+So, you should be able to do code motion
+here where we're gonna rejumble all the
+instructions and we're going to push the
+load up and push the store down.
+Leave the branch at the, excuse me, at the
+end.
+So, we've done, we've done some code
+motion.
+The next thing we want to do is we're
+going to want to bundle or schedule the
+instructions.
+So, when we say bundle, we're going to
+take several operations.
+And pack them together into one VLIW
+instruction or one VLIW bundle.
+And we denote that here with these braces
+to say, these execute parallel or at the
+same time.
+So first, you're going to sort of want to
+do scheduling.
+Then you want to somehow bundle
+nondependent instructions together.
+There's been a couple algorithms I've
+tried to do sort of scheduling, code
+motion scheduling and everything, and
+bundling together.
+Those don't always work out as well.
+So, most of VLIW pros-, most of the VLIW
+compilers now will actually do the code
+motion and the scheduling first.
+And then they'll do the bundling, at the
+end.
+Okay.
+So, let's look at our first technique here
+to get at instructional parallelism.
+And our first type of, speculation in VLIW
+processors.
+So what's, what's, what's our challenge
+here?
+What's our, what's our problem?
+Well, our problem is the branches or the
+presence of a branch rather, is going to
+restrict the forms of code motion the
+compiler can do.
+So, we have a branch, we have some code
+after the branch.
+If you have lets say, an add instruction.
+That's pretty easy to move it before the
+branch.
+Okay.
+How about an instruction which can take a
+fault or take an interrupt?
+Loads are a good example of some, one of
+those sorts of instructions.
+How's that possible?
+Well, a load can take a, a page miss or a
+page fault.
+It can try to, access some value which is
+not mapped in by the operating system.
+So, let's say we take this load and we
+move it above the branch.
+Okay, that's not too bad.
+Now, what happens if that load takes a
+trap or takes an interrupt?
+That was never, never supposed to happen.
+In correct program sequence order, the
+branch was going to branch around the
+load.
+So, the load was never going to execute.
+But all of a sudden, the load got moved up
+and the load executes and it takes an
+interrupt.
+Well, your program crashes, it takes,
+either a SEGV or a bus error if you're on
+something like a SPARC system or a, you
+know, the reason of taking a segmentation
+fault.
+Even though nothing, nothing went wrong.
+This branch was supposed to protect this
+load from never executing.
+So R1 here, let's say, just gets loaded
+with some bogus value if the branch is
+taken, and the compiler, the compiler knew
+that, and the programmer knew that.
+But, all of a sudden, the compiler decides
+to reorder things and has moved the load
+up.
+Now, that, because it wanted to try to get
+more performance.
+This is something that you can do in your
+out-of-order superscalars also.
+That was our out-of-order superscalars are
+going to pull nondependent loads up in the
+program and try to move them across
+branches.
+But in, in out-of-order superscalar, if
+you pull a load up and it does something
+wrong, you just do a speculative state,
+you just don't, don't care about it.
+So, we need some way to have loads that
+don't hurt the system.
+So, it's a similar sort of idea, but, you
+know.
+We can't move with load above the branch,
+cause it might cause an exact, some sort
+of exception.
+So a solution to this is, is we're going
+to add special instructions, special
+versions of the instructions which don't
+take faults.
+So.
+If the fault were to happen, it sort of
+remembers that the fault happened.
+But it doesn't actually interrupt the
+process.
+And this is, this allows us to pull some
+of these instructions before branches or
+reorder perform code motion statically at
+compile time.
+Okay.
+So, let's take a look at this example
+here.
+How would we go about doing this?
+Okay, so we're gonna move the load up.
+So, let's say we move the load as high as
+possible.
+We move it above these, these two
+instructions instruction one, instruction
+two, here.
+And what do we need to do?
+Well, if you note, we don't have the word
+load here anymore.
+We have Load.s.
+So, it's a speculative load.
+It has a different semantics.
+The Load.s never causes an exception even
+if it has a page fault, or a null point or
+exception, or any underlying memory
+reference or anything like that.
+It's not gonna actually, take that fault.
+Instead, it's just going to sort of
+remember that.
+And this is typically done if you look at
+something like Itanium, which is the, this
+is the sort of code sequence out of
+Itanium processors.
+In Itanium, what they're going to do is,
+they're going to, the, the destination of
+a load, in this case R1, is going to be
+set with a poison bit.
+Itanium this is actually called a NaT
+number.
+And what it means is the destination
+register of a load is marked as not there.
+Or that's, that's not a thing or not a
+number.
+And what's important about this is, when
+you go to use that value.
+That's when you take the exception.
+So let's, let's take a look at example
+this.
+What we do is down here where the load
+original was we put in a check speculative
+instruction, and it uses r1 here.
+So, what this is going to do is check the
+value of r1, and if r1 was, took a trap or
+exception there was some problem with it.
+We can jump to fix-up code.
+So, there will be some other piece of code
+somewhere else we can branch to.
+And a fix-up code is gonna re-execute the
+load, and make sure everything is okay,
+and then, then jump back to the use.
+So, it's speculation.
+We try to prove, we try to, make sure,
+that the common case when we pull this
+load up, nothing bad is going to happen.
+But we, we put a check in just to make
+sure that it's, this is the case.
+One other thing I want to point out is
+these poison bits, or these not a, not a
+numbers, they propagate.
+So why is, why is this important?
+Well, what that mean, is.
+Actually I want to correct me and said a
+little bit here.
+If you try to use R1 somewhere else before
+you do a check, the not a number
+propagates.
+It doesn't take a trap.
+It only takes a trap or only jumps to fix
+up code when you go to actually do the
+use.
+Or, or when you have a special check
+instruction or a there's another load you
+can put there that will re-execute the
+load, if the, if the original load didn't
+work, a non-speculative load to the same,
+to the same value.
+Okay, so, so why is this propagation of
+not a numbers important?
+Well, this allows you to pull code down
+here up and above this branch also.
+So, we can put the full load up, we can
+pull dependent instructions up and just as
+long as we do the check at some point.
+And check to make sure that the load was
+not.
+Didn't take an exception not a problem.
+We can basically speculate that the load
+is fine.
+We can speculate that the instructions to
+pan a load are going to be fine.
+But if and even if depending on the
+instructions on the load are not fine,
+that we've also speculated.
+When we go to, at some point in our code
+we need to introduce this check
+instruction here which sees that this
+value is not a number.
+So, if it propagates all the way through
+your code, you have a load to add to add a
+sub but which all reads and writes, let's
+say register, or, somehow reads from
+register one.
+And is sort of depends a tree from
+register one, through those, that code
+sequence.
+At some point, you want to check after the
+branch has actually happened whether
+everything's okay.
+And because it all propagates, you can
+basically do work early, and then check
+later.
+And when you do the check later, you can
+say oh, I get it, everything's okay, and
+it has a value in, in it.
+It has not number in it, or it has this
+poisoned bit set, and it's propagated all
+the way through.
+At that point, and, you can jump to fixup
+code, which you can re-execute the load,
+and all of the code you've pulled up.
+All that speculative code, and that's why
+you need, fix-up code and not just
+re-execution of the load.
+Because the fixup code might have to
+re-execute more than just the load.
+It might have execute the load, and all
+the code, the other code you pulled off
+the front of the branch.
+Okay.
+So, let's, let's move onto another,
+speculation.
+And this is data speculation.
+So, in data speculation, our, our problem
+here is we have memory hazards that are
+going to limit our scheduling.
+Especially if we have to do all the
+scheduling statically.
+So, if you're conservative in your
+compiler, and you can't prove anything
+about the different addresses.
+All of a sudden what you have is, every
+single load is dependent on every single
+other load.
+And every single store is dependent on
+every single other, other store.
+Now, why I say why are loads depend on
+other loads?
+Although most loads you might be able to
+reorder pretty easily, you have to worry a
+little bit about if one takes a trap
+before the other.
+I guess we kind of already talked about
+how to solve that problem.
+But if you, once you reorder a load in the
+store.
+Then you start to have problems because,
+or reorder a store in a store, or anything
+from a store, then you start to have
+problems because all of a sudden, you have
+some state that changed in your memory
+system that you have make sure that the an
+original program or the later instructions
+actually pick up the result of that.
+So, later loads or stores somehow honor
+the results of that.
+So, it's really sort of focused on moving
+loads of past stores.
+So, what's our solution?
+Well, our solution is to add some hardware
+check to guarantee that the pointers or
+the two memory addresses when you do the
+reordering of a load in a store, or a
+store in a store, that these addresses are
+not the same.
+And this is actually the same thing that
+we did in our load store queue, or our
+load store disam-, memory disambiguation
+that we talked about, in out-of-order
+processors.
+So it's, it's the same.
+Same sort of thing going on here.
+But we need to actually change the
+instruction set to handle this in a VLIW
+setting versus in the superscalar was all
+microarchitectural issues, sort of below
+the instruction set that no one ever had
+to look at.
+Okay.
+So let's, let's look at how to do this.
+We have a code sequence here.
+Some instructions, a store, and then a
+load.
+Compiler can't prove anything about these
+stores and this load.
+But in the out-of-order superscalar, it
+could guess or speculate that the load and
+the store don't share the same address.
+And if they did, it could basically roll
+back the code, and re-execute the load.
+I'm going to emulate something like this
+but using, doing it all statically with
+the compiler.
+Okay, so how, how do we do this?
+Well, this is something else that, Itanium
+added and it also talked about at a
+previous, research VLIW processors or,
+explicitly parallel instructions and
+processors.
+What you're gonna do here, is you're going
+to move the load up above the store.
+And this is basically speculating that the
+load in the stores don't hit the same
+address.
+And much the same way that we, when we
+reorder loads of those stores in an
+out-of-order superscalar added the load
+address to a load store queue and a memory
+disambiguation queue.
+We're gonna do the same sort of thing
+here.
+That we're, when we move this load up
+we're gonna have a different instruction
+here of load and add.
+So, what this is going to is it's going to
+add, it's going to do the load and add the
+address to a special table which we're
+going to call the address, what's does
+ALAT stand for?
+Address load, Advanced Load.
+Address Table.
+The ALAT is what Itanium calls this.
+So, it's a, it's a structure that's a
+associative structure where you can put
+addresses in it, and then check, other
+instructions, other addresses from other
+instructions against it.
+And if, you get a hit or something like
+that, you know that something bad
+happened.
+And you can, re-execute.
+So, we're going to see here, that, we're
+going to have a load, we're just going to
+get the load out in the memory system.
+The, we can overlap the time in the memory
+system with executing other instructions.
+We have a store here.
+Now, the store is going to take the
+address of itself, and we've changed the
+instruction set here.
+So, we've added these two new instructions
+here, and changed the semantics of a
+store.
+And it's going to check in the ALAT, or
+Advanced Load Address Table, to see if the
+other see if the address the stores
+happening to is already there.
+And if, if it is.
+It's going to, going to change the table
+somehow.
+And we'll talk about that in a second of
+what exactly happens.
+But roughly it's going to, take this
+address out of the table.
+And then when this load check happens
+here.
+This checks to see if the address is still
+in this table.
+And if it's been bumped out of the table.
+It jumps to fixup code, which is basic
+going to re-execute the load, or
+re-execute the load and all the dependent
+instructions of the load.
+So, we can, effectively do data
+speculation, but all in software.
+But this is going to require us, to have
+an associative hardware block or a some
+sort of content addressable memory or CAM,
+that we need to add that all load address
+and all store addresses, are, passed
+across.
+This is similar to how we had our memory
+disambiguation queue in our out-of-order
+superscalar.
+Okay so, lets look at the ALAT, the
+Advanced Load Address Table.
+Okay, so what, what do we have in here?
+Well three things.
+We store the address.
+We store the size, this is important so we
+know, is it word, double word, half word,
+bite sort of thing when we go and do
+matching.
+And when a Load.a happens.
+It adds one into this table, and we, we,
+we denote the register number that is the,
+the target of this also.
+It's kind of, kind of useful to know and
+we go to do the check.
+This is to match up to make sure that the
+same load is the same load from before,
+and we can effectively remove the address
+from the table when we do the check.
+Okay, so we added an address.
+Okay, we're running along and though we
+execute stores but the stores don't hit on
+that address.
+So, when a store executes, what is it
+going to do?
+Well, it looks in this table and cams or,
+or does a comparison against all the
+addresses with size matching, and
+everything, against this table.
+And if it's in the table, it removes it
+from the table.
+So, by the time that the check or the load
+check happens, that address is not in the
+table, then.
+So, when the load check happens, it's
+going to look in here at this table again
+and say, oh, I'm not in the table anymore.
+This address is not in the table anymore.
+So at that point, you can know, what's
+going to re-execute that load.
+But if it's still in the table, that means
+no stores hit it, bumped it out of the
+table.
+So, no stores in, you know, the leading
+time bumped it out.
+So, the speculative load was fine.
+So, we've effectively done what
+out-of-order superscalars can do.
+We can move now loads.
+Above stores, and through a changed or
+instruction set architecture, by adding
+these special check-in, load check-in, and
+check instructions.
+And by changing the semantics of load, and
+adding a load, add, or load a instruction
+here.
+We can change.
+We can, we can have, data speculation into
+our program.
+Okay.
+A couple other things that are fun to add
+to classical LVIW's that, to improve
+performance.
+I just kind of want to just breeze through
+these, these next two ones a little bit
+faster here.
+First one, multiwave branches.
+So problem, you have brand VLI
+architecture, or very long instruction
+word architecture and if you have, let's
+say, ten things in one instruction, or
+ten, ten operations in one instruction, or
+ten operations in one bundle, but you have
+sort of short branches or maybe you have
+multiple branch decisions happening.
+You want to have sort of a branch every
+three instructions.
+Well, you have lots of wasted slots.
+If you can't somehow have one instruction
+branch multiple directions.
+They might say branching multiple
+directions?
+That's, That's a really weird idea.
+How do you have an instruction go multiple
+ways?
+How do branches could go one or two
+places?
+They either fall through or go some place
+else.
+Well, we could actually change the
+instruction set to have a branch that can
+go multiple directions.
+So, let's look at this with a full
+predication example here.
+So we have two bundles of code here.
+This first one here is three instructions
+and it these are all executed in, in
+parallel.
+And what its going to do it's going to do
+three different comparers.
+So, this is similar to our, this is our
+full predication example here.
+It's going to write to these predicate
+registers in with the, the logical,
+positive and logical negative sort of
+versions of, of the predicate comparison.
+Okay, so that sort of stages us to do
+three different branch comparisons.
+And then, down here we have three branches
+that all branch based on this predicate.
+Or these different predicates that we
+already staged or, or setup up here.
+And they can branch to three different
+places.
+Label one, label two, and label three.
+This also could be fall-through code, if
+none of the branches are taken.
+And, you know, one little wriggle here
+that you have to have sort of figure out
+the semantics in, and I should say Itanium
+supports this.
+You can buy real chips with this in it.
+If you have three branches together, you
+need to sum up over of these branches
+because, let's say, they all say taken.
+Well, they all, all resolve to actually
+being taken.
+Well which one do you take?
+Because you could branch all three
+different places, and want deterministic
+execution.
+So, typically, when you have an
+instruction set like this of multi-way
+branching, you define some order.
+Maybe the first one has priority over the
+second one, which has priority over the
+third one, etc.

@@ -1,0 +1,35 @@
+L3S4:
+
+In Lecture Quiz 1:
+Time: 16:57
+
+Question:
+Which memory technology takes the smallest area to store a bit?
+
+Choices:
+
+A. DRAM
+
+B. SRAM
+
+C. DISK
+
+D. Does not matter
+
+-------------------------------------------------------------
+
+In Lecture Quiz 2:
+Time: 22:42
+Question:
+Arrange, SRAMs, Register files, DRAM and Registers in order of increasing bandwidth.
+
+Choices:
+
+A. Register Files, Registers, SRAM, DRAM
+
+B. Registers, Register Files, SRAM, DRAM
+
+C. DRAM, SRAM, Register Files, Registers
+
+D. SRAM, DRAM, Register Files, Registers
+

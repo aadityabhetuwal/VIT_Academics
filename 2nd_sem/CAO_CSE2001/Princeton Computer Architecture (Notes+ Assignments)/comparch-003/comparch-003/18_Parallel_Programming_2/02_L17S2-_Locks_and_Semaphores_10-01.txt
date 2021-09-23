@@ -1,0 +1,264 @@
+So this brings us up to what we talked 
+about right at the end of class last time 
+which was looking at an example where you 
+let's say have a sequentially consistent 
+processor. 
+And, we take a piece of code, that we had 
+talked about at the beginning of class 
+last time, and ask ourselves. 
+Does this still work. 
+And what we're going to do is instead of 
+having one producer and one consumer, 
+we're going to have one producer and two 
+consumers, or multiple consumers. 
+So as shown here, we have one producer. 
+It has a register where it keeps the tail 
+pointer. 
+There's, there's two different pointers 
+here in memory. 
+The actual data storage of the queue, 
+two consumers. 
+They have their own register sets, 
+'because they're two different 
+processors, or two different complete, 
+threads. 
+So they have registers which they cache 
+effectively. 
+It's not a cache, but they effectively 
+have to load, load it into their register 
+space. 
+And then they actually have where they 
+will load the actual value that they pop 
+off the ends of the queue. 
+So someone I think said this at the end 
+of class here. 
+But if you're going to be executing the 
+producer, this piece of producer code, 
+and you're going to execute this consumer 
+code does anyone see a problem here of 
+something that can happen that we 
+probably don't want for a first in, first 
+out queue with multiple readers. 
+Yeah so let's, let's walk through that. 
+Let's say two consumers, 
+our execute, we, we interweave two 
+consumers executing the same instruction, 
+from one consumer thread and the other 
+consumer thread every other cycle. 
+So we have, the first consumer will read 
+the head pointer into the head. 
+The second consumer will read the head 
+pointer into its own head register. 
+This consumer here will read the tail 
+pointer into, the tail register. 
+The second consumer will do that same 
+thing. 
+So all of a sudden the two consumers read 
+the same heads and the same tail. 
+And this is sequentially consistent 
+because we've not done run, done no 
+reordering between within the thread. 
+we've just done some valid interlead. 
+Now they both check this. 
+This is the, the case which is basically 
+saying is there anything in the queue. 
+Does the head equal the tail? 
+If the head equals the tail there's 
+nothing in the queue. 
+If there's a distance between the head 
+and the tail that means there's some 
+entries in the queue So they both fall 
+through an they say, well yeah. 
+There's, there's stuff in the queue. 
+The next thing they do is they go read 
+from the head. 
+This is the value that they are going to 
+use. 
+Well they both just read the same head 
+pointer. 
+Because we are going to execute from one 
+thread and we're going to load that value 
+into another thread. 
+So all of a sudden we just read the same 
+value twice and one is the one thread and 
+one is the other thread but it was the 
+same, same value that we get out of 
+reading from the, the pointer that points 
+to the, the, the head if you will. 
+Now. 
+In a perfect world, that would be the 
+only bad thing that could happen in this 
+case because we would incorrect, they'd 
+both incorrect the headpointers, then, 
+then they do stores here and effectively 
+what would happen is they would write the 
+same head location into the, the, or the 
+same pointer if you will into, into the 
+head. 
+That's not so bad. 
+But effectively what we did is we 
+enqueued one thing into the queue, and 
+then we got two things out of the queue. 
+This breaks our semantics of what a queue 
+should actually do. 
+Something that could happen that's much 
+worse here. 
+Is that one of the threads, let's say 
+another valid interweaving, is the one 
+thread just stalls for a long time in 
+here. 
+And, like a billion cycles, it just falls 
+for a billion cycles. 
+It takes really bad cachmus or it traps 
+into the operating system, 
+or something bad happens to it. 
+What can happen is before the update at 
+the headpointer happens, 
+or 
+what could, what could have happened here 
+is you could have something really 
+strange happen. 
+Or, or, you could basically have the 
+other thread execute, and it could pop a 
+whole bunch of values off the head of the 
+queue in the meantime. 
+So let's say there was 100 things in the 
+queue. 
+We both execute into here at the same 
+time. 
+One of the threads get stalled here for a 
+long period of time. 
+The other thread pops 100 things off the 
+queue. 
+But then finally, this one here goes and 
+updates the head pointer again. 
+So what's going to happen, is effectively 
+you are basically going to reset the 
+queue and put 100 things back onto the 
+queue. 
+And, it's probably going to be garbage in 
+memory, in the queue at that time. 
+So this brings up the idea that we may 
+not want to be concurrently executing 
+even the sequentially, even the strict 
+sequentially consistent model. 
+This block of code and another threads 
+piece of code which is executing the 
+same, same thing, the, the two consumers. 
+So we're going to call this a critical 
+section. 
+if you take an operating system's class 
+you will seen this, seen this a bunch. 
+And the idea here is that you want to 
+atomically execute from all the consumers 
+possible. 
+This block of code here. 
+So no two consumers could begin to 
+execute that block of code at the same 
+time. 
+And one way to do that is you have a lock 
+on that piece of code. 
+So you grab a lock, you can go execute 
+that piece of code, and then you release 
+the lock. 
+Questions so far? 
+Okay, so a little bit more general notion 
+of the same idea of a lock is called a 
+semaphore. 
+And if you've taken !!! class you've 
+probably seen these strange nomenclatures 
+of P and V semaphores. 
+And if you want to go and look up where 
+it actually comes from, it's Dutch. 
+And P largely means attempt to acquire 
+the semaphore. 
+But, in, in, in Dutch it means I don't 
+speak. 
+Does anyone here speak Dutch? 
+By chance? 
+Anyone speak anything close to Dutch 
+[LAUGH]? 
+You do? 
+Little bit? 
+Okay, how do we, how do we, how do we say 
+that? 
+What, what is close to Dutch actually? 
+German's close to Dutch? 
+Yeah. 
+Okay. 
+I guess it's. 
+so I don't, I don't speak Dutch or 
+German, but it means try to reduce. 
+In a semaphore you can have multiple, 
+people trying to grab a lock at the same 
+time and multiple people trying to 
+caching to aquire that lock at the same 
+time. 
+So an example, or aquire for the same 
+time. 
+The example that we gave in the last 
+class is that you have multiple users 
+trying to use one I/O device, and let's 
+say that there are two queues in the I/O 
+device. 
+You have 100 different processors or 
+threads trying to use that one I/O 
+device. 
+You can actually have strictly only two 
+acquire the I/O device, but not more than 
+two. 
+In a Mutex, you're only allowed to have 
+one thing be able to acquire the critical 
+section or acquire the lock at a time. 
+And, hence, we have a little bit more 
+general term for this. 
+A P semaphore basically, decrements a 
+counter. 
+So we start off with a counter S, here. 
+We put some number into it, 
+and then we do P on that, 
+it'll actually decrease the counter, and 
+if the counter was greater than zero, 
+we can go execute our Kregel section. 
+Then we have the release for the V 
+semaphore. 
+And that will actually increment this 
+counter by one and it'll wake up some 
+other process if there is some other 
+process waiting on that. 
+if, if, if, I said dropped below, one 
+it'll go wake up another process [COUGH]. 
+And, one of the important things here is 
+that these, both these P and these V 
+semaphores must be atomic, relative to 
+each other. 
+So however you go, thinking about going 
+to implement them, they must, they must 
+be relative to each other. 
+And this is, with respect to everything 
+happening, 
+everything else happening on your system. 
+Otherwise, really, really bad things will 
+start to happen. 
+You'll actually, have multiple people 
+grabbing the lock. 
+And how you would typically use this is 
+inside of your thread or your process. 
+You're going to put your critical section 
+in, put the acquire here, and the release 
+there. 
+And one of the important things that, 
+here to note is these semaphores. 
+You can have the value S here determine 
+how many the, the initial value of S 
+rather determines how many different 
+threads or processes are able to enter 
+the curricular section concurrently. 
+If S is initially such one that means one 
+only one thread is allowed to go in there 
+and that's what's called a Mutex. 
+so it's mutually exclusive, only one 
+thread can go into a curricular section 
+at that time. 
+
+

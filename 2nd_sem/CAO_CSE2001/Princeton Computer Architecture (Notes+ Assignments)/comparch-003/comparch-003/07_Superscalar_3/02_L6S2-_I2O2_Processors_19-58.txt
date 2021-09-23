@@ -1,0 +1,485 @@
+So in, in this processor we're going to
+have basically three pipelines here, a
+long multiply pipeline, a memory pipe that
+say takes two cycles, and then a short ALU
+pipe here on the top.
+We have a scoreboard like we had before.
+And this is going to track where, where
+data is available in the pipe.
+Where data is available in the pipe and
+architectural register file is surfing at
+the end.
+So this was roughly similar to the in
+order issue, in order right back, in order
+commit processor, but there are some
+interesting things here.
+If you compare this picture here to this
+picture here, we just dropped all these
+pipeline stages.
+So that's pretty cool.
+We don't have to bypass out of there
+anymore.
+We can just sort of shove the date in the
+architectural register file.
+And if we preserve read after write, write
+after write, and write after read
+dependencies things, things should be
+okay.
+Let's see if we can actually do that.
+So let's first take a look at the
+scoreboard for this in order issue, in
+order in order fetch, in order issue, out
+of order, execute, and right back, and out
+of order commit processor.
+So the, the scoreboard looks very similar
+to the in order, in order, in order, in
+order machine.
+And we can use it to track structural
+hazard on the right back port.
+And this is really important.
+If you try to have, let's say a multiply,
+and then an add after it, it's possible
+that the multiply and add under pipe
+lining might have to go use the right back
+port at the same time.
+So, you got structural hazard.
+And we're going to show a pipeline diagram
+of that happening in the, in the next
+slide.
+We still don't, don't actually need to
+have a more complex scoreboard.
+So briefly, someone asked in last lecture,
+in the scoreboard, do we need to track
+which functional unit each value is going
+down the pipe.
+We still need to do that for this
+relatively simple pipe, because for a
+write after write dependence, we are
+basically just going to stall.
+If you want to break that requirement,
+then you need to start tracking more
+complex things in the score board, and you
+may even want to have some thing like
+register name, which we'll talk about in
+the next class.
+That's going to allow you to basically
+break a write after write dependence
+dynamically in the processor.
+So an important point here because these
+pipe stages are different lengths now.
+In our scoreboard, we had different places
+where the bits, where the, where the
+entries in the scoreboard could be.
+But now if we go to execute an
+instruction, which is long, we are going
+to put it in one of sort of like the first
+entry in the scoreboard is going to march
+down every cycle as tracking the
+information that goes down the pipe.
+But if we are trying to let's say execute
+a add instruction, it doesn't actually
+have to wait four cycles to get into the
+architecture register file so we can
+actually insert here a one and then it
+just marks it down the balance of the pipe
+for a particular location.
+And this is what I was saying that because
+we are not going to allow write after
+writes hazards on a particular register,
+you're never going to have a case where
+there's basically multiple inversely
+ordered bits in this table.
+If you had that, you would actually have a
+more advanced scoreboard, and I'll show a
+picture of that a little later in today's
+lecture.
+Okay so let's, let's go through an
+examples of how to use the scoreboard and
+how to walk through a in order issue in
+order fetching issue, out of order execute
+and write back an out of order commit
+processor.
+So, here is the same code sequence we had
+in the previous example case.
+So we're going to be using this throughout
+all of class.
+Let's, let's take a look at this and sort
+of see how this pipeline diagram happens
+and notice a few things.
+First let's take a look at some read after
+write hazards, and what the pipeline has
+to do.
+Mul R5, R1, R4.
+This reads R1.
+Wire one is created by this multiply in
+instruction zero.
+So it actually has to wait to get the
+bypass here from.
+Instruction two is going to have to wait
+to get this value.
+So you can see here it's basically just
+stalled.
+And what's happening here is your in-order
+issue, you can't go try to issue
+subsequent instructions under that.
+Later in today's class we're going to be
+talking about pipelines, which actually
+have out-of-order issue such that while
+this is waiting around you can think about
+trying to go and issue the next
+instruction that's not dependant on that
+previous instruction.
+And by doing that we get more performance
+cause we can basically be re-ordering
+instructions and trying to use our
+functionally as use our ALUs as much as
+possible.
+But for right now, we have a bypass coming
+out of Y3 here out of this multiply down
+into the register file access stage of
+that next multiply.
+So that's sort of one thing that's going
+on.
+Let's take a look at another read after
+write dependence here.
+So, another read after write dependence is
+actually register eleven, gets written
+here and read down there.
+Well, what are we doing special for this?
+So, instead of marches on the pipe, the
+right happens here.
+Let's see where the read for this
+instruction, instruction four tries to
+happens.
+Well, the read tries to happen there.
+Well, at that point, the data's actually
+in the architectural register file.
+We don't have to worry about any funny,
+funny bypassing or anything like that.
+And you can sort of work through the rest
+of the, the, the, the things going on
+here.
+But there's a few other things I wanted to
+point out in this picture.
+First, because you have different pipe
+links, you can actually see that, let's
+say, this add here is running the
+architectural register file, before a
+previous instruction writes the register
+file in program order.
+And this has some, some consequences, some
+large consequences when you're starting to
+think about if, let's say, this
+instruction here, the multiply that
+preceded the add took some sort of fault
+or took some sort of exception.
+Because now, you basically change the
+architecture register file before anyone,
+before that other instruction has finished
+and other instruction didn't actually
+finish.
+So what does, what does that mean?
+Whoa.
+One other thing I wanted to point out in
+this picture, which is a really
+interesting case is right here.
+So this add instruction here is dependent
+on R12.
+R12 gets created here.
+And basically at the end of the stage is
+ready to bypass.
+So if we look down we'll say, well, this
+instruction here we don't even try to read
+from the bypass until here, so that value
+is ready.
+But for some weird reason this instruction
+stalls.
+Can anyone see what's going on with that
+instruction?
+All of its inputs are ready.
+It's ready to go.
+It's a party to go to, but there's a
+issue.
+Okay.
+So that, that is what's happening here, is
+that if you were to remove this I stall
+stage here, this would get pulled forward,
+and now you'd have this writing and that
+writing at the same time.
+So they should have a structural hazard on
+the right port of the register file there.
+So you have to, to, to, to stall.
+Okay, so let's, let's take a look at how
+that shows up in the reorder excuse me,
+how it happens that show's up in the
+scoreboard.
+So when we go to sort of look at this so
+what's, what's we have here is we have
+cycles.
+There's eighteen cycles across the top.
+Or actually, there's nineteen cycles
+across the top.
+The first one's zero, but I don't draw
+that.
+If we look at, let's say, this cycle here,
+instruction one which this add is in the I
+stage.
+So it's in the issue stage of the pipe.
+So it's looking for it's operands
+basically.
+And what's going happen is this add needs
+to check to make sure that it's not going
+to conflict on the right port of the
+previous MUL.
+In this case it doesn't actually happen.
+But when this instruction moves here, so
+this is what I was saying is that it
+doesn't actually put 1s in the four
+locations, instead it marches down.
+Instead its going to, start here at the
+before two cycles to go before it writes
+to the register file, because the pipe is
+shorter.
+So it has to check this location, and
+says, well, for my register that I'm
+trying to write, is anything else
+currently scheduled to write that location
+in two cycles And our scoreboard can
+answer that question.
+If there was a one in this box, yes.
+We would know that there was a MUL or some
+other instruction that had long leniency
+that you would get conflicts.
+So in this instruction we're to move here.
+This one would also, clocks every cycle,
+and moves down our scoreboard.
+It's going to conflict at that point, and
+we're going to know we're going to have a
+write hazard on the register file.
+So we can sort of, we can sort of see
+those things happening in our scoreboard.
+And then we, we could also use our
+scoreboard to actually detect that real
+case, this case here, this last
+instruction, this last add, we're going to
+see that show up over here.
+So let's, let's try and find that.
+Okay, so, we have instruction six.
+It wants to basically move forward in the
+pipe, but it checks this location here and
+says, okay.
+Or, or in this cycle, here, Instruction
+six basically should be the issue stage,
+and doesn't move out of issue stage.
+It's, it's sitting in the issue stage.
+It looks, in this location, which is
+basically two, two cycles till the end of
+the pipe, and sees that there's a one
+there.
+The, the box is trying to indicate that.
+So it looks there, and says, oh, there's a
+one there.
+That means I can't issue the stage and I
+need to stall, and we get the stall
+showing up.
+These other boxes, are here to donate the
+here to represent the other adds that are
+happening in the other MULs and things so
+we actually check with these other
+locations, actually this is just the other
+one add, these are, we are going to check
+for this add here, this add here, this add
+checks here and sees a conflict and has to
+check again the next cycle that's why
+there's four little boxes vertically on
+that, on that chart.
+Other things, that this is a different
+representation here.
+You can see R1 is being written and has a
+long lines in the pipe.
+This other register has a shorter or other
+register has a shorter life in this time,
+because in a, in our scoreboard, because
+it's an add instruction.
+Okay.
+So, do we have any questions about that
+before we move on to a more complex pipe?
+So this is assuming a fixed latency for
+every instruction, that is correct.
+Or at least per pipe or function unit in
+the pipe.
+You can definitely have function units
+which have variable leniency.
+So an example of that is, well there's
+sort of two good examples of that.
+One is something like a divider unit.
+Sometimes people build divider units, so
+that you keep dividing until you're done.
+And it's sort of a way to shorten the
+length of a divide.
+So that sometimes has a variable length.
+Another good example of this is something
+like a load, that misses in your cache.
+An out of order processor, and you have to
+wait for the load to come back.
+Good ways to handle that actually in a
+scoreboard.
+Sometimes scoreboards will just have an
+extra sort of special bit on the side for
+each destination register which says, this
+register's just out to lunch, you know, I,
+it's in some long variable length
+pipeline, I don't know what's happening on
+it.
+Don't try to bypass it, don't try to do
+anything special with it.
+And just wait for it to come back and that
+bit clears.
+So processors I built for these variable
+length instructions we'll typically just
+have an extra bit.
+For maybe the different functional units,
+maybe the divider, and one for the load
+miss case, or something like that, such
+that, you know, if that exceptional case
+happens, or if the load misses, or if the
+you go ahead and take a divide, which has
+a variable length, cuz divide can take
+anywhere from, like, two cycles up to,
+like, twenty cycles in some pipelines.
+And in every, everything in the middle.
+You'll just mark a bit saying, this
+register's not ready, in the scoreboard.
+And then, if someone tries to go read that
+register, it just knows to stall.
+So it's a slower performance sort of way
+to deal with that but that's a, that's a,
+that's a tough, tough case to handle.
+A scoreboard can help there and it's a
+sort of extra information in the
+scoreboard.
+Okay so like I said we have this out of
+order commit processor.
+It's doing out of order write back and
+it's doing out of order commit.
+Oh.
+Well, out of order write back maybe okay
+we maintain our write after right
+dependency so we're not actually going to
+end up with inflex state in the
+architecture register file because of that
+but something bad can happen is what
+happens if we go and try to take an
+exception.
+So let's say we have our same instruction
+sequence that we've been looking at up
+until this point.
+And here, we're wandering around.
+We're going down the pipe.
+And, this instruction here take some sort
+of fault and its figure it out at the end
+of the pipe at our commit stage so the
+multiply goes all the way to down to the
+end.
+We end up with I don't know, multiplies
+don't take a whole lot of great faults but
+let's say it takes some sort of exception.
+What, what is, what is going to happen?
+Well, that instruction is dead, all the
+other instructions are dead, cuz it took a
+fault.
+Unfortunately, we already wrote the
+register file.
+Done, done, done, done, done.
+Yeah.
+Okay, so now we end up in our trap handler
+or our exception handler or interrupt
+handler and all of a sudden register
+eleven is just wrong, it has the wrong
+architectural value.
+So this is one of the reasons why people
+should try not to build out of order
+commit.
+It gets, gets it gets tricky to have out
+of order commits with precise exceptions.
+Now there are, there are some ways to do
+it.
+So one way is limit the types of
+instructions.
+So if you have a in order issue, out of
+order commit, out of order write back,
+what you could think about doing is, you
+know that this doesn't write until this
+point here.
+So what if we resolve all of our previous
+let's say, all of our let's say all of our
+previous exceptions.
+If we move our commit point earlier in the
+processor, we can actually make this work
+and have precise exceptions.
+So if our commit point, let's say, is in
+the either memory one stage, or first
+stage of the multiplier or something like
+that, at that point, you know, we haven't
+written any other state here that's wrong.
+That write back hasn't happened, so we can
+still kill everything down.
+Unfortunately, that means that you can't
+have an exception happening here, here or
+anywhere else sort of like, later in your
+pipe.
+So that's, that's a problem.
+So you, you can limit the types of
+exceptions, push your commit point early,
+and still have an out of order commit
+processor with precise exceptions.
+But that even is tricky.
+So, so, this is a great question.
+So why can we not have two commit points?
+Some processors do have two commit points.
+And some processors will have a, it's
+called sliding commit point.
+So that you try to commit things, sort of,
+early, and then if something else for
+certain types of instructions, you can
+move the commit point later.
+But typically, you want to have a big
+point in one place where you say after
+this point in the pipe all of the state
+has past this has been committed and those
+instructions cannot be rolled back and
+those instructions cannot be undone.
+But there are examples of things where
+people will have a sliding commit point.
+I've actually built a processor which has
+a moving commit point.
+But it's, it get tricky, because what it
+basically means is certain types of
+instructions cannot execute after certain
+other types of instructions.
+Because if they do, these will violate
+that, that sliding commit point.
+Like this example here.
+If, if the fault can be taken here,
+there's no way to solve this problem.
+But you could have something, whereas a
+sliding commit point, where, if you have
+these, a mall followed by, let's say, an
+add, you can actually sort of slide the
+commit point out.
+So there are processor ideas that you can
+try to have a sliding commit point.
+But otherwise you have to, you have to
+check, that gets quite a bit complicated.
+But I don't want to really get into that,
+today.
+Let's, let's leave that for sort of
+advanced topics discussion.
+But in, in, what we're going talk about in
+this class, we're going say we want to
+have one commit point.
+We want it to stay one place in the pipe.
+Is the canonical location that pass that
+point all the data that is inflight is,
+has executed and is committed and we need
+to know sort of one location for that.

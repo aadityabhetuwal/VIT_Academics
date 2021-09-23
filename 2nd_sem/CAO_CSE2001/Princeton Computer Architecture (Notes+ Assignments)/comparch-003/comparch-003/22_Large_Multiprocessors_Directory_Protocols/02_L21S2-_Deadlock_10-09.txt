@@ -1,0 +1,268 @@
+Okay, so this brings us to the end of 
+interconnection networks. 
+And what I wanted to talk about was 
+Deadlock. 
+So let's assume that you have three nodes 
+labeled one, two, and three here. 
+It's on a 1D, or excuse me, yeah, oh 1D 
+tourist, that is unidirectional. 
+So links only flow in the clockwise 
+direction here. 
+Now, all of a sudden, you have node one 
+wants to send to node three, node two 
+wants to send to node one, and node three 
+wants to send to, to two. 
+And we're going to look at a wormhole 
+routing network. 
+So the wormhole routing network you start 
+to send the header words and [INAUDIBLE] 
+has not, potentially not even been 
+injected into the network at this point. 
+Let's say they all start at exactly the 
+same time. 
+So one is going to start sending to 
+three. 
+Two's going to start sending to one. 
+Three's going to start sending to two. 
+And if you'll notice, is each set of 
+these has one overlapping link with the 
+previous one. 
+So there's going to be some contention on 
+that link. 
+So very quickly, you can see that. 
+If we were to all, if we were to launch 
+these three messages exactly at same 
+time, and the message length was long. 
+None of them would actually get to the 
+receivers. 
+One would use this link, or one sending 
+to three would use this link, two sending 
+to one would use this link, three sending 
+to two would use this wraparound link. 
+But then all of a sudden, they would try 
+to acquire the next link but it's already 
+been reserved. 
+But they can't give up the link because 
+they've already acquired the link, so all 
+of a sudden you have a deadlock. 
+So these numbers get pretty tricky. 
+and one way that we go about trying to 
+see if our routing protocol is deadlock 
+free or actually can deadlock is we start 
+to do something called Waits-for-analysis 
+or waits-for and Holds analysis. 
+And waits for, and Waits-for and Holds 
+analysis, 
+the basic idea is, so this is looking at 
+our example that we saw before where we 
+have three routers. 
+What's happening here is we're injecting 
+into A and this A is acquiring this link 
+or this [INAUDIBLE] here, 
+and then it needs to acquire the next 
+one. 
+So let's draw this as a diagram. 
+So A holds TQ2, 
+so A holds TQ2. 
+This one here, 
+this inbound Q here. 
+And when we draw Waits-for and Hold 
+analysis diagrams. 
+When we are waiting on something we draw 
+a edge from the thing that is the, the 
+actor to the resource that we're waiting 
+on, 
+and the holds actually goes in the 
+opposite direction. 
+So if a holds TQ2 here we actually draw 
+the edge the other direction. 
+all of a sudden, A is holding TQ2 two, 
+and it's waiting to acquire TQ3, this one 
+here. because it needs to transit this 
+link to deliver it to TQ3. 
+But at the same time, B has acquired TQ3, 
+so it's holding that and it's waiting for 
+TQ1. 
+But C currently holding TQ1 and its 
+waiting on TQ2. 
+This is how we do deadlock analysis from 
+a proof perspective. We actually write 
+these dependency graphs or Waits-for and 
+Hods graphs and if you find a cycle in 
+your protocol, your protocol can have a 
+deadlock. 
+It need a couple of some way to color 
+link your, color, color edge in this 
+graph or you need to really design your 
+protocol. 
+But this is the sort of canonical way 
+that you can do this and if you start to 
+look at different routing protocols some 
+of them could possibly deadlock and some 
+of'em can, you can prove statically to 
+all possible weights for of whole graphs 
+you can come up with will never have 
+cycles. 
+So I, I think I mentioned last time, if 
+you look at dimension order routing with 
+one more routing. 
+All possible inputs and outputs on that 
+you never actually going to have a 
+deadlock, 
+you never call for cycle in the graph. 
+And the reason for this is the only ever 
+quire X routers and then Y routers, will 
+say if you have the dimension that you 
+acquire X and quire Y. 
+But you never going into have effectively 
+something that is holding Y trying to 
+acquire something on the X axis. 
+So, you never going to have a, a cycle in 
+that Waits-for and Holds whole analysis 
+graph. 
+I just briefly wanted to some up here 
+that Deadlock is actually not an enemy. 
+You can try to use deadlock, 
+to your benefit or, or just live with 
+deadlock. 
+Just because your protocol has deadlock 
+does not mean you can't try to recover 
+from it. 
+So what I mean by this is deadlock 
+avoidance can be very expensive. 
+So trying to draw all possible graphs 
+here, you should think about, you know, 
+where your deadlocks happen in your 
+systems, and plan them out and make sure 
+they don't happen often. 
+But some of the things you need to do, to 
+try and cut edges here, might be too 
+restrictive. 
+So for instance, dimensional routing may 
+only route in the X dimension and then in 
+the Y dimension, could be very expensive 
+relative to an adaptive routing scheme, 
+or you try to route around congestion in 
+your network. 
+So this deadlock avoidance, you know, 
+you'll, you'll design the protocol to 
+never deadlock, 
+this could be quite expensive. 
+So an alternative, and this is something 
+you should not necessarily be afraid of, 
+but you have to be careful of this is 
+that you find the deadlock and then you 
+try to recover from it. 
+So what I mean by this is on-chip network 
+or a, a, multi-chip network you can 
+actually have a deadlock occur, 
+notice that a deadlock occurred. 
+And either try to roll back the state and 
+somehow jitter the state so the deadlock 
+won't happen a second time. 
+Or many times these deadlocks happen 
+because your dependent on one particular 
+buffer in the system and two people 
+trying to acquire that buffer. 
+So you can try to virtualize that buffer. 
+Effectively saving the state of that 
+buffer in memory and adding more, more 
+states. 
+So you, a lot of these protocols, if you 
+were to add more FIFO entries into the 
+system, it would actually break the 
+deadlock. 
+So, sort of going back into this picture 
+here, 
+if all of a sudden if I added another, 
+let's say, FIFO here that the inbound 
+traffic went into and then this other 
+traffic tried to bypass it, it would 
+actually cut one of these edges, and all 
+of a sudden you would not be having a 
+deadlock. 
+So you can think about trying to have a 
+deadlock recovery mechanism that's an 
+example of it. 
+So a good example this is actually in the 
+raw micro processor from an IT where we 
+I, you can actually have that much on the 
+on-chip network. 
+Its dimensional routed, but you can still 
+have message depended deadlocks. 
+So what I mean by that is while the 
+network itself is not going to deadlock, 
+the traffic flows you have on top of it 
+that from since your memory coherence 
+protocol on top of that could be 
+potentially deadlock. 
+So how do you recover from that? 
+Well you can actually have a counter, 
+a timer which goes off when you determine 
+that the network has not moved for a 1000 
+cycles. 
+So all the sudden you're running along 
+and no traffic moves on your network. 
+Well it's a pretty good indicator that 
+you have a deadlock condition, 
+because something should be flowing. 
+There should be some forward progress 
+guarantees. 
+[COUGH] And if you notice that, an 
+interrupt will go off. 
+So this timer will go off saying nothing 
+has moved on my network for 1,000 cycles, 
+this is probably a deadlock. 
+So that, you could take an interrupt and 
+then software can go look at all this 
+data in the network and introduce more 
+buffering into the network. 
+So, effectively through software try to 
+virtualize a particular FIFO entry and 
+that can break the deadlock. 
+So there are ways to recover from 
+deadlocks. 
+If your network is for instance used for 
+message passing network, you can just use 
+memory to go do that. 
+So actually on the raw processor, our 
+memory coherence protocol, we used 
+deadlock avoidance and then our message 
+passing protocol, our message passing 
+networks use deadlock recovery. 
+later on in, in Tylera actually we have 
+something depending on which memory 
+network we have mixtures of these two. 
+And you might say that sounds scary, 
+but if you walk through the proofs and 
+are very careful about it and you are 
+guaranteed that you don't need anymore 
+resources to go break the deadlock you 
+may be okay. 
+But yeah it's, its just some say it's 
+playing with fire. 
+You've got to be a little careful of 
+these, these sorts of solutions when 
+trying to play with deadlock recovery. 
+But if you're guaranteed that you're not 
+going to need any more resources you can 
+just resolve it right then. 
+And oh, 
+so the reason you would want to, to use 
+the lock recovery is it does not restrict 
+your protocol. 
+And by doing that, you can have the 
+common case of your protocol be very, 
+very fast. 
+And, you could make it so that the 
+deadlock almost never happens. 
+Or never, in practical concerns ever 
+happens. 
+Then, when the deadlock does happen oh, 
+you take a little bit of performance 
+bump, or a performance hit there. 
+Because you have to virtualize it in 
+software. 
+But the probability of it happening is so 
+low. 
+

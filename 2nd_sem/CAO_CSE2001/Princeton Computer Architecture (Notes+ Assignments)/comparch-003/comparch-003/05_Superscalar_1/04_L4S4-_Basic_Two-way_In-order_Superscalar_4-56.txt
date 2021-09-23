@@ -1,0 +1,133 @@
+Let's, let's look at a baseline 2-way
+in-order superscalar.
+That's a mouthful to say.
+So, difference than the pipelines you've
+seen before.
+We have two ALU's.
+It's a big difference.
+We can execute two integer ops at the same
+time in this pipe.
+Drawn here, we are going to actually
+differentiate these two pipes.
+We are going to call this pipeline A and
+this pipeline B, and pipeline A lets say,
+can do integer ops and branches, and
+pipeline B can do integer ops and memory
+access.
+But you can't, you can't do memory up here
+and you can't do branches down there.
+That's, there's nothing fundamental.
+We're just going to look at it to sort of,
+basic example here, we have two asymmetric
+pipelines.
+An important, important point of this,
+first is that, compared to our 5-stage you
+know MIPS processor is that with will it
+fetch two instructions at the same time.
+If we want to actually be able to execute
+two things, we need to able somehow get
+that out of the instruction cache or the
+instruction memory.
+Hm, okay.
+Well, that's interesting.
+So, the program counter kind of sort of go
+in here and instead of being one
+instruction now we actually get two to go
+in these two different instruction
+registers.
+We also need to add more ports to our
+register file.
+Instead of, in our basic pipeline that we
+have talked about earlier, we had only two
+read ports.
+You gave two different addresses and it
+outputted two registers.
+Now, because we have two different
+instructions at the same time, we actually
+have to pull out four different read ports
+or four different read registers at the
+same time.
+And, if we want to be able to retire or,
+commit instructions two at a time, we need
+to add more write ports.
+So I, I show the register file here sort
+of split into two.
+But, the register files kind of, it, it's
+together, but logically I just drew it
+apart so, that you can actually make heads
+or tails of the drawing.
+So that's, that's something interesting to
+think about is, you have to, to worry
+about that.
+Okay, so the first question I have here,
+is this good enough?
+Is this pipeline diagram good enough in,
+let's say, the fetch stage?
+We stick some addresses in, we get two
+instructions out.
+So, that's a good question.
+Do we do PC and PC + four?
+So, let's say we can, there's some logic
+which we pull out PC and PC + four at the
+same time.
+So, we're executing two instructions.
+So, so roughly, you know, we need to worry
+about alignment issues here.
+We need to worry about branches is, let's
+say, the first instruction in, that we
+pull out of the two instructions.
+In this next part here, Our pipes are not
+symmetric.
+So, is this, is this good enough?
+So, what happens if the first instruction
+that comes out here is a load.
+So, instruction IR0 here.
+The instruction register just loaded with
+the bits from the load.
+What, what happens down the stream here?
+Can the load happen here?
+[inaudible].
+Yeah.
+That's a problem.
+So, we're starting to go with the
+superscalar here.
+We need to start thinking about having,
+let's look back and forth here and take a
+look at this.
+You need something here that can take an
+instruction that will show up here and
+route all the operand values down over
+here.
+Largely, a lot of times people call this
+issue logic or instruction steering logic.
+So, you have to sort of steer the operands
+and you're going to, you can basically
+swap the two operands, the two
+instructions that are going down the pipe
+at the same time.
+Okay, so, so that's, that's interesting,
+and this is, could actually cost some time
+to do this.
+So, this might motivate us to have longer
+pipelines.
+So, we'll talk about that in a second.
+Another thing you have to do, is on the
+control side, is you have to actually
+start thinking about duplicating control.
+So here, we actually have two decoders
+because we're decoding two instructions at
+the same time.
+So, the instruction register wires up to
+Decode A and this instruction register
+wires up to Decode B and then they're
+going to drive singles down across the
+respective A and B data paths.
+So, that's, something not drawn here, is
+you may also, if you have to interchange
+these sort of instruction register zero to
+the B pipe.
+You might have to, you definitely have
+some, you know, communication or some,
+swapping of the instruction inputs here.
+So that's, that's, that's sort of the
+baseline, 2-way processor.

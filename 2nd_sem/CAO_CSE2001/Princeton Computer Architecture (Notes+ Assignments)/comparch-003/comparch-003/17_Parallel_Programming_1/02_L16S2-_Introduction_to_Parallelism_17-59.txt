@@ -1,0 +1,445 @@
+Okay. 
+So, we're, today, we're talking about 
+parallelism and synchronization. 
+from a parallel, parallelization 
+perspective, we're worried here about 
+parallel programming and how to build 
+computer architectures that can run 
+simultaneously multiple programs or 
+multiple threads within one program. 
+And today, we're going to talk about some 
+models of that synchronization, and some 
+primitives to help you solve it like 
+synchronization primitives and memory 
+fences. 
+This is a little bit of background or 
+motivation for nowadays why we're going 
+to multiple processors. 
+So, we're, show here Moore's Law plotted 
+on a log plot. 
+A number of transistors going up 
+exponentially. 
+Our sequential performance has sort of 
+gone up, and then sort of stopped at this 
+point. 
+If you go look at the new core I7 or 
+something like that, 
+it's kind of flattened out here. 
+It isn't continuing to go up. 
+and in fact, the numbers that they 
+actually publish for sequential SpecINT 
+to our actually parallel numbers these 
+days because they're using multiple cores 
+to make SpecINT and SpecFP go a little 
+bit faster. 
+and, clock frequency has also found out 
+we didn't get to our 10GHz processor. 
+And largely, that it is due to us hitting 
+some power challenges here. 
+But it's also just incredibly hard to 
+build and design these very high 
+frequency processors. 
+So, instead, we started to use these more 
+and more transistors to implement 
+multiple cores. 
+So, we started off with two cores and 
+then four cores and, you know, we've, 
+we've gone up from there. 
+Intel, 
+I think, he is now selling an eight core 
+part and a ten core part is coming out 
+soon. 
+AMD has a sixteen core part, but it is 
+not a true sixteen core part. 
+I think it is two eight cores that are 
+glued together on a chip. 
+and there's some other weirder stuff up 
+here. 
+Some actual many cores, multicore 
+processors with more, more cores. 
+But people did multiprocessor built 
+multiprocessors before the multicore 
+revolution here. 
+Back in these days, there were 
+multiprocessor systems. 
+You could take multiple chips and put 
+them together somehow into small systems 
+or large systems. 
+And for the rest, rest of class between 
+now and the end of the term, 
+we're going to be talking about parallel 
+computing systems. 
+Both systems that have multiple cores on 
+one chip and multiple chips in a system. 
+And for, there's some subtle differences 
+between the two of those things, but a 
+lot of commonality. 
+In today's lecture, we're going to focus 
+on symmetric multiprocessors and memory 
+systems for sharing of data and using 
+shared memory to share data. 
+But there are other ways to share data 
+and we're already touching on that in two 
+lectures when we talk about messaging in 
+more detail. 
+The, I bring up symmetric multiprocessors 
+because it's the simplest model to reason 
+about. 
+All processors are up here, and memory is 
+down here. 
+And let's assume there's no caches in the 
+system to begin with. 
+And everyone is equidistant from memory, 
+and it's one big memory. 
+And you've multiple processors, which 
+could either be running multiple threads 
+in one program or multiple programs. 
+A couple other interesting things is, you 
+know, 
+these concurrency challenges don't come 
+up just from having multiple processors. 
+There are other things that can go and 
+communicate with memory or communicate 
+via memory. 
+We have all these different IO 
+controllers down here, network cards, 
+disc controllers, graphics cards and they 
+also want to read and write memory. 
+So, in your memory system, even on a 
+uniprocessor system, there are multiple 
+agents that want to read and write memory 
+simultaneously. 
+[COUGH] Okay. So, let's talk about 
+synchronization. 
+The dining philosopher problem is an 
+example of a synchronization challenge 
+and we're going to talk about two major 
+synchronization ideas but there are more 
+than, are shown on the slide. 
+mainly they're sort of broadcast models 
+and, and other things like that. 
+But for right now, when I say 
+synchronization, it's some way to 
+synchronize communication or arbitrate 
+communication in a restricted fashion. 
+So, we're going to have two here, we're 
+going to talk about producer-consumer, 
+that's the, the figure on the right here. 
+A producer, as the name implies, produces 
+some values. 
+And a consumer, consumes the values. 
+This is the most basic form here, one 
+producer, one consumer. 
+You could think about having one 
+producer, multiple consumers or multiple 
+producers, multiple consumers or multiple 
+producers, one consumer. 
+a lot of this same ideas hold here. 
+So, that's, that's one model that people 
+like to use. 
+Another model that people like to use is 
+there's some shared resource and you want 
+to make sure that not more, let's say, 
+then one processor is trying to access 
+that shared resource. 
+And this resource could either be a disk, 
+a graphics card, or it could actually be 
+a location in memory. 
+And we're going to call this mutual 
+exclusion. 
+And the reason it's called mutual 
+exclusion is it's exclusive, 
+who can access the resource at one time. 
+Now, the generalized form of this, that, 
+that's the most basic form is only one 
+processor or one entity can go and access 
+the resource at a time. 
+A more general form of it is some number 
+of processors or resources can go access 
+that at one time. 
+And this is the more general semaphore 
+question which we'll be talking about a 
+little bit later. 
+So, what I mean by that is, you could 
+have P processors or let's say, P is 
+twenty. 
+And you could have a resource that no 
+more than two processors can go access at 
+the same time. 
+You might say, 
+well, why would you want to do that? 
+Well, a good example is something like a 
+network card that has two outbound 
+queues, we'll say. 
+So, you can actually have multiple 
+processors using it, 
+but if you try to have three processors 
+use that one network card at the same 
+time, 
+well, there's only two outbound queues. 
+It has to decide, somehow, to, to share 
+those. 
+so that's the example of a, of a true 
+[UNKNOWN] versus just a mutex. 
+Okay. 
+So, let's go through some code examples 
+here because these are going to be 
+instructive and let's look at 
+actually, before I do that 
+you can even have on a uniprocessor 
+system, synchronization challenges. 
+And how is that possible? 
+Well, as I said, even in the uniprocessor 
+system, you sometimes have multiple 
+concurrent entities. 
+So, it's either your disk drive, doing 
+DMA into memory at the same time as a 
+process is trying to read from that 
+block, for instance. 
+And you need to guarantee, for instance, 
+that this block is completely read before 
+the processor goes and tries to read the 
+block. 
+That's one way that is going to happen in 
+uniprocessor system. 
+Another way that happen in a uniprocessor 
+system, is uniprocessor systems can many 
+times be multiprogrammed. 
+So, the operating system would actually 
+time slice between different programs. 
+And you'll get interleaving of 
+instructions in a preemptive environment 
+at least of different processes at the 
+same time. 
+So, you might be running one process, 
+the timer tick goes off. 
+You stop that process. 
+You switch to another process and start 
+executing code from that. 
+At some point, the timer tick goes off, 
+and you switch back to the first process. 
+So, even on the uniprocessor system, you 
+can have synchronization challenges. 
+Okay. 
+So, let's, let's look at a 
+producer-consumer example. 
+Let's look at the abstract first. 
+So, you have a producer here, a consumer 
+there. 
+We're going to use memory and one big 
+symmetric block of memory for all of the 
+communication at this point. 
+We have a queue between the producer and 
+the consumer shown here. 
+And then, we have a head and a tail 
+pointer. 
+So, it's a FIFO says, where the, our 
+first in, 
+first out queue. 
+I was going to say, where the head is, 
+where the tail is, they can sort of move 
+after each other and they'll say. 
+it's circular so they wrap around at some 
+point. 
+[COUGH] You have a register value here on 
+the producer and you can move the tail 
+pointer into this register. 
+And then, we have three registers over 
+here. 
+The tail pointer register, the head 
+pointer register, and a register for the 
+value we receive. 
+And the reason I point out these 
+different registers is just to show that 
+the producer owns this register, and the 
+consumer owns these three registers. 
+And, as you can see here, this says, R 
+tail and that says, R tail. 
+So, they're going to have different 
+copies of R tail and they could 
+potentially get out of sync here. 
+We're going see some, some fun hijinks 
+happening. 
+Okay. So, let's, let's look at the basic 
+sequence of code here where the producer 
+wants to put an item x into the cube for 
+a consumer to read sometime in the 
+future. 
+First thing, it wants to do is it's going 
+to read the tail pointer into its 
+register. 
+It's going to then, this is a, a load 
+store architecture here. 
+It's going to do a store of value x into 
+the tail, which is going to put it here. 
+Now, we're going to have to bump the 
+tail. 
+We can't do this atomically so we 
+actually have to add one to it in our 
+register space so we just increment it in 
+our own register. 
+And then, we're going to store this back 
+into the pointer in memory. 
+Seems simple enough. 
+Let's look at what the consumer does. The 
+consumer loads the head. 
+And the first thing it's really going to 
+do here is it's going to try to figure 
+out if the head equals the tail. 
+because that will mean that the queue is 
+empty and it just needs to block. 
+Loads the tail pointer. 
+So, it's the head pointer in this 
+register, a tail pointer in that 
+register, and sees that they're equal. 
+If they are equal, 
+it's going to jump up here, reload the 
+tail pointer into the tab to see if it's 
+got updated by this thread and just spin 
+here for forever until the tail pointer 
+is not equal to head pointer, which means 
+there's some data available. 
+And then, we can fall through. 
+And in the fall through case, we are 
+going to load from the head into R, so 
+into this register, this is, so we, we 
+did the read. 
+And we're going to update the head 
+pointer to the next location. 
+Save it off and then, do something on 
+this value we got. 
+So, processes just do, do something. 
+So, this program is a little naive 
+because we've been talking about out of 
+order processors, 
+we've been talking about out of order 
+memory systems. 
+And in a perfect world, 
+this is assuming that instructions are 
+executed in order and that there's no 
+interleaving between the consumer and the 
+producer here, and vice versa, in the 
+memory system. 
+So, anyone think there's any problems 
+with this? 
+does this work fine? 
+Yup. Okay. So, you're, you're saying if 
+the consumer runs before the producer 
+does anything, you might just try to take 
+values off the queue. 
+Well, so let's guard against that and 
+say, the, the start case is head pointer 
+equals tail pointer. 
+So, that won't happen, you'll sit 
+spinning here. 
+Now, because no one's like jumping up and 
+screaming up and down at this point, 
+you're sort of all assuming that these 
+operations happen in order. 
+But we've talked about out of order 
+machines which reorder loads relative to 
+stores. 
+We've talked about very interesting 
+interleaving. 
+We've talked about out of order memory 
+systems. 
+So, so much for me jumping up and down 
+here, and saying, what do we guarantee 
+about loads and stores to different 
+addresses? 
+So, we said, all we know is that a load 
+and a store or excuse me, a store and a 
+load that are serialized in that order, 
+on the same processor, to the same 
+address, will happen in order. 
+Our out of order super scale and our out 
+of order memory systems, we've talked 
+about, 
+have defined nothing about ordering 
+between processors or even memory 
+operations inside of one processor. 
+So, that's what we're really going to be 
+talking about today, how to reorder those 
+instructions and how to prevent that from 
+causing havoc. 
+Okay. So, 
+let's, let's look at this and let's 
+number these purple instructions. 
+So, we're going to number store, store in 
+these two loads. 
+The reason we, we look at those, in 
+particular, is this is basically updating 
+state that this thread is reading from, 
+and these are the two instructions that 
+update that thread, and these are the two 
+instructions that read that thread, 
+or read that state rather. 
+So, the programmer assumes that there's 
+some level of causality, here. 
+Incorrectly, 
+producer is assuming, if you look at this 
+code, that if three, this load happens 
+after this store here, 
+that there's some relation between one 
+and four. 
+Namely, that one has happened by the time 
+four happens. 
+Not a good assumption in our memory 
+systems. 
+And that's especially in our out-of-order 
+memory system. 
+Because, if we recall, 
+out out of order memory system said 
+nothing about store ordering. 
+We talked about, the only thing we talked 
+about was having a load at the same 
+address as a store and not moving that 
+load past that store. 
+But otherwise, these two stores are out 
+of order processor that can very easily 
+reorder or an out of order memory system 
+can very easily reorder. 
+Likewise, over here, 
+these are just two loads. 
+These loads can happen completely out of 
+order in an out of order computer, 
+and out of our memory system. 
+No guarantees there. 
+So, this assumption is bad in a 
+multiprocessor system. 
+Uniprocessor system might make sense, 
+multiprocessor system, bad assumption. 
+So, let's look at some sequences that are 
+problematic. 
+Name, namely, let's say, two and then, 
+three happens. 
+And then, four and then one happens. 
+So, what, what happens when that? 
+Well, two updated the tail. 
+Three says, raise the value of that new 
+tail pointer. 
+But at this point, we haven't actually 
+stored the value into the cube because 
+one never happened. 
+We go x cubed four and it just reads 
+garbage from memory. 
+And then finally, the value gets updated. 
+Totally valid in out of order, out of our 
+memory systems that we talked about up to 
+this point. 
+Nothing wrong here. 
+Okay, let's say, four and then one 
+happen. 
+So, goes the load. 
+Load the head. 
+Then, the value gets written. 
+And then, two and then three happen. 
+This is just completely out of order, 
+kind of no good semantics here. 
+So, this piece of code which looks like 
+it should have, the programmer would 
+assume to have good semantics. 
+Basically, it has no, no useful semantics 
+unless we define what those semantics 
+are. 
+

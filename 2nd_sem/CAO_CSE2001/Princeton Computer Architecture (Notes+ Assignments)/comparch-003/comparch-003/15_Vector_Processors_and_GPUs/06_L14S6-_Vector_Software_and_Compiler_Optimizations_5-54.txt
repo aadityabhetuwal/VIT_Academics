@@ -1,0 +1,135 @@
+So, it's an important aspect of all this
+vector work of how do you compile for
+this.
+Well,
+Thankfully, we actually have compilers
+that can do automatic vectorization.
+And one of the challenges here, if you
+look at this element wise multiply is, you
+have a loop that's running and another
+loop that's running and your compiler
+needs to figure out that it can merge
+those loops and run them at the same time.
+And, compilers actually have gotten pretty
+sophisticated.
+If you look at the, the, the Craig
+compiler now, it can basically do outer
+loop parallelism, it can do certain types
+of parallelism with loop carry
+dependencies and vectorize all this.
+But it requires some pretty deep compiler
+analysis.
+This especially works well for things like
+Fortran codes where you don't have random
+pointers pointing in different places.
+C codes get a little bit hard.
+So, what if you don't want to execute the
+same code in all the elements of your
+vector?
+Well, that could be a problem.
+So, here we have a piece of code which
+loops over some big vector, this is C
+code. And, it checks to see whether the
+value is greater than zero.
+And only if it's greater than zero does it
+do this next operation.
+So, there's been extensions to vector
+processors that have allowed effectively
+predicates or masked operations on a per
+element basis of the, of the vector.
+So, the way you would do this is you would
+actually load the entire vector, set a
+mask register where you have a one or a
+zero which is the result of this
+comparison on an element to element basis,
+And then, do the operation. And you can
+basically put this together with these bit
+by bit comparisons and have slightly
+different control flow for the different
+elements within a vector.
+And, just sort of, showing the
+implementation of this, if we looked at
+how to actually implement masking, one way
+to do it is, you actually do every
+operation.
+So, let's say, you're doing multiply and
+your vector length is 64.
+You do all 64 but you just disable the
+right to the register file on, the ones
+that have the mask bit turned off.
+Or, you could have a much more fancy
+implementation which takes out the work
+that doesn't have to be done.
+But, the control on this is, is quite a
+bit harder.
+And, I would say, that this is probably
+more common, just the simple
+implementation.
+And the, the,
+This is, this is harder largely because,
+if you have the resources anyway, say if
+you have multiple lanes, it might just
+make sense to go execute a sort of a null
+operation later.
+Some other things that are pretty common
+in vectors is you want to have reductions.
+What I mean by reduction is let's say, you
+have this array and you want to add all
+the elements in the array into a variable.
+There's a sort of a vector to scalar
+operation You can't really do this on what
+we discussed so far.
+You can't do a vector operation which will
+actually operate on all of these values
+and, and try to do something useful with
+it.
+But, what you can do is you can try and do
+some software tricks.
+So, one of the software tricks is, you
+take a whole vector, and instead, call it
+two vectors.
+Sort of, cut it in half, and then overlap
+them and do parallel adds.
+And then, you take the results of that.
+You take, it was someplace else in there,
+And you take those two parts and you
+overlap them, you do adds.
+So, you could do lots of parallel adds and
+effectively build a reduction operation,
+by building a tree of adds.
+So, if we have our vector here, we would
+cut it in half and add this part with this
+part, and then the result would be half
+the size. If we cut in half we had this,
+part of that part, the result is half the
+size and cut again, we do, we keep doing
+adds. So, we can use our vector arithmetic
+to effectively do a reduction.
+So we're about out of time here.
+Talk about scatter gather, this isn't that
+deep.
+The implementation of this can be very
+hard though.
+Um,,
+A of d of i. So, we want to index base off
+a index of the vector.
+This is called gather.
+Scatter is the other direction when you're
+doing store with a double lead-in, a, a,
+a, a, index of a index.
+And, in the instruction set in your book,
+they actually have an instruction to do
+this.
+Lvi here,
+Well, what that basically does is it takes
+each element of vector D here, indexes
+into vector C, and then that is that
+result.
+Problems with this is, of course, your
+memory layout is not going to be all
+nicely laid out in memory.
+You're going to be sort of jumping around
+in memory.
+Let's, let's stop here for today, and
+we'll talk a little bit more about vectors
+and GPUs next time.

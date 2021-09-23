@@ -1,0 +1,3 @@
+﻿L10S3 Solutions:
+
+Quiz 1: Codes typically execute loops and by definition, a loop needs a backward branch.

@@ -1,0 +1,279 @@
+Okay, let's look at the issue logic here
+and a pipeline diagram.
+So here we have OP A, B, C, D, E, F, so we
+have straight line code, no branches.
+And we have things flowing down the pipe.
+And we have our nice pipeline diagram.
+And one of the cool things is now that we
+have a two wide superscalar, we can
+actually violate a rule that we had
+before, which said two things cannot be in
+the same pipe stage at the same time,
+temporally, cuz time, time runs from left
+to right in this diagram.
+So here we have two things to do.
+You could go to stage two operands, or two
+operations or two instructions in the
+fetch stage.
+And, we're just gonna name, because we
+don't have a great name for these things,
+we're gonna call these A and, A0 and A1
+and B0 and B1 to represent the different
+execution unit stages.
+So in an ideal world, this is pretty
+sweet.
+In this, in this at least for this code
+here, we actually have a clocks per
+instruction of one half.
+That's pretty awesome.
+And as I said, we can have two, two
+instructions in the same stage of the
+pipe.
+Okay.
+Let's look at a little bit more complex
+code sequence here.
+We have add, loads, some more loads, an
+add, a load.
+Your issue logic, that swapping logic
+actually will have to move instructions
+around in this case.
+So we have this add and this load.
+Well this is actually easy.
+The add goes to the A unit, the load goes
+to the B unit.
+No problems there.
+Okay, so now we have the load.
+Uh-oh, loads in, we fetched it and it's in
+the instruction register zero.
+That means it wants to go to the A pipe,
+but we need to swap these two.
+So, you can see here, this is how we draw
+this.
+We actually say this add is going to the A
+pipe here and that's the opposite of
+what's going on there.
+But, there's still those stalls going on,
+at least in this example.
+And then finally here we actually are
+going to get a structural hazard.
+And the structural hazard introduces a
+stall.
+So, we fetch these two loads
+simultaneously, or we can only execute one
+load at a time.
+So, we need to stall one of the loads in
+the decode stage and push that out of the
+limit.
+So, it actually has a different pipeline
+diagram than the no stall, or the no
+conflicts, no structural hazard example.
+Okay, so a let's look at a, little bit
+more complex example here, a dual issue
+data hazard.
+What happens when you have data hazards?
+So unfortunately when you have data
+hazards you can actually, this is without
+any bypassing.
+This, this first, this first example, this
+first two instructions here don't have any
+data hazards.
+But here we have a write to register five,
+and a read from register five.
+And, this is a read after write hazard.
+And because we're not bypassing in this
+pipeline yet, we actually have to stall
+the second instruction waiting for that
+first one, even though we could have
+potentially executed at the same time, but
+there's a real data hazard there.
+So, we need to introduce stall cycles into
+the second instruction.
+Does this make sense to everybody?
+So, we're going to push out that add.
+If we have full bypassing, we still need
+to add stalling potentially.
+So no we don't have to wait for this value
+to get to the end of the pipe to go pick
+it up in the ALU but we can pull it back
+because we can bypass, let's say the add
+result after a zero, and what you see here
+is the same instruction sequence.
+But now it's bypassed from A0 into the
+decode stage and we can start going again,
+quicker.
+So bypassing is really helping us here,
+and it's crossed with the superscalarness,
+if you will.
+So wh-, wh-, what we mean by order matters
+is that here, we've interchanged these
+last two instructions.
+So we just flipped them, and we turned
+what was a write, excuse me, a read after
+write hazard into a write after read
+hazard, and because of that this actually
+pulls in by one cycle and we don't get the
+stall.
+So, just by changing the ordering in the
+instructions, it will change the data
+dependencies and that will actually change
+the ordering and change the execution
+length.
+Does that make sense, everybody, why we
+can actually interchange two instructions,
+and the data dependencies completely
+change, and we need to worry very
+different things about the data hazards.
+Okay, so I want to briefly wrap up about
+fetch logic and alignments.
+So this is, someone was alluding that, I
+think you were alluding to this.
+Let's look at some code here, and it's
+going to take jumps.
+So execute some instructions.
+So this is the address, this is the
+instruction, and we have a jump here to
+address, 100 hexadecimal.
+And then we execute one instruction, OPT
+E, and we jump to 204 hexadecimal, and
+then we jump, we execute one instruction
+and execute to, and jump to 300 and, or
+3OC hexadecimal, and we just execute some
+stuff.
+Here is our cache, and let's say our
+cache, the block size is four instructions
+long.
+And we're going to look at how many cycles
+this takes to execute.
+So let's say there's no alignment
+constraints in the first, in the first
+case.
+So, in cycle zero here, we execute these
+two instructions, and we, and we fetch
+them from the instruction cache, and
+they're, they're aligned nicely together.
+There's nothing sort of weird going on, we
+just go pull them out.
+Okay, these next two instructions eight
+and C, those, those are next to each
+other, that's, that's great.
+And then, and then we jump somewhere else,
+to 100, and we're going to execute these
+two instructions that are next to each
+other and they're at the beginning of
+their lines, so that's great, no problem
+there.
+Hm.
+Okay.
+Now we start to get some weird stuff.
+Now we start to jump to sort of the middle
+of a cache line.
+In, in this example here we jump to sum
+address two or four.
+So our block size is said four
+instructions.
+We're sort of jumping, not to the first
+instruction in that block.
+So when he, Fully fleshed out, fetch unit,
+lets say, you can execute with any
+alignments.
+So, life is easy.
+We can just, fetch and we can execute
+these two instructions at the same time in
+the same cycle, in cycle three, we fetch
+both of those.
+Hm, that could get harder if we actually
+try to put some realistic constraints in
+that.
+Okay, now let's jump to a three the end of
+a, end of a cache block and we're gonna
+try to fetch these two instructions at the
+same time.
+So one is on this cache line, and one is
+on that cache line.
+Do we need to fetch two things from our
+cache at the same time?
+Yeah, we do.
+If we actually wanted to try to execute
+this instruction and that instruction at
+the same time.
+Let's say, for right now, this issue logic
+actually allows us to do that.
+Somehow, it's a dual ported instruction
+cache, we'll say.
+And then, finally, op five here.
+Or, 314, executes last.
+And, and it's just sort of fall through.
+There's no jumps or anything happening.
+So some things that can be really hard to
+actually make work out right are fetching
+across cache lines and possibly even
+fetching randomly inside of the cache
+line, depending on your fetching fetch
+unit logic.
+And, and like I said, we might need extra
+ports on the cache.
+Here, here is the this code executing, and
+as you can see we don't actually get any
+introduce stalls, which just sort of
+executes this, then this, then this, and
+this, and we execute two instructions
+every single cycle.
+Now let's look at lists of alignment
+constraints.
+So, here's our, here's our original
+example, and let's look at what, what,
+what we could possibly try to execute
+here.
+So we're jumping through call.
+We, we only use these two instructions
+from the middle of the line.
+So let's say we can only fetch a half of a
+block at a time or something like that in
+each cycle, because that's how wide our
+cache is.
+So what you might have to do in some
+architectures if you have alignment issues
+like that, and let's say you are not
+allowed to have a straddle.
+You'll actually have sort of extra data
+fetched that you are just never going to
+use.
+You are just throwing away this bandwidth.
+And also the cycles of this change.
+So, let's, let's look at this same code
+sequence and look at what happens when we
+go to execute it.
+So going, going back to this, so we
+execute, op A and op B.
+Okay, let's just go down the pipe.
+Okay.
+Life is, life is good.
+We get to this address eight here, eight
+hexadecimal.
+Well, we're going to swap that, because
+the jump needs to go down pipe A.
+But otherwise things, things are okay.
+Well, now, now we jump to, to the middle
+of a, of a line here.
+Hm, that starts to get more interesting.
+And we're gonna basically end up wasting
+cycles.
+So this will take seven cycles where
+before, we had this taking only five
+cycles.
+Cuz we've effectively introduced dead
+cycles, where we fetched instructions we
+just didn't use.
+So the three X's here show up as
+instructions we fetched.
+So like, for instance, this instruction
+or, the instruction at address 200 is
+that.
+We fetched it and we're not using it.
+And we fetched this two and we weren't
+using either of them, so having a complex
+fetched unit or not fully bypassed, or not
+fully alignment-happy fetch unit can cause
+some serious problems in our performance.
+Let's stop here for today and we'll talk
+about the rest next time.

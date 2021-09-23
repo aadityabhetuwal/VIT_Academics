@@ -1,0 +1,559 @@
+Let's start off our third topic so far in
+our review of computer architecture.
+So this is, still review at this point.
+As I said at the beginning of, of this
+class, if you know everything up to this
+point in the class, that's a requisite or
+a prerequisite for this course.
+We're just going to blow through
+everything you should know in order to
+start the much more detailed, content
+later in the cour-, this course.
+We talk about real processors you're gonna
+be building.
+So things like out of order, multi issue,
+multi core, microprocessors versus simple
+little processors you should have built in
+previous classes.
+So, this is ELE 475 at Princeton
+University.
+We're talking about computer architecture,
+and today we're going to be reviewing
+caches.
+And this is the last topic cache review as
+I said before we move on to a new material
+and the new material we're gonna be moving
+onto very soon is superscalars or
+processors which can execute multiple
+instructions per cycle.
+So let's take a look at the agenda for the
+cash review lecture.
+We're going to start off by talking about
+memory technology and motivate the
+different.
+Or see we start off talking about memory
+technology and use that as a motivation
+for caches.
+So we're gonna look at different types of
+technology, DRAM versus SRAM, what the
+transistor technologies are behind them
+versus or, or why we have these different
+memory technologies?
+Why don't we just have one?
+What are there different ways to store
+information?
+Why, why don't we just use register files
+for everything?
+Or simple flip-flops for everything?
+Then we're gonna motivate cache design or
+why we have caches?
+So let's define what a cache is, a cache
+is a little piece of memory that you stick
+next to something which does not have all
+of the information that you're trying to
+store.
+Instead it has a subset of information and
+hopefully it has a useful subset of that
+information.
+We're then going to talk about
+classification of these different caches.
+So we'll put names and labels on sort of
+different cache architectures.
+So we're gonna talk about associativity of
+caches, we're gonna talk about size of
+caches, we're gonna talk about whether the
+cache has multiple things that could fit
+in one set or not.
+And we'll talk a bunch more about that.
+And then we'll have a very, very brief
+introduction to cache performance or some
+of the things we should know about why
+cache is going to give you good
+performance right now.
+Later in this course, we're gonna actually
+have two more lectures about advanced
+caches.
+Advanced caches, we're gonna talk about,
+more sophisticated topics with, how do you
+build an implement actual caches for very
+high performance processors?
+So let's start talking about memory
+technology.
+Okay.
+So, so let's, let's look at a, a memory.
+Or something that can store multiple
+values, and give it back some data.
+So here we have a very naive, flip flop
+based, register file.
+You'd probably never actually build this
+in a modern micro processor.
+But, let's, let's look at that sort of
+conceptual idea here of what, what a
+memory really is.
+Here we have four entries, that are flip
+flops.
+Maybe its multi bit wide?
+So its maybe, I don't know, lets say
+these, each of these registers are 32 bits
+wide and each of these buses is 32 bits
+wide.
+And we're gonna sort of select, based on a
+readdress some value.
+So we can choose, you know, this is two
+bits here, we can choose one of four
+places.
+We have right data that comes in and we
+just sort of broadcast that to all of the
+registers.
+And we write depending on the right
+address here and the clock.
+And, you know, if the decoder tells us to
+light this up and the clock clocks the
+actual element, it will load in the value.
+You may even have a write enable on
+something like this where that would also
+feed, let's say, into the end dates here.
+So it'll say, if it writes not occurring,
+don't actually load anything into these
+registers.
+Okay, so that's really, really naive.
+Let's take something a little bit more
+complex and how these things sort of start
+to actually, actually look.
+Okay, so now we're gonna transition from
+talking about this naive register file and
+see what people actually built.
+And, the first thing you should realize
+is, if you go to build something that's
+naive register file you have lots and lots
+of bits as you add more and more bits
+here.
+Here we only have four, but if we go to a
+thousand bit register file this
+multiplexer goes really big and if you
+stack these all up a thousand long your
+aspect ratio your x versus y or the size
+when you go to lay it down on a piece of
+silicon is, is very long and very narrow.
+So you will end up let's say with a 1000
+bits, one bit tall.
+And that does not lay out very well, and
+it's not necessarily good for speed or
+from a area perspective.
+So why is it not good for speed?
+Well, it's not good for speed because
+wire, wires have cost and take time to
+propagate.
+So you have to propagate from 1000 bits
+away or 1000, bit cells away, all the way
+over to the multiplexer.
+Your cycle time is not gonna be very fast
+versus if you would somehow make it more
+square or more rectangular, the distances
+actually are minimized.
+So this is how we end up with a rays or
+memory rays.
+And we're going to look at a memory array
+for register file first.
+Let's look at a register file array, and
+how you could possible actually go build
+this, because it's a little bit different.
+We're not going to use fully complimentary
+logic here for everything.
+Instead we are going to start to
+transition to something where we will have
+more of analog circuits connecting our
+bits to respective buses.
+And, we're also going to change how we do
+the decode.
+We're not gonna have a full multiplexer
+here, or a full decoder here.
+We're going to, split that into different
+portions.
+So here we have an example array.
+It's a square and we, each of these little
+boxes is a single storage element, bit
+cell.
+And the address comes in here and that
+goes up into a row decoder, which will
+turn on one of these wires at a time, and
+these are called word lines.
+And we'll have both read word lines and
+write word lines.
+This is still just for register file.
+But we're actually gonna split out some of
+the bits here of our address and send it
+over to here, which is the column decoder.
+And that's going to choose, this is, this
+column decoder is just a multiplexer, very
+similar to this multiplexer.
+But it's gonna only have a subset of the
+bits.
+Instead of having all of the bits that are
+together here going through this, this
+multiplexer and having N bit address
+coming into it, instead has a, a subset of
+that.
+So, in this diagram here, we have a four
+bit wide readout, or write, and we're
+going to have one, two, three, four, five,
+six, seven, eight bits in, bits across
+here.
+So we're gonna need a two to column
+decode.
+So this is a one bit decode here.
+But as a, this is just a toy example.
+As we go to build sort of 1000 bit arrays
+or megabyte arrays or gigabyte arrays or
+giga-bit arrays we're gonna have lots of
+bits coming here and lots of bits there.
+But the, the ideal one to get across is
+you split off a portion of the address to
+the word-lied creation and a portion of
+the address to your column decode here.
+And this register file, I wanted to just
+sort of walk through.
+What this diagram over here, the circuit
+little diagram is.
+Here we have two cross coupled inverters.
+And as you'll see we don't have full
+complimentary logic connecting these two
+things, but this is, this is a stable
+storage cell.
+If you give this power it'll store data.
+If we wanna do a read, we need to connect
+to the output of this to read bit lines.
+And these read bit lines are these
+vertical wires running here.
+And we're gonna use, we're gonna do this
+with effectively a pass gate here.
+When we energize the read word line, it
+connects the output of this gate or output
+of, it's gonna be this inverter here to
+the read bit line.
+And if we wanna do a write, we're going to
+turn on, not the read word line, RWL here.
+But we're trying the write word line, WWL
+and what that's gonna do is it's going to
+connect both the Q and Q bar to the right
+bit line.
+And, now we get into this sorta some
+analog, magic here.
+But, in order to have this work, what
+we're gonna do is we're gonna put, we're
+gonna energize, or, or ground the write
+bit line so that it's stronger than what's
+going on of these two, or stronger than
+what either of these inverters can drive.
+So we overpower the inverter.
+And we can flip it, let's say from a zero
+to one, or a one to a zero.
+So this is not traditional sort of
+complementary logic, but this how we
+typically build register files.
+Small little arrays that are close, let's
+say in to a processor.
+Now, lets move to something, a little bit
+larger.
+We are gonna look at, memory arrays.
+So, these are things like SRAMs.
+So we go from register files, something
+that we'd hold our general purpose
+register for processor in.
+And we are gonna move out a little bit and
+talk about small arrays, something like
+caches, maybe a kilobyte of data, and
+these are typically built out of SRAMs.
+Same structure, we're gonna change the
+cell a little bit here.
+The main difference is the cell we're
+gonna have two sets of bit lines.
+We're gonna have bit and bit bar.
+And then we're gonna have two pass gates
+here and these are cross coupled inverters
+in the middle.
+And by doing this, we also have this, this
+word line running the other direction
+which connects this cross couple inverter
+to the bit lines.
+By having these, SRAM arrays typically,
+what happens is, because the, because you
+have bit and bit bar, you can have these
+be even weaker than normal, and when you
+go to build something like an SRAM down
+here, in addition to the column decode,
+you're also gonna have, a word called,
+sunsamps.
+These are basically operational
+amplifiers, where you hook the bits and
+the bit bar to them, and it can sense a
+very small difference between the bit and
+bitbar.
+And by doing this, you can effectively
+have a very low difference between bit and
+bit bar, and be able to sense it at the,
+at the other side.
+And one of the differentiations I wanted
+to make between a register file and this
+SRAM here is that the register files, many
+times are designed to be sort of
+multi-ported.
+But in this diagram here, these bit lines
+get reused.
+They are both read and write bit lines.
+So, we have effectively built a
+single-ported SRAM.
+Having said that people do build
+multi-ported SRAMs, and single ported
+register files, but conventionally you
+build a register file when you need speed
+and you need lots of ports and you build
+an SRAM when you want to be more dense in
+your storage.
+Okay, so now let's move to a piece of
+technology which is in all of your
+computers or register files and SRAMs are
+all in your computers, but this is
+something that you can actually like see.
+'Cause usually the SRAMs and the register
+files are all integrated onto your
+centralised microprocessor, you don't
+actually get to go, see it.
+But here we have a stick of DRAM.
+So let's see what this is.
+This is PC100 DRAM and this old stuff.
+This 128 megabytes of RAM.
+Nowadays your computer has, at least this
+laptop here has four gigabytes of DRAM.
+And different people have different
+amounts, but DRAM on the contrast with
+SRAM, you still go and build an array out
+of it.
+But the actual storage looks very
+different.
+The bit cell storage, instead of being
+some form of cross coupled inverse.
+Instead, you're gonna have one transistor
+which hooks a capacitor into your bit
+line.
+Now you may ask yourself how do you build
+a capacitor?
+The capacitor typically you'd need, you
+know, two plates or two pieces of metal
+with some dielectric in the middle.
+We can store charge.
+Well, what's inside of that RAM looks very
+odd.
+It, it is a capacitor, but it's a very
+oddly shaped capacitor.
+Typically what'll happen is you build
+these very, very deep trenches very long
+and skinny trenches.
+You want the skinny cause you wanna put
+them very close together, cause if you
+want gigabytes of gigabytes of RAM, the
+smaller you make it, the more you can
+shove on a, a single piece of silicon.
+But you have this really long and narrow
+trenches here and you have two plates of
+metal and then a dielectric in the middle.
+So in this case here, we have, I think,
+there's two metal sort of plates here and
+then there's some dielectrics sort of
+shoved in between there, but you can't
+really see it in this picture.
+And then all the actual logic, is up here.
+So, in this diagram here, this is the
+transistor.
+And [inaudible], and here's the, the,
+depletion region, here's our word line.
+But basically, that's, that's this
+transistor here.
+So, we're going to be connecting the
+capacitor which has a very funny aspect
+ratio, very tall to this bit line.
+And to give you some idea.
+This is a slice through the silicon wafer.
+This is not a plan view or top view.
+Top view, you would just see the, looks
+like a transistor and then some poly plug
+here running vertically it would look
+really small.
+But this is a slice.
+And the reason we do this is cause we
+wanna see that the actual capacitor is
+very long, very deep into this.
+And what they want to point out is this is
+typically really hard to go build on your
+standard CMOS process.
+So this is hard to go build on something a
+logic process.
+You have to go build this, let's say, in a
+special DRAM only manufacturing process.
+So you want a, it's sometimes hard to mix
+that.
+There are some technologies which allow
+you to mix them, but when you do that,
+people haven't really designed ways to
+make them as small.
+But DRAMs cells are small.
+Okay, so why, what are the advantages of
+DRAM?
+Why are we even talking about DRAM?
+Well, it's a lot easier in DRAM to have
+large amounts of storage.
+You can have big amounts of storage in the
+same area.
+Because instead of having, I don't know,
+in SRAM, six or eight transistors for each
+cell.
+Instead, we now have one transistor and
+one capacitor.
+So it's actually less.
+Now, how does this circuit work?
+Well logically, what we're gonna do is
+we're gonna store data, or store charge in
+the capacitor.
+So we're gonna connect to the capacitor to
+the bit line.
+We're gonna either put a one or a zero on
+the bit line.
+And then, we're gonna disconnect it and
+it'll hopefully store the charge.
+And at some point in the future, we're
+gonna connect it, and we're gonna
+discharge it into, the capacitor into the
+bit line, and read out the value.
+And we still need something at the bottom
+here, which is very sensitive to read out
+this bit.
+And the reason is cause the capacitance
+that you can store in one of these little
+capacitors is very small amounts, so
+there's a whole lot of charge in the, in
+the circuit.
+Hm.
+Okay.
+So what is the cell, what's, what's the
+problems with this?
+Well, first, one of the major problems
+with this, is you're gonna end up having
+this capacitor discharged and charged and
+capacitors as you may recall, don't always
+store their charge, that well.
+They might slowly, lose that charge, over
+time.
+And what this turns out to be, is you're
+actually going to have to, refresh the
+DRAM.
+So, you might have heard of DRAM refresh.
+But typically, you know, in a modern,
+modern day computer, your, your DRAM will
+only hold the data for, maybe a few
+seconds.
+It used to be that it, it only held it for
+a few milliseconds.
+Most RAM's actually decent now and you've
+probably seen some tacks, the people have
+built around this.
+Like there's some encryption in tacks
+where people will effectively turn off a
+computer and then pull the RAM out and
+stick it in a different computer and the
+DRAM out and stick it in a different
+computer.
+And the DRAM will still hold the charge,
+still hold the information even if you
+remove the, the electricity or remove the
+power from it because it's has a bunch of
+little capacitors that will store that
+charge.
+That's, that's a funny little case with
+this DRAM.
+Ends up being a negative.
+But we're really doing this to have more,
+more space to, to, to store data, because
+each of these bit cells is a lot smaller.
+Okay, so I like this diagram, this is, one
+of the more key diagrams in today's
+lecture, here is, showing the relative
+sizes of SRAM, versus DRAM, and different
+heights of SRAM versus DRAM.
+So let's start off here with.
+An SRAM cell built out of logic, a logic
+processor, logic CMOS technology.
+So that's, that's this one here.
+This looks to be six transistors, so sort
+of optimized SRAM monologic process and
+this is pretty big.
+Lets contrast that though, with this one
+over here, we have DRAM on a memory
+specific process and it's tiny, so it's
+not only one transistor versus six
+transistors.It's actually more than six
+times smaller because they can optimize
+this.
+They can go into the Z dimension here, go
+in out of the board.
+Because, that's, that the trench capacitor
+goes down into the substrate.
+And some of the other interesting things
+on, on this diagram here we have a DRAM on
+an Asic process, or DRAM on a traditional
+Asic process, which is, which is here.
+Here we have six transistor cell with
+local interconnect.
+It's a little bit smaller, so what that
+means by local interconnect is you can use
+polylayer of your process the poly silicon
+layer to do interconnections.
+So you don't have to use wires for
+everything.
+So it gets a little bit denser, the layout
+gets a little bit denser.
+And I really like this bottom one here.
+Yep, the bottom one labeled A is not.
+It's not four different things.
+Instead, what that is, this is a fully
+complimentary logic cell, a storage cell
+built out of gates.
+So, it's some number of gates put together
+here.
+So, this is, what's this trying to get
+across here is, that the addition of
+custom logic cells, here, this one this
+one, storage cells in your library is
+really important.
+Because, otherwise your RAM's going to be
+a lot, lot larger or you won't be able to
+fit as much memory on your machine.
+Okay, so to wrap this memory technology
+section up, I wanna talk about some of the
+tradeoffs.
+So in computer architecture is all about
+the tradeoffs.
+And, why would we use one type of
+technology versus another type of
+technology?
+So, what are our tradeoffs here?
+Or we can go from fast, close, small
+things.
+So things like latches and registers.
+At least sort of put them together into
+bigger, we can put together bigger things
+like something like a register file and
+then SRAM and have different technologies
+even.
+And as we sort of get into bigger and
+bigger memories, we got a lot more
+capacity, but it takes longer to access
+them, kinda of definition And typically we
+have less bandwidth.
+But if we have, small things, we have low
+capacity, low latency and very high
+bandwidth.
+So it's sort of a tradeoff of capacity
+versus the other positive aspects and
+depending on where you put it in your
+memory system.
+You might want to trade these off

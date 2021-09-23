@@ -1,0 +1,323 @@
+So let's, let's think about our snoopy 
+protocols that we've talked about, our 
+bus based protocols, and the performance 
+and the asymptotic performance 
+requirements of them. 
+So, what are the challenges of a snooping 
+protocol? 
+As we discussed before, as you add more 
+people or more processors to the system 
+you have more entities shouting on one 
+shared media. 
+And you need to hear the shouting. 
+You can't just forget some, some, some 
+shout because you need to snoop that 
+against your vocal cache. 
+So when ever another core takes a cache 
+miss, you need to snoop that against your 
+cache and make sure that you don't have a 
+copy of that or that you have to 
+invalidate for instance overplay back of 
+some data or do something other 
+invalidation coherence protocol 
+adjustment. 
+So, 
+what's, what's annoying about this, if 
+you sort of look at the amount of 
+bandwidth you require on your bus, all 
+cache miss need to go across that bus 
+everyone needs to look at that, and 
+everyone needs to have a port that has 
+enough bandwidth to look at all those 
+transactions on their cache. 
+So, if we go to look at this, our bus, if 
+we want to sort of keep up with the same 
+amount of bandwidth of cache misses per 
+core as we add more cores to the system 
+is going to grow order N, where N is the 
+number of processors. 
+[COUGH]. 
+Because though you can compute this 
+because everyone let's say has the same 
+number of same amount of cache misses 
+going on and you want to have the same 
+cache miss rate and you just multiply it 
+by N. 
+Three each, each course is going to have 
+that. 
+Well, that will be fine when N is eight, 
+but if N goes to a thousand or a million, 
+you're going to have some serious 
+problems with that, it's a very, very big 
+bus. 
+And it's not just straight badnwidth, you 
+also need to have effectively somewhere 
+arbitrate for the bus and you need to 
+have atomic transactions going across 
+that bus so it may be hard to actually 
+even if you have a very high bandwidth 
+bus you may not have enough this cycles 
+in order to operate in the bus. 
+So, a solution this, is, we start to look 
+at something we're going to call 
+directory cache coherence and directory 
+protocols. 
+And the idea in a directory protocol, 
+that the key idea here is that instead of 
+broadcasting your invalidations to every 
+other core in the system, or all cache in 
+the system, every other core in the 
+system. 
+Instead what you do is you go talk to a 
+location that we're going to call 
+directory. 
+And this directory is going to keep track 
+of which caches have that data. 
+And what's nice about this is now if you 
+take a cache miss you can go ask the 
+directory well, who has all these 
+different, who has this cache line. 
+And if only one other core has the cache 
+line let's say readable, it will and 
+you're trying to take it into an 
+exclusive access trying to write to it. 
+You only need to invalidate only one 
+location instead of sending that data to 
+all end processors in your system. 
+So we've cut down what we, was a 
+broadcast system into a point to point 
+system. 
+But the overhead that we have to keep now 
+is we need to track, in a directory. 
+All the locations that have or all the 
+caches which could have a particular 
+cache line in it. 
+And, and we'll, we'll go through a much 
+more complicated example of that but 
+that's the, that's the overall key idea. 
+And this is going to turn what was a 
+broadcast into a point to point 
+communication. 
+And we can use point to point 
+interconnects for this. 
+Another good point of scalability here is 
+you can actually have different 
+directories. 
+So you don't have to have one big 
+monolithic directory. 
+Instead you can segment the address space 
+somehow and depending on the address that 
+you have you can go to a different 
+directory. 
+And, by going in these different 
+directories, you can actually increase 
+the bandwidth, to your directories. 
+Okay, 
+so let's see how this fits into like, a 
+block diagram here. 
+We have CPUs are trying to communicate 
+with other CPUs via shared memory. 
+And they go check their cache first. 
+If it's not in the cache, 
+before they would have communicate or 
+cross a bus, and everyone would have to 
+look at that traffic but instead, in our 
+directory cache coherence, they'll send a 
+message from the cache. 
+To the directory controller associated 
+with the address so you're going to send 
+a message here to this directory 
+controller. 
+And they directly controller is going to 
+keep track for every single line in or 
+the, the basic directory controller here 
+is going to keep track for every single 
+line and memory. 
+The list of possible other caches which 
+could potentially have that piece of data 
+and we're going to call that the sharer 
+list or the share list. 
+And this is. 
+Right now, if we look at this, might 
+still be a uniform communication network. 
+So, let's say, in here, you have some 
+omega network. 
+Anyone can talk to anyone else and the 
+latency through it is fixed. 
+So this is still a uniform memory access 
+system. 
+We've not. 
+We didn't have to go non-uniform here. 
+So, no cache is necessarily closer or 
+farther away to any other piece of memory 
+in a system like this. 
+[COUGH] So this is kind of our naive 
+directory cache coherence protocol. 
+But what's still nice here is we don't 
+have to broadcast. 
+We can our, let's say our omega network, 
+or mesh network, or something else on the 
+inside here. 
+We'd like to send from this cache 
+directly to this controller. 
+If no other cache has it. 
+Let's say, readable or writable, or 
+anything like that. 
+It can just respond back with the memory. 
+The, the data from memory. 
+If not, instead of invalidating and 
+broadcasting an invalidate to all other 
+cores. 
+Instead now, the directory can just say. 
+Oh, this core, 
+this cache and this cache have copies. 
+I need to send two messages. 
+One to this cache, one to that cache, and 
+validate them. 
+Wait for the responses and then reply 
+back with the data. 
+So, we can, we can decrease our bandwidth 
+that we use in the common case across our 
+inter-connection network. 
+So I'm going to show a slightly different 
+picture here which is pretty similar to 
+the previous picture. 
+Well, you'll notice is that the memory 
+and the directory, now, are connected to 
+an individual CPU. 
+So why do we do this? 
+Well. 
+If you're building one of these scalable 
+systems some sort of like supercomputer, 
+it might be a good property that as you 
+add more CPUs to the system, you also add 
+more RAM memory. 
+And maybe more directory storage or 
+something like that. 
+Another positive of, of, of a design like 
+this is this CPU now is actually close to 
+this memory bank. 
+And we can try to take advantage of that. 
+So one, one question comes up, is how can 
+we take advantage of that? 
+Anyone have any thoughts? 
+Okay so, shared data, we don't know where 
+it's going to be accessed. 
+It could be accessed by all 6 CPUs and 
+all 6 caches here. 
+But it's very common that your stack for 
+your program is going to be only access 
+local and the instruction memory for your 
+program is only going to be access local. 
+So you can potentially have performance 
+benefits by putting the instruction in 
+memory or excuse me, 
+instruction and stack and maybe even some 
+portion of the heap close to this core 
+because then you can access that really 
+quickly, but only shared data has to go 
+across this interconnect. 
+[COUGH] And will or in fact that has a 
+fancy name. 
+So systems where some data is close and 
+some data is far away are called Non 
+Uniform Memory Access or NUMA and you 
+might see this actually even in your 
+desktop processors are actually 
+Moving towards numerous systems. 
+They're, they're, some of them are are 
+actually 
+If you look at some of the. 
+I believe it's the A and D chips today 
+are already numa systems even on a on a 
+single di, or not excuse me single chip 
+with multiple dies or something like that 
+there, there actually two newer nodes 
+inside of them sort of one for one memory 
+controller one for one another memory 
+controller. 
+So, [COUGH] if you go into something like 
+Linux and you go look in the proc 
+directory, you can actually see there's a 
+sub-directory in there called NUMA. 
+And it'll tell you the configuration of 
+the different memory. 
+And then the OS can take advantage of 
+this, so can put for instance, the stack 
+and the instruction memory, for a 
+particular program, that's being used by 
+a particular core close to that core. 
+And then, maybe through some other data, 
+I can somehow choose some other, other 
+choice. 
+Now, 
+I want to make a point here, is that just 
+because the latency to memory is 
+different does not mean that your system 
+is a directory based cached coherent NUMA 
+system. 
+So you can still have non-directory-based 
+systems where some memory is close and 
+some memory is far away. 
+So you could still have a, basically a 
+bus, or something like that, or maybe 
+some other internet connection network in 
+there which is still a snooping protocol, 
+or effectively a snooping protocol. 
+But some data is close and some data is 
+far away. 
+But if you see this in literature usually 
+you feel people talking about directory 
+based cache coherent NUMA systems will 
+call them CC NUMA or cache coherent NUMA 
+systems, that's usually sort of means 
+that this is a cache coherent non-uniform 
+memory access architecture and usually 
+implies that directory based for the may 
+be other protocols that people are using 
+out there also. 
+Okay so I want to go back one slide here, 
+and I wanted to finish off talking about 
+one-topology, which is interesting. 
+And the difference between these two 
+slides is we went from a CPU here to 
+CPUs. 
+So this is a multi-core chip now and 
+where this gets interesting is you might 
+have a directory based cache coherence 
+system connecting multiple chips but then 
+inside of a chip you may have something 
+like a bus based snooping protocol. 
+So we actually mix and match these two 
+things. 
+And how we go about doing this is, if 
+caches, if cores inside of this one chip 
+for instance, after you go get data from 
+each other, they can just effectively 
+snoop on each other, but outside of that 
+your cache controller or may be your L3 
+cache for this particular chip, is going 
+to respond to messages coming from other 
+directories, like invalidation requests 
+and do something about it. 
+So there's basically a transducer there 
+between a directory base cache coherence 
+protocol, and a bus base snoopy protocol. 
+And this is pretty, pretty common these 
+days. 
+Especially given that you have a fair 
+number of multi core systems showing up. 
+And being used in more of these directory 
+based cache coherence systems. 
+And we'll talk about one of them at the 
+end actually the 
+SGI UV systems or UV 1000, which we'll 
+talk about, is a users off-the-shelve, 
+Intel parts, modern day sort of Core i7 
+parts mixed together with a NUMA, and 
+directory based coherence system to 
+connect all the chips together. 
+So there's a transducer from the external 
+snoop bus protocol to the directory based 
+coherence protocol. 
+

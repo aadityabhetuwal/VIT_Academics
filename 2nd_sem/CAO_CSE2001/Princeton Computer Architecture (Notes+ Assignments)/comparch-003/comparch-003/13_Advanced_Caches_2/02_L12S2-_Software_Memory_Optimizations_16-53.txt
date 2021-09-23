@@ -1,0 +1,614 @@
+Okay. So now, we get to, what can software
+do for my cache?
+What can software do for my memory system?
+Well, surprisingly, a lot.
+And compiler people actually do spend a
+fair amount of time thinking about this.
+So, one of the things you'll actually see
+is you'll see the compiler many times,
+Pad out data structures.
+So, if you disassemble a piece of Ccode
+that you have, you'll actually see a
+compiler many times will insert extra
+bytes, which wastes memory but it's there
+to improve performance.
+And how this improves performance is it
+will make the access patterns for
+instance, either not conflict in our cache
+or conflict in our cache in a strange way
+which is beneficial or will somehow
+exploit either temporal or spatial
+locality.
+So, you can do lots of tricks here to
+either improve spatial or temporal
+locality. one of the things I do want to
+talk about is sort of a hybrid software,
+hardware solution here that you can
+actually add instructions to your
+processor, to give hints.
+Actually, allow the compiler to give hints
+to the architecture.
+Whether to pull something into the cash or
+not pull something into the cash.
+So, many times the compiler will actually
+know, or programmer will know, I need to
+use this data, exactly once.
+Now, if you, if you know you only need to
+use that piece of data once, should you
+pull it into your cache?
+No.
+You're never going to reuse it.
+You're never, you're never going to get a
+cache hit, you're just going to take the
+cache miss and then some point later in
+the future, you're just going to evict it,
+and you're, and it's going to hurt your
+miss rate.
+So, instead,
+There's been an introduction actually,
+sometimes people call this non-temporal
+hints or no allocate bits, so one way this
+actually works out sometimes is certain
+pages in our memory system are marked as
+being non-temporal and it won't be
+cacheable.
+You can do this as lets say, six as
+actually non-cacheable bits in the page
+tables for instance.
+A finer grain way of doing this is
+actually having special load instructions
+or special store instructions which say do
+not ever bring this into my cache or do
+not pollute my cache with this data cuz I
+never intend to go read this again.
+And lot's of architectures have started to
+include this now as a optimization.
+Another fun thing you can do is if you
+know, if the compiler or the software
+system, or the programmer knows you're
+never going to use the data again, why let
+it sit there and rot in your cache?
+Get it out, get it out as quickly as
+possible, now there's a couple different
+ways to do this. So, one of the, the, the
+instructions that you can add to the
+architecture and have a software/hardware
+approach to this and you'll actually add
+something that I think that an X86 is
+called actually called flushing and
+validate.
+So, the idea is that you, you may still
+have dirty data in that location.
+And you want to flush it out the main
+memory or flush out my cache and
+invalidate the data in the cache.
+And by giving the compiler or the
+programmer primary control of this, you
+can effectively kill data that is in the
+cache and make it clean or make it clean
+and not valid in the cache,
+That line,
+So when you go to bring in new data, you
+don't have to evict something.
+So, you are effectively,
+It's kind of the inverse of prefetch.
+In software prefetch, you bring something
+in early.
+Here, we push something out early.
+And that, that can be a, a pretty big
+benefit.
+One of the other things is that not I
+don't quite have this on, I don't have a
+slide here, but there's a, there's a
+corollary to this.
+There's a, lots of times architectures
+will have instruction called basically
+it's just like invalid instruction.
+It'll invalidate the data.
+And this is, the semantics of this are a
+little bit, you have to be a little bit
+careful with, because this unviel does not
+flush the backing data out to main memory.
+You're changing architectural state with
+this instruction.
+So, if there was dirty data, you're
+effectively deleting that dirty data.
+Sometimes people will actually use
+instructions similar to that instead of a
+flushing and invalidate, if you know that
+you just have scratchpad memory where you
+don't need the backing data.
+And that's a way to, you don't even have
+to waste the writeback bandwidth to your
+L2, or your L3, or you main memory.
+You can just say this data is no, is now
+dead.
+I never want to use this again.
+So, that's typically an invalid
+instruction.
+And invalid instructions will lots of
+times take a cache line number instead of
+an address, sometimes it will take an
+address and it will validate the entire
+cache line. Unfortunately, you need to
+take the entire cache line or cache block
+and throw it out.
+And the, finally, the inverse instruction
+of that instruction which a couple
+architectures have it.
+I know Alpha has, I think, X86s later
+added it.
+I don't know what it's called on X86. on
+alpha, it's called it's like something
+called like write 064, I think is what
+it's called.
+Basically, what you can do is if you have
+some data and you want to write some data
+to your cache but you don't want to have
+to pull in the backing data,
+Because that will just effectively add
+bandwidth out to your main memory system
+or out to your higher levels of cache.
+Instead, what you can do is there's a
+special instruction which will just fill
+the whole entire cache line with zeros out
+of nowhere.
+And what's nice about this, is now that
+you've filled in an entire cache line of
+zeros, you can go do rights to those
+zeroes and fill in the useful data and
+never have to have gone an fetched the
+background data from memory.
+So, it saves bandwidth.
+So, these are all different hardware
+software techniques together that the
+compiler can use to optimize performance.
+But yeah.
+I do, do want to finally just one last
+thing about this improving spatial
+locality and temporal locality.
+If you ever go disassemble a C program,
+you'll definitely see structures.
+If you, if you run a C program with
+feedback driven compilation,
+You'll see that, a lot of times, they'll
+actually reorganize the data structure and
+languages.
+So, for instance, if you go look at the
+careful description of what C says about
+this some languages allow you to insert
+padding or reorganize some of the fields
+in a data structure.
+And by doing that, you can get more
+performance by effectively reorganizing
+data so you put all of the things that you
+access in a row, right next to each other
+and that will get you for instance spatial
+locality.
+Okay.
+So now, we get to go to some of the fun
+software optimization strategies up here.
+So, let's go to the, the, the first one
+here.
+I'm going to give you guys a second to
+look at this code.
+Look at the, look at the top example first
+or the top piece of code first.
+We have a loop around a loop.
+For j is less than N, for i is less than
+M.
+Okay.
+So, it's doubly index array x here were
+effectively striding through this array,
+somehow, or multiplying every element in
+the array by two.
+Seems, seems basic enough.
+So, one of the questions that comes along
+here is in C, the default layout of x,
+it's a doubly indexed array and we're
+walking, by the higher index. It's the,
+the inner, inner loop here.
+So, if we, if we look what's happening
+here, this is a 2D array x.
+And i goes that way and j goes, goes that
+way.
+Now, we're going and we're walking through
+this array by i. So, we're going to walk
+down, walk down, in that pattern.
+By default, in C, this array gets laid out
+such that the second index gets sort of
+laid out contiguously.
+And the higher order index gets laid out
+non-continuously.
+So, this would be addressed, let's say,
+zero, this would be address one, this
+would be address two, this would be
+address three, four, five, assuming these
+were all bytes.
+Let me come back over here, six, seven,
+eight, nine, ten, eleven.
+Unfortunately, with the way that the top
+loop is written, we're effectively
+hitting,
+What we're fighting, spatial locality of
+the cache lines.
+Huh, that's not good.
+Well, lo and behold, if we do the exact
+same operation and our compiler can easily
+detect this, and we just flip the order
+that we strived through the array,
+Instead, we'll go down through the array,
+and get spatial locality perfectly.
+So, by doing a simple loop interchange,
+life, life gets a lot better.
+Actually, before we move on here, I do
+want to say this brings up a good example
+of packing of data.
+I have something here which says,
+Which has six bytes in a row.
+Zero, one, two, three, four, five.
+Now, one optimization that compilers will
+many times do is they'll actually had out
+the structure.
+Let's say, out to eight bytes cuz it makes
+the math a lot easier to go strive through
+the array and indices.
+So, it's an example of one of the, the
+things that I showed before.
+It will also even sometimes have better
+cache performance.
+Cuz you'll pull an entire line at a time
+versus straddling different cache lines,
+if you have an odd, a non-naturally
+aligned structure like we had before.
+That may not happen in this,, it may not
+hurt in this example for the striving for
+the entire array.
+But other examples it could, it could
+definitely be harmful if you are trying to
+operate a lot within one row, for
+instance.
+Okay.
+Before we move off of loop interchange,
+does that oh, actually, what type of
+locality does this improve?
+Spatial. Yay,
+We,e we drilled that one down pretty well.
+Okay.
+So, let's look at our next piece of code
+here. For I, i less than N, we multiply b
+of i times c of i and deposit it into a of
+i.
+And in the next loop you, we do something
+very similar.
+We take c of i multiply by a of i and
+deposit it into d of i.
+Well, going to say, how does this happen?
+This seems like a brain dead way to write
+this piece of code.
+Yes and no.
+Maybe you do something in between here,
+Between these two four loops.
+And it may not be readily apparent to
+everybody that you can actually do
+anything about this, like because we have
+this piece of code here which goes and
+reads, I don't know, all they, for
+instance.
+Well, a compiler can recognize this, and
+actually say, well, we just wrote this
+entire array.
+And now, we go back and read this entire
+array and we read c before also.
+That's not, that's not very, very good.
+Because we're effectively, let's say, it
+caches out, assuming these arrays are
+large, we're going to read and see an
+element of c read an element of b deposit
+in a We're basically going to strive for
+the cache and these, all these three
+arrays are going to kick each other out.
+By the time we get back to here,
+A of zero is definitely not going to be in
+our cache.
+Maybe a of the last element will be in our
+cache, or a of N, n will be in our cache,
+or a of n minus one will be in our cache,
+but a of zero is not going to be in our
+cache.
+So, compiler can think real hard about
+this, and do what's called loop fusion and
+pull these statements apart.
+Such that you take b of i times c of i put
+it here and then use that, you're probably
+actually going to do that on a temporary
+variable, you're probably not going to do
+that with your main memory if you have a
+of i and a of i in statements right next
+to each other, but you still have to write
+a of i, we'll say for program correctness.
+And you take a of i and c of i and
+multiply them times each other and put
+them into d here.
+What's nice about this is you're actually
+going to bring in a cache line of b of i,
+we're going to cache line of c of i,
+Do the multiplication.
+You're going to bring in, well, you
+already have a of i cuz that's your
+destination and you just have that
+variable.
+And then, you can write it over into d of
+i, and strive through all those cache
+lines together.
+And effectively, you are not having to go
+re-fetch a of zero multiple times.
+Instead, you've fetched it once.
+And what's also nice is you don't have to
+go refetch, let's say, c of i twice, or c
+of zero twice.
+It's already there in your cache.
+Okay.
+So, question comes up here.
+What type of locality does this improve?
+.
+Temporal, yes. Because before we were
+bringing something into the cache, kicking
+it out of cache, bringing it back into the
+cache.
+Both these actually exhibit decent spatial
+locality actually already, and we're able
+to change the spatial locality of what's
+going on here, they're both striving
+through raised spatially.
+But temporaly, we don't have to kick.
+Every we don't have to kick a and c out of
+the cache effectively, twice, so we're
+bringing it into the cache twice.
+So, we are able to exploit a bunch of
+spatial locality here.
+Oh, sorry.
+[LAUGH] This will explain a lot of
+temporal locality here.
+Okay, so now, now we get to something a
+little bit more sophisticated, matrix
+multiply.
+Common thing for computers to do,
+You want to take at least in dense matrix
+codes or many algebra source codes.
+You take matrix a, you want to multiply it
+by matrix b.
+So, this is like traditional MatLab kind
+of code.
+You have some Matlab, you have a bigger
+array, you want to multiply by another
+array And we would take to the matrices,
+This applies to higher dimensional
+matrices also.
+But,
+It's easy to draw two-dimensional things
+on a two-dimensional screen.
+It's hard to draw four-dimensional thing
+on a two-dimensional screen.
+So, we'll start with that.
+Here's our naive implementation.
+We have we have three four loops going on
+here.
+And what we're doing is we're doing the
+traditional way that you learn how to do
+matrix multiplication.
+You take a row, multiply it by a column,
+And that's that spot.
+Take this row and multiply by that column,
+that's that result.
+This row by that column, that's that spot.
+This row by that column, there and you
+just work through it.
+And, you're basically, when you, let's,
+let's step through actually what the
+multiplication actually is.
+You take this value, multiply by that
+value, take this value, multiply by that
+value, and you continue going down and
+summing each of the multiplication
+results.
+And that's how we ultimately end up with
+this point here or this value here.
+So, this is the input, input, output.
+Okay, let's think about what this does to
+our cache.
+Okay.
+Let's, let's say, our cache line.
+The, these elements here are, are bigger.
+They're not just one byte, or one word.
+They're couple words, or, or, they're
+maybe like a long, long or something like
+that.
+They're a big data structure or a big, big
+value.
+And let's say, only three values fit in a
+cache block or a cache line.
+So, we go to this multiply, we basically
+have to bring in two lines for this one
+row.
+And then.
+Over here,
+If cache lines are arranged this way, as
+we go down this column, we're bringing in
+different cache lines and only using one
+value out of that cache line.
+Now, that's not, not super great.
+To make matters worse, let's go look at
+the output array.
+The output array looks relatively similar
+to the input array.
+We're running here, running here, running
+here, running here, running here, running
+there, so we're just kind of streaming
+through memory here.
+I don't know if you could do better.
+It's a, it's a good question.
+At least we're going at least only how
+this code is ran, we're going from left to
+right, so we're actually taking advantage
+of spatial locality.
+We could be doing, could be doing worse.
+But just to recap here, this is pretty,
+pretty poor cache axises. We're bringing
+many cache lines, they're all going to
+fight each other, especially for large
+arrays.
+And over here, we're pulling in line after
+line,
+Even though one of the interesting things
+is, after we do this multiplication times
+that, we're going to do this
+multiplication by the next one which
+sounds good, you know?
+This times this, this times this.
+We should be getting tempral locality
+here.
+But the downside is for very large size
+matrices.
+As I said, this can be multiple blocks or
+multiple lines long.
+What's going to end up happening here is
+this may conflict with something else
+farther down if it's, it's a very large
+cache, in its own array.
+You're just increasing the occupancy into
+the cache.
+So, we're going to talk about blocking,
+which will actually make it so we can
+actually only read one block at a time and
+do the multiplication in multiple steps.
+Okay. So, the cool get a little more
+complicated when we go to blocking our
+cache or blocking our memory multiply.
+Sometimes people call this tiling instead
+of blocking.
+Sort of, I think tiling is traditionally,
+is sort of meant as a matrix
+multiplication specific term to a more
+general thing, which we call blocking.
+Code gets, code gets a little more
+complicated.
+But what we're going to do here is we're
+going to start off by here and multiply
+these three elements by these top three
+elements and deposit it into the result.
+Now, you might say to yourself, that's not
+the results that needs to go there.
+It's not.
+It's only half of the result that needs to
+go there in fact.
+So, you need to do something.
+You need to finish this and multiply by
+that and.
+Add what was here before with that new
+value But the nice thing is addition is
+communicative so we can re-order these
+steps.
+And, in fact, what we're going to do is
+we're going to block or tile and have this
+block rotated and multiplied with that
+block in the positive results here.
+And then, in our next step here, you see
+we're actually going to.
+Sum them into the same destination.
+So, the first step is we are going to take
+this, multiply by that.
+And what we are going to see here is we
+have one, two, three cache lines.
+And over here, we are actually going to
+have one, two, three cache lines.
+Even though we are accessing them this
+way, we actually design this algorithm
+such that we reuse the other portion of,
+of the data that we pull in here.
+And then, we're going to do that,, and sum
+the partial parts of the multiplies into
+these nine locations.
+And then, we're going to do the second
+half of that.
+We're going to take this, multiply that,
+and accumulate them into there.
+As you'll see, this actually is going to
+have some better locality which we'll talk
+about in a second and we have to bring in
+fewer cache lines at the same time and
+still get good performance.
+Okay So, let's look at the, if you want to
+compute this part over here cuz we're not,
+we didn't, we talked about in, in this
+example here, computing this entire result
+to raise, so how do we compute that part
+over there?
+Well.
+It's the same idea, you're going to take
+this up over that.
+Deposit it there, and then take this,
+rotate it and multiplied by that, and
+accumulate into there.
+So, a couple, a couple things.
+Start recap here, couple, couple happy
+things about this, we're really able to
+shrink the working set in our cache, so
+our cache capacity is lower for what's
+really going on here or, or, rather our
+effective cache load is lower.
+The number of cache lines we need to keep
+in our cache is quite a bit lower.
+We also can have better, so that's going
+to be temporal locality cuz we're
+basically going to have the data in our
+cache, and we're going to be working on
+the data in our cache.
+Now, we also end up with, if you look at
+the input array here, we're actually going
+to have better spatial locality.
+Because before we were sort of stream
+through all these different cache lines,
+and now we can work on one block at a
+time.
+And especially, in our result matrix,
+because this and this reuse these entries
+in our result matrix twice.
+So, we can get, get some benefit out of
+that.
+But, so, so the answer is you get both
+temporal and spatial locality improvements
+here.
+But it's a fun software optimization you
+can do to kind of improve your
+performance.
+Okay. So, let's go look at compiler memory
+optimizations and what we can get out of
+this.
+Well, you can get, get some different
+things out of this if you do the cool
+tricks where you have non-temporal hints,
+to some extent, you can use that to
+increase your, your bandwidth cuz you're
+utilizing less bandwidth.
+Hit time, I don't think you really get any
+well, software to change the hit time of,
+you know, it's a, it's a hardware
+constraint, so we're not going to have
+anything to do about that.
+Missed penalty we might be able to help
+out with.
+So, how does the compiler help out with
+missed penalty?
+Well, it can schedule the data so that
+it's in closer for instance, the blocking
+algorithm will actually use a smaller
+cache footprint.
+So, fit into a smaller cache, so we won't
+have to go out to the L2.
+So a good example of this is, let's say,
+you have a matrix multiply,
+In your matrix multiply, it fits in your
+L2.
+The, the naive approach, it fits in your
+L2 but doesn't fit in the L1.

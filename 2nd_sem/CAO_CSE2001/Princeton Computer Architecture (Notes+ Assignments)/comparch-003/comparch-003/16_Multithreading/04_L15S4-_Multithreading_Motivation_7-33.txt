@@ -1,0 +1,181 @@
+Okay so let's switch topics here. 
+We finished our vector processors, 
+and we're going to start talking about 
+technique. 
+That's looking at how to exploit a 
+different, different forms of 
+parallelism, or thread-level parallelism, 
+than we've been looking at up to this 
+point. 
+So this is not data level parallelism. 
+This is actual thread level parallelism 
+or process level parallelism in your 
+machine. 
+So what's the motivation for changing 
+your computer architectures to run 
+threads very effectively? 
+So we've talked about threading or 
+multi-programming in the past, where you 
+time slice between different processes. 
+That's not what this is about. 
+This is about either, this is about 
+executing multiple programs at the same 
+time, or time multiplexing between 
+processes on the time slice of the 
+instruction at a time. 
+So where this really came from is that 
+sometimes you can't really extract 
+parallelism in the instructional 
+parallelism. So this is where out of 
+border processors, try to exploit, 
+and super Scalars try to exploit. 
+And sometimes you can't necessarily 
+exploit data level parallelism in a 
+program because data level parallelism 
+will say it doesn't necessarily work out, 
+or you don't have dense matrix sorts of 
+codes, which is very easy to find data 
+level parallelism. 
+Instead, sometimes your workloads have 
+thread level parallelism, 
+and what we mean by thread level 
+parallelism is that either there is 
+independent sequential jobs that need to 
+happen, 
+and an example of these would be you have 
+to operate on a million things, 
+but the control flow for each of those 
+million things is wildly different. 
+So you, the, the most efficient way to go 
+about doing this is just to actually have 
+a process or a job per work unit that you 
+need to work on. 
+So, a good example of this is network 
+processing. 
+You are trying to build a fire wall and a 
+packet comes in on your network card. 
+And your firewall wants to inspect this 
+packet and look for, I don't know, 
+malicious tacks, 
+or it looks for, looks, want, it wants to 
+look for something like viruses or it 
+wants to look for attack code sequences 
+or trojans or, or something else like 
+that. 
+This isn't data level parallelism, 
+because you can't try to have each of the 
+operations working on these packets be 
+the same. 
+So depending on the type of packet, 
+you're going to make wildly different 
+control flow decisions. 
+So for instance, if the packet is TCP 
+versus UDP, 
+is, is, like a big choice in the 
+beginning. 
+And then, is it, what port is it on, is 
+it SSH, is it HTTP, is it web traffic? 
+You know, you're going to do lot's of 
+different processing in your firewall 
+based on that decision tree. 
+So, typically the most efficient way to 
+go out and try to attack this is that you 
+just have a job or a process or possibly 
+a thread per data element that comes in. 
+Another, reason you might want to do this 
+is there are examples of applications 
+where you actually having parallel 
+threads will solve the problem faster. 
+so believe it or not the, the traditional 
+traveling salesman problem. 
+If you throw threads at that, 
+you can actually have this problem get 
+super linear speed-ups, because you can 
+have basically other threads sort of 
+parsing off the search tree faster. 
+And then, the threads can share data 
+between each other, and when another 
+thread comes to a certain point, it 
+doesn't have to recompute a certain 
+location. It can just use the previous 
+result of another thread that already got 
+to that point and know that it doesn't 
+have to go down a certain path. 
+So this is kind of like dynamic 
+programming, if you will, but for some 
+sort of large search. 
+That's one example, as a very plain 
+example having threads, get you super 
+linear speed up. 
+but you can also just use threads to go 
+after a certain types of parallelism that 
+are hard to get at data level 
+parallelism. 
+Also in the, you could actually hide 
+latencies by using threads. 
+So an example hiding latency using 
+threads is, let's say you have a program 
+that you know typically misses in your 
+cache, 
+but you have parallelism in this program. 
+One way to attack it is to cut up the 
+problem and have a thread per different 
+problem, and when one of the programs 
+blocks on the cache, switch to the other 
+program. 
+So while you're waiting for memory to 
+respond back you can do some useful work. 
+Okay, so let's look at this from a 
+pipeline perspective and look at ways to 
+recover cycles. 
+So here we have some loads. 
+Load, load, something that's dependent 
+on, 
+we've a, we've a load that's dependent on 
+another load and an add that's dependent 
+on the second load. 
+And then finally, a store which is 
+dependent on the add. 
+So the down, down side of doing this is, 
+you got all this sort of dead time. 
+All this purple time here is, is dead 
+time on the processor. 
+We could throw an out-of-order super 
+Scalar at this. 
+It's not going to do any better. 
+Well yeah? So you're right this could, 
+if we're doing bypassing, we can pull 
+these one, one cycle earlier. 
+But we still have a lot of dead time. 
+And if you were to have an out of order 
+super Scalar, 
+out of order would not actually help you 
+out in this case either because you, is 
+an actual dependency string through all 
+these instructions. 
+Hm, now that's, that's not great. 
+So can we, 
+can we come up with some ideas to, to 
+cope with this. 
+So one thing we were said is we can add 
+bypassing to, to decrease the time here. 
+But having out of order super Scalar is 
+not going to make this go faster. 
+So that technique doesn't work. what 
+other techniques have we talked about? 
+Vector processors? 
+Well, there's no, no vectors of data 
+here. 
+we can go wide. 
+Well, that doesn't hap-, help. 
+We're still going to only be executing 
+one instruction per cycle. 
+So we can, 
+we can try to do VLIW. 
+Doesn't, doesn't help. 
+If out of order superscalar can't do it, 
+the VLIW probably can't do it. 
+So we have all these dead cycles, 
+we want to try to recover some of these 
+dead cycles. 
+

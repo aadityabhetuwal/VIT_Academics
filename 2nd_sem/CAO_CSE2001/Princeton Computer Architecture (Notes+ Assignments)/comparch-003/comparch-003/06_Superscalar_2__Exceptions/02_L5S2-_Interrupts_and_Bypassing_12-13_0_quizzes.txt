@@ -1,0 +1,38 @@
+L5S2:
+
+In Lecture Quiz 1:
+Time: 8:21
+
+Question:
+
+What are the negative aspects of introducing additional stages in the front of a processor pipeline?
+
+Choices:
+
+A. Branch misprediction penalty will be increased
+
+B. It increases clock cycle time
+
+C. It introduces more circuit complexity 
+
+D. It makes no difference
+
+-------------------------------------------------------------
+
+In Lecture Quiz 2:
+Time: 12:07
+
+Question:
+
+How can the impact of branch be minimized in a two-way superscalar pipeline?
+
+Choices:
+
+A. Increase the front-end stage numbers
+
+B. Decrease the front-end stage numbers
+
+C. Use high-accuracy branch predictor to reduce waste cycles
+
+D. A good branch predictor and a reasonable pipeline front-end stage number
+

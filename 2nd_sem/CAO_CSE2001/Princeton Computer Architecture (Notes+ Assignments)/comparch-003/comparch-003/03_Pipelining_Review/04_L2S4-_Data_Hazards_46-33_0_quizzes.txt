@@ -1,0 +1,25 @@
+﻿L2S4:
+
+In Lecture Quiz 1:
+Time: 27:32
+
+Question:
+What additional reasons may a pipeline stall?
+
+--------------------------------------------
+
+In Lecture Quiz 2:
+Time: 34:42
+
+Question:
+Does an addition of a bypass for the A source operand from the end of the execute stage ALU, help with performance in: a) r1 <= Mem[r0+10]; r4 <= r1+17 b) JAL 500; r4 <= r31+17?
+
+Choices:
+
+A. Yes, Yes
+
+B. Yes, No
+
+C. No, Yes
+
+D. No, No

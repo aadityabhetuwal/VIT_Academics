@@ -1,0 +1,434 @@
+Welcome to our next installment of ELE475.
+today we are going to be continuing our
+discussion of advanced cash techniques.
+And one of the big things we are going to
+get in to is talking about how to build
+out of order memory systems. So what I
+mean by out of order memory systems,
+basically, I mean, you can have memory
+operations out of the memory system but
+they execute out of order. And you can mix
+this with the in order processor pipeline.
+Or an our of order processor pipeline.
+It's the designer's choice. They both
+sorts of designs have been built, have
+been successfully built. But where, this
+is important, this allows you to
+effectively get more memory parallelism.
+Because you can have transactions going
+out the memory system in parallel, and the
+processor can continue an overlap
+computation with the memory. so we, just
+to recap from last lecture. We have a
+revised agenda here, now with all of our
+Different cache optimization techniques or
+advanced optimization techniques. or we
+talked about pipelining caches, we talked
+about adding a right buffer, and a buffer,
+last lecture. We talked about the reason
+and the motivation for multi-level caches.
+So two level caches, three level caches,
+maybe even four level caches, backed by
+main memory. We talked about having victim
+caches. Which were extra little highly
+associative caches that you can put next
+to a low associative cache or someone can
+direct mapped cache. And effectively this
+can increase your performance quite a bit.
+because once you sorta miss in your direct
+mapped cache you can go out you your
+victim cache. And the victim cache may
+have the data you're looking for. And this
+gets over small numbers of lines which are
+highly contended and might blow out if you
+will in a number of ways within the amount
+of associativity you have in your cache.
+We talked about hardware and software pre
+fetching. And this is where we stopped
+last time. We stopped at hardware,
+software pre fetching. And today we have a
+couple, couple extra topics. We are going
+to talk about h ow to bank your cache as a
+technique to get more bandwidth. The easy
+technique to get more bandwidth is just
+to, put multiple ports on your cache, but
+that gets quite expensive. Because you
+have to duplicate your, possibly your .
+You probably have to duplicate, the right
+logic. And in the worst case, you may have
+to duplicate the storage space. We're, in
+today's lecture we're gonna to talk about
+some software optimizations that the
+compiler can do. We're gonna start by
+talking about some software optimizations
+that, are, easy to do without transforming
+the code too horribly. And then we're
+gonna talk about some that actually
+require some pretty heavy lifting, with
+respect to code transformations, and what
+you have to do to reorganize the code.
+Still in valid ways. But by doing such,
+you can actually have better memory
+performance and better cache performance.
+And then we're gonna get to the meat of
+today's lecture. We're gonna be talking
+about non-blocking caches or sometimes
+called lock-up free caches, or sometimes
+called out of order memory systems. Then a
+couple, , at the end here we're gonna have
+critical word first, which basically means
+that when you go out to the memory system.
+You ask for the word that you need most
+urgently. And the memory system will give
+that, that back to you first, and this
+allows you to restart, quicker. And then
+there's a, very similar idea but possibly
+easier to implement called early restart.
+Which instead of asking for memory system
+to return the data in a specific order and
+taking advantage of that. Instead what you
+do is you, the memory system gives you
+back the data in order or the whatever the
+chromatic order is that expects back to
+you with. But when the word that shows,
+the word shows up that you need you, or
+you stall for you just restart the
+processor . So if you're Asking for one
+word out of a huge cache line, and it
+happens to be the second word in the cache
+line, you don't have to wait for the whole
+cache line to get loaded into the cache.
+But this has come extra co mplexity.
+And finally, we are going to talk about
+way prediction. Way prediction, we touched
+on it a little bit when we were talking
+about some of the instruction issues in
+super scalars. We are going to talk about
+it a little more in detail here, where way
+prediction allows you to predict where to
+go find either the next piece of data you
+are going to go access or the next
+instruction you are going to go access.
+This is important if you have a multi-way
+cache. In a direct map there is only one
+place to go find it. In a two way cache
+there is two places to go find it. And if
+you check both. You can try to do that in
+parallel. It'll probably waste a bunch of
+power. or what you can do is you can
+predict it. Let's say it's in way one, or
+you can predict that it's in way, way
+zero. And use that prediction if you have
+high prediction accuracy, you may only
+have to fire up half your cache. Or if
+it's on our critical path, you don't
+actually have to do two comparisons or
+three comparisons or four comparisons,
+however, however high the associativity of
+your cache is. So let's go take a look, At
+thinking strategy and multi, multi porting
+our caches. This is a little bit of a
+recap, I think we talked about this
+briefly during last lecture. But we are
+going to continue on with that. So, here
+we have our two way issue processor
+pipeline. You have a program counter,
+reason instruction cache, you have your
+instruction registers. What's interesting
+is that this pipe, you can only execute
+one memory operation per cycle. What's a
+limiter? Let's say you want to execute two
+memory operations or three memory
+operations or four memory operations that
+are all independent of each other. What do
+you go about doing? Well, in our, in our
+two issue Python here. Logically, what you
+wanna do is you wanna somehow put the data
+path on both pipelines. And remove this
+restriction, of where you can execute
+memory accesses. In, in which pipe you can
+access memory accesses from. Okay, that
+doesn't sound too horrible, until we go
+look at the imple mentation of this. So we
+can go and have a true multi-ported cache.
+So if a true multi-ported cache, if you
+think about the decoding logic on a read,
+we're gonna have to least duplicat,
+duplicate that decoding logic. Likewise if
+we want to actually execute two writes at
+the same time, we're going to have to
+duplicate the rotor coders for, for that
+logic. And a lot of times how people
+actually go to implement this, is they
+basically duplicate the entire cache to
+get an extra port for, for a variety of
+reasons. It could, you know, the area
+increase could be large, and it could even
+be double for, for a two port read and a
+two, two write port Sorts of cache. So
+they don't even share the storage data.
+But that's like, only a little bit of the
+problem. The other problem here is that it
+also increases your hit time in your cash,
+and no one likes increasing hit times in
+cashes. Now, why does it increase the hit
+time? Well, unless you. For instance,
+duplicate everything. If you try to share
+some of the logic, you're basically going
+to increase the loading on the readout of
+the cache here. And by increasing the
+load, this is gonna have slower drive
+strengths, you'll probably increase the
+time. And, and you can go look in
+something like cacti which is a tool from
+HP which has different cache
+configurations and you can see that, you
+know, adding a second port is usually will
+be the last thing in the world you wanna
+do when you're doing your processor
+design. It's really, ends up being really
+quite expensive. mostly in terms of area
+and somewhat in terms of timing. So can
+we, can we do better? Well maybe yes maybe
+no. So one thing you can think about doing
+is instead of actually having a true dual
+porting cache, can we have a pseudo dual
+porting cache or a cache which has the
+same external interface? So if we sort of
+cut out here in the middle, we have two
+addresses coming in. Two datas coming out,
+it looks the same, but, instead, we
+actually put something else in the middle
+here. What do we put in the middle? Well,
+we actu ally put. Two, banks, that are
+called, of our cache. And the first bank
+is one-half the size of our cache. And the
+other bank is one-half the size of our
+cache. And they're both single ported.
+What this is relying on is if you have
+statistical memory accesses that have some
+good pattern to them, the probability that
+you'll actually end up routing two memory
+addresses to the same bank, and get what
+it's called bank conflict, will be quite
+low. Instead the probability that you
+actually go to two different banks will be
+high. Now, you might say, well, big
+conflicts, sound pretty, pretty. Possible
+to happen. This is sort of the naive
+drawing here. When people go to build
+these things for large cache, you actually
+have many banks. and then let's say you,
+and if you have more banks than the number
+of ports you have, you can make a decent
+argument for the probability you're gonna
+get a bank conflict ends up being quite
+low. Or the probability that any two
+random addresses will end up going to the
+same bank will be low. Now, let's talk a
+little bit about addressing and how we do
+this Assignment of addresses to banks. The
+most basic thing is you can just maybe low
+order interleave it. Or you can try to
+high order interleave it. So, one of the
+questions that comes up here is, which is
+better, low order or high order
+interleaving our banks. Everyone will take
+a guess on this one. So, when I say low
+order, I mean use the low order bits to
+hash into which address bank, or which
+bank you go into. Higher leaving you some
+higher bits. Maybe middle order early
+leaving you some middle order bits. What
+would you choose if you were a designer?
+That's a good insight So, if we think we
+are accessing an array. And we're trying
+to describe through the array, so we're
+through the array the high order bits of
+those are all going to be the same. So if
+we have high order inter leave bits all
+the high bits are going to all be the same
+and were conflicts. They're all going to
+go to let's say a big zero all the time.
+And therefore our cache which we are
+trying to have more or higher through put,
+didn't get any higher through put. Okay,
+now let me give you counter example. .
+Counter example is let's say you are
+striding through an array. And you have an
+array an array of structures. A pretty
+common thing to do. And the structure is,
+let's say 100, no it's yeah it's 120 bytes
+long. And we go and access the first byte
+in that 180 128 byte structure in a loop.
+Are the lower order bits of the address
+the same between all of those? Yeah. So I
+can probably bet our higher bits are the
+same and our lower bits are the same.
+What's changing in that example? Some
+medium bits, some, some bits a little bit
+higher than the, the, the little lower
+bits. So what we're trying to get across
+here is that you have to be very careful
+about how you do bank interleading, if you
+have naive hash functions. Or the e
+functions which sign address to a
+particular bank. And you may not even want
+to have you've been thinking about having
+even more sophisticated hashing functions
+or sign ins from address to bank. But, if
+you go to do that, you know this is on
+your critical path of your memory load so
+you may not want to have a complex hash
+function there. So you might want to just
+take some middle order bits, you might
+want to tank some little bits, and some
+high bits for you bank assignments. It
+gets a little challenging here, you
+probably don't want the highest order
+bits. Definitely cause in most systems all
+those are always zero or something like
+that. Its very unlikely that your higher
+bits are something important unless your
+accessing a stack where all those are
+usually one, or one. . So I have another I
+think we talked about most of these on the
+slide, but if it were trying to go thru
+high thru put here bank conflicts. We, we
+talked about how you can get a bank
+conflict. we talked somewhat how you can
+avoid bank conflicts by having more banks
+than you have ports into the, the porting
+structure. And that's just a, from a
+statistics perspective if you have let's
+say a, a 32, your, your, your cache is you
+have a 32 kilobyte cache, and each bank is
+one kilobyte or something like that. Then,
+all of the sudden, you have the
+probability that you have two ports trying
+to access one particular bank. It's kind
+of like a birthday problem. So it's not,
+there's the trying to find if two people
+have the same birthday.'Cause it's not
+quite the easy probability, you'll go
+figure that out, but it's quite low
+because it's roughly you know, one. What
+is this? It's probably 32 times one over
+32 times one over 32. So it's not, not the
+lowest thing in the world but it's, it's,
+it's possible to actually reduce the
+probability conflict with random access.
+And if you have a better hash function, of
+course you can do better. Extra wiring, so
+what do I mean by extra wiring? Well, in
+our previous design, we didn't have these
+sort of crossover paths. So what this we
+present you is that its a mux here, a
+multiplexer is there. A mux here and a mux
+there for the address paths. So that's
+extra wiring extra delay by banking. And
+one of the bigger, bigger challenges the
+extra wiring for going in the multi banked
+memories is. It'll shrink bank size or
+shrink the memory size and if you
+traditionally sort of look at memories,
+they like to be larger. You can the
+overheads a little bit better off the, for
+example the fires at the bottom of the
+memories and the rotor decoders and the
+column decoders if it's bigger, because
+for instance the rotor decoders and the
+cone decoders will roughly grow as the log
+of the number of bits or something like
+that. But if you make each your catches
+rally small and you have multiple of that
+overhead gets worse so you have to have
+more sense amps, more row decoders, more
+column decoder's. So something to think
+about, but usually that's, that's
+relatively small and, and you're willing
+to pay that, unless you get some really
+funny aspect ratios. So what I mean by
+really funny aspect ratios if you want to
+have your, if you shrink the cache too
+small. So if you have, I don't know, 256
+byte caches. And the read out width is
+lets say a, a byte. So you get a long and
+narrow, cache. And you can try to sort of
+you call addressing or something to sort
+of squish that into a more square form
+factor. But sometimes if you squish your
+bank sizes to small you get very funny
+aspect ratios, or very long skin rams that
+don't fit very well into the designs.
+Okay. Un-, uneven utilization, so what do
+I mean by that. Well, what I mean by that
+is . Just like you can have bait
+conflicts. Due to the addressing of the
+hashing scheme, you can also have a
+pathological case, where all of the
+interesting data is stored in one of the
+banks. So lets say going back to the
+example you use low order enter leaving to
+the lowest order bid of the address, which
+is not the offset we'll say, to choose
+between big zero bank one. But it just so
+happens the program, pads out all its data
+structures, such that, that BIT is a
+constant of zero, basically for all the
+useful arrays you're trying to access.
+What that will do is it will locate all
+the data lines, in banks zero. Alright,
+well we just took our big cash and cut it
+in, in half, because we effectively placed
+all of our data over in this bank. So
+we're getting uneven data utilization. So
+we get uneven bandwidth utilization and
+bank conflicts, but we can also get data
+utilization, these often go together
+though. The bank conflicts and the uneven
+utilization cuz you're accessing something
+a lot, and it's in bank zero, you know,
+that means it's probably means stored
+there, so you have uneven, storage
+patterns also. Questions so far about
+banking, why we wanna bank? This is a, a
+pretty common thing to do. So a good
+example of this is, if you go look at the
+Niagara processor which is a Sun
+microprocessor. That has, the first
+diagram had eight cores. And, if you go
+look at their cache structure, they had
+eight banks of the cache. So, is a
+relatively, heavily last level of cash. If
+you go look at something actually like,
+the multi core intel chips out there, they
+even have more b anks. actually I think I
+saw one once where is the 32 megabytes
+last level cash for the intel itanium two
+had some incredibly large number of banks.
+I thin it had 32 or 64 banks in their
+cash. And they were wide, also. So they
+had lots of bandwidth going through that
+cache. Okay, so, if you look at our, our
+cache banking, was really, really helps
+here, as we are just, we are increasing
+the bandwidth. We might be actually
+hurting some things, we might be hurting
+the hit time a little bit, miss rate, miss
+penalty should not change, the cache size
+is same. We haven't, effectively increased
+or shrunk the cache size. Even if you get
+lots and lots of, bank conflicts or you
+can have poor utilization, that's still
+not actually affecting your miss rate. Cuz
+you would have been, conflicting, in the
+same size cache. Logically, it's, you
+could draw a box around it. It would be
+the exact same, same thing. It just that
+it happens that, you know, in, if you were
+to, have it not be a banked cache, you
+would have every other line, be in the
+contested ones, or something like that. So
+just having better memory layout is, is
+good all around.

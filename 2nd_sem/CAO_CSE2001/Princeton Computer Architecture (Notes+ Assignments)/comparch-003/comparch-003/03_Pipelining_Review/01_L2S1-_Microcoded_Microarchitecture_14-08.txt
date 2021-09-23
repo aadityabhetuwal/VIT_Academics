@@ -1,0 +1,376 @@
+Welcome.
+So this is our second lecture of ELE 475,
+Computer Architecture.
+And in today's lecture, we are going to be
+learning about microcoded microprocessors,
+so these are microprocessors which allow
+you to reuse components and reuse datapath
+components in order to make a smaller
+processor.
+And we're going to start our review, our
+first review of three reviews.
+And like I said before in the previous
+lecture, if you are watching this lecture,
+and think, well, I've seen this all before
+stick through the first three or three and
+a half lectures.
+That's designed to be reviewed to get
+everyone on the same page for this class.
+So I'm David Wentzlaff.
+I'm a professor here at Princeton
+University in the electrical engineering
+department.
+And let's get started talking about our
+second lecture on computer architecture.
+So a little bit about an agenda for what
+today is going to be about.
+We're going to start off by talking about
+microcoded microarchitectures, and then
+we're going to transition to talk about
+pipelines, basic pipelines, and review of
+basic pipelines.
+And we're going to talk about the basics
+of pipelining, that we are going to talk
+about and, and talk about the frameworks
+which we are going to need to analyze
+other pipelines or analyze pipelines.
+Then we're going talk about structural
+hazards in pipelines.
+So these are problems where you might need
+to use a resource in two different
+locations in a pipeline at the same time.
+Then, we're going to talk about data
+hazards.
+Data hazards are where you have one
+instruction or one operation or
+transaction which is dependent on another
+operation or instruction in your pipeline,
+but they're in different stages.
+So you might need to somehow interlock or
+control or stall between the different
+stages.
+And then we're going to talk about control
+hazards.
+We'll probably hold off on the control
+hazards depending on how far we get into
+today's lecture and it might end up a
+little bit, in another little snippet on
+the end.
+But in control hazard we're going to talk
+about when you have an instruction which
+has to redirects the pipeline or change
+what the pipeline is doing or the
+instructions slowing down the pipeline are
+doing, that is another form of hazard.
+Okay, so let's get off start off by
+talking about microcoded
+microarchitectures.
+One of the, one of the big problems is
+you're going along, this is a, a problem
+that happened back when processors were
+first being designed, and you couldn't fit
+a lot of the processor in either a room,
+let alone, or nowadays on a, on a chip.
+But one of the questions that comes up is
+what happens when a processor is just too
+large to fit in a room, or fit in a chip.
+How, how do you go about solving this?
+And this is not a question of how do you
+solve putting multiple processors on a
+chip or a room, but rather if you really
+can't fit a whole processor in a room, so
+this would be if you're building your
+chips out of, or you're building your,
+excuse me, processors out of something
+like vacuum tubes or switches or, or
+electromechanical relays.
+You have to think pretty hard about what
+happens if it's, your processor's too
+large, how do you cut down the size?
+Well you can time multiplex the resources.
+So that's right, you can use a resource
+and instead of physically building a bunch
+of resources and then collecting them
+together instead you can build one
+resource, which is in someway general
+purpose and then you can use that
+resource, and then use it again, and use
+it again multiple times for one
+instruction.
+And this is called a microcoded processor.
+So let's look at a microcontrol unit, and
+how one of these things works.
+So, in this, in this design you'll
+actually have, here's the control lines
+which run to your processor.
+So these are bunch of wires they're going
+to come on to your processor and are going
+to assert different things on AL use,
+multiplexers, registers.
+And then you're going to have some way you
+need to try this.
+So in a microcoded control unit you're
+going to actually have a microcode address
+that gets decoded and lights up in a RAM
+fashion a bunch of wires.
+And some of those are going to turn on
+these control lines and they're also going
+to be used in this calculation of the next
+state.
+Now, if you look at this, you can see that
+this actually implements something like a
+small finite state machine.
+But the, the one interesting thing here is
+that you actually have op code from the
+program coming in here.
+And effectively what you can do is for
+each instruction you are trying to execute
+in a program, you can cycle through a
+little state machine for it, and you can
+have different state machines depending on
+the op code that comes in here.
+So the op code comes in here, you might
+have for instance, condition, flags or
+something like that, coming out your
+processor.
+So whether the instruction's a branch,
+and, whether the instruction is taking
+that branch or not.
+And, what you can do then is, take that
+along with a little flip-flop here which
+would keep it in some piece of state or an
+address.
+You can actually step through, step
+through a little state machine, which will
+do multiple things.
+And we'll look at this a little more
+example of how, one of these microcontrol,
+microcontrol units will hook up to a
+microcoded microprocessor, or a microcoded
+processor.
+The last thing I wanted to get across here
+is, this is typically a RAM and you can
+actually cycle through it multiple times,
+and the RAM is going to tell you where the
+next micro coded instruction is.
+So you'll beel, basically cycling around
+this loop multiple times, or maybe only
+one time, depending on the actual
+instruction you're trying to execute.
+Here is the microcoded control unit, or
+the microcontrol unit hooked up to a
+microcontrolled process, or microcoded
+processor.
+So, we have the datapath sitting in the
+middle here.
+And we have a bunch of wires coming out of
+our control unit here, which assert
+different things on the data path.
+For instance, are you doing subtract, are
+you doing add and it's going to swing
+different multiplexers inside of this data
+path to select what operation is actually
+occurring.
+And I wanted to contrast the
+microcontroller, or the microcontrol unit
+with the memory where you're actually
+going to store your user programs.
+So your user programs are gonna be stored
+in a RAM structure or a randomly
+accessible memory structure versus a read
+only memory structure.
+So a good example of this is, you'd have
+your actual ISA instructions here like x86
+or MIPS sitting in your RAM.
+And up here, you're going to have
+microcode instructions.
+So if you go back to this diagram,
+typically the RAM entries are called
+microcode instructions.
+And sometimes people write little programs
+that say, how do you sort of control the
+different lines that come out of here.
+Okay, so let's put this all together and
+look at how we would build a Bus-based
+RISC processor.
+So we're going build something like a MIPS
+processor, which you may recall from your
+computer organization class.
+And we're going to use a datapath where we
+reuse da datapath elements over time.
+So we're going to time multiplex the
+resources.
+This is not a pipeline design and it's not
+even a single cycle RISC design, but
+instead, it is a micro coded RISC design.
+And we're talking about this because we
+are going to contrast this with pipelining
+in today's lecture.
+So let's, let's look at this diagram.
+We're going to see, that we have a
+register file here, which has 32 general
+purpose registers, cuz we're trying to
+implement MIPS, which has 32 general
+purpose registers.
+And we also store the program counter or
+the instruction pointer in this register
+file.
+So this register file actually has 33
+elements, or maybe you can store it in
+where there, the zero register is, ors
+zero register is in MIPS if you, if you
+try really hard cuz that's typically hard
+coded to zero.
+So let's walk through how a instruction is
+going to be executed on such a
+architecture.
+And a couple other things to note here
+this is main memory.
+So we're going to have to fetch our
+instructions from over here.
+Our ALU is here and this is our
+instruction register.
+And everything is connected together on a
+bus, where only one value could be driven
+at a time.
+And that value could be broadcast over to
+multiple locations.
+So let's start off by thinking about what
+do we need to do to execute an
+instruction?
+Well, to execute an instruction, we're
+going start off by fetching the program
+counter for the instruction.
+So the microcoded control unit, is going
+to assert the wires to basically say, do a
+read out of the register file here for the
+program counter.
+And we know that the prog, if the program
+counter's going to be selected, because
+the microcontrol control unit is going to
+set on the register select lines here,
+assert the entry which we'll choose, 32
+we'll say which'll select the program
+counter.
+So the program counter, we, and this is
+all in one cycle right now, the program
+counter is going to be asserted onto this
+bus and now we need to latch it somewhere
+and register.
+So it's going to be broadcast all the way
+in this bus but we actually want to take
+it and load it into this memory address
+register here.
+And else, that will finish our first cycle
+of a microcoded control unit processor or
+microcoded control unit processor.
+The next cycle, this is all within one
+instruction, we're going to fetch the
+instruction we need from the data memory
+or, and the instruction memory.
+So then it's going to get forced onto this
+bus, and we're going to take it and latch
+it here or register it into the
+instruction register.
+So, at this point we fetch the
+instruction.
+Okay?
+That's, that's done a fair amount so far.
+The next thing we need to do is go get the
+actual operands.
+So on the third cycle here, we are going
+to take the rd, we'll say, or actually
+we'll take the two sources, rs1 and rs2.
+Now, we're going to fetch first rs1 from
+our register file and latch that or
+register that into the A operand.
+Then we're going do the same thing for rs2
+on the fourth cycle.
+And now we can actually do, let's say an
+add.
+So let's say we're assuming, we are doing
+an add instruction here.
+So now we can do the add.
+So we let A and B actually add.
+And we need to store the result somewhere.
+Well, conveniently, we know we want to
+store it into the destination register.
+So we don't have to store it into A or B,
+we can actually store it back into the
+register file here.
+So we will be asserting rd is the address,
+and we will be, the microcoded control
+unit will be asserting register right on
+the register file.
+Okay, so the, we've now actually done our
+actual operation, almost completely.
+We next need to figure out how to
+increment the program counter.
+Because we want to go fetch the next
+instruction.
+So as we said, we didn't store the program
+counter anyway, anywhere here.
+So we need to go re-fetch the program
+counter out of the registry file.
+And we're going to reuse or time multiplex
+the ALU here.
+So we're going fetch that value, put it
+into A, and we're going to increment it by
+four.
+So the next cycle we'll do, let's say an
+operation here, let's say the ALU has a
+special operation just for adding four.
+Alternatively you could try to load four
+into the B register here.
+And we're going to add four because our
+instruction is four bytes long.
+And we're going to store that value back
+into the program counter.
+So at this point, we've actually executed
+a complete one instruction.
+And it takes, I think we added up
+something like five, six, no, I think six
+or seven cycles at that point.
+Now, one of the things I wanted to point
+out before we most off this slide, is
+that, depending on the instruction you're
+executing, you can have variable amounts
+of time taken.
+So for instance, if you're trying to do a
+branch instruction.
+Branch instructions are a little bit
+different.
+We're not going to actually just add four
+to the program counter.
+We might need to fetch a different value
+into a compare, and then fetch either the
+program counter or add a different value
+to the program counter when we go to do a
+branch operation, likewise for, for jumps.
+And it can have different numbers of
+cycles.
+Another good example of different numbers
+of cycles is if we're going to be
+operating on a unary instruction, or
+instruction which only has one input.
+So a good example of this is a, oh, let's
+think, what is this example of this?
+This is something like a logical negation
+where you just flip all the bits, in a, in
+a, in a value.
+I don't think MIPS actually has that
+instruction.
+Anyway, what I'm trying to get across here
+is, you can actually have different number
+of cycles to execute instructions
+depending on the instruction.
+So example, of something like a load
+instruction, would also to a lot more
+cycles because you're going to have to
+cycle the memory unit here more times so
+you have to execute instruction where you
+actually go and fetch the data from the
+memory and then put it back in the
+register and maybe do some math with it
+and then store it back in, into the room,
+the general purpose registry file.

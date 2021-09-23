@@ -1,0 +1,66 @@
+So, welcome back, today we are going to be
+talking about how to go
+about building cache coherent systems, so,
+we've
+just come off talking about consistency,
+and
+memory consistency and now we're going to
+start
+talking about, memory coherent systems and
+talk
+about, sort of, the beginning protocols
+when
+you go about building memory coherent
+systems.
+Before that.
+Let's go back and review what we worked
+what
+we're working on at the end of last
+lecture.
+So at the end of last lecture, we were
+talking about
+mutual exclusion and one of the we talked
+about having test and
+set and specialized operations that can
+do, that can give you
+mutual exclusion but you could also just
+use basic loads and stores.
+And, we talked about using Decker's
+algorithm
+and, one of the key insights into the
+Decker's algorithm is that you have this
+shared
+turn variable here which between the 2
+processes,
+which are trying to communicate, are
+trying to lock the same, variable.
+Then we went on an expanded this to.
+Multiple process mutual exclusion.
+And this is the sort of the moral
+equivalent of
+a, going to the deli and try and take a
+ticket.
+So you go to the deli, you take a little
+ticket, and
+then someone goes and calls your ticket
+number, and then you are served.
+This is how you can implement multiple
+people trying to access one resource.
+but unlike in a deli where you have let's
+say
+a, a number on the, on the wall which
+ticks up.
+Or you have a, a person behind the deli
+who calls your number.
+Or in a bakery where they call your
+number.
+Instead here we need to do that in some
+sort of distributing manner.
+So in the end process mutual exclusion.
+The person who actually finishes being
+served wakes up the next person.
+And as I said, this is a little bit more
+complex but you can still do the same idea
+here.
+excuse me, totally with loads and stores.
+

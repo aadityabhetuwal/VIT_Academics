@@ -1,0 +1,637 @@
+Well,
+Computer architects came up with something
+fun here.
+Came up with this notion of paging.
+So instead of having.
+Variable size programs.
+And at variable size segments or data
+segments.
+Instead, what you can do is you can take
+all of your memory.
+And you can chunk it up into different
+fixed size regions.
+So, for lack of anything better, let's say
+you have all of memory, and you chunk it
+up into four kilobyte regions.
+And we call it a page.
+So, what is, what is this really, turned
+it to?
+Well.
+Let's say we have the address space of a
+user here.
+And it thinks memory goes zero, one, two,
+three.
+Over here we have physical memory.
+And what you can end up with is a table
+which will map these different addresses,
+into different locations, possibly out of
+order, over there and it's a chunk at a
+time.
+So, if you go to access, let's say,
+address zero to four kilobytes minus one.
+You are accessing here.
+If you go to access four kilobytes to
+eight kilobytes minus one, you're
+accessing here.
+But this is a virtual address space.
+Once you go through translation, if we go
+to access, let's say, address 4,182
+rushing at mapped, up over to here into
+physical memory.
+And just to introduce some nomenclature
+here.
+If you take a processor generated address
+or a virtual address.
+If you go to look at what is actually
+inside there,
+There's a page number which is this number
+here.
+Which is which page to go look at.
+And then there's an offset, which is the
+low order bits of the address.
+And the offset says.
+We're inside of this physical page to go
+find the exact byte we're looking for.
+And it's pretty common, for these pages
+sizes, to be in this sort of few kilobytes
+sort of range.
+If you go look at something.
+I don't know, we'll, we'll, we'll take X86
+for example.
+X86 default page size is four kilobytes
+but it also as a, two megabyte option and
+like a one gigabyte option.
+Some architectures like MIPS actually has
+quite a few page size options.
+So I think you can go anywhere from four
+kilobytes by maybe powers of two all the
+way up to I think maybe four megabytes.
+So you can have, different page sizes, but
+for right now, let's just, abstract that
+and just say, there's a fixed size of some
+small number of kilobytes.
+Actually, the first original machines
+actually had these even be smaller.
+They had'em, maybe about 512 bytes.
+But, As memory got bigger.
+Page sizes can get bigger.
+And we'll, we'll talk about why you might
+want to have bigger page sizes.
+But really what happens here, is page
+table allows us to take a contiguous
+memory, a set of memory addresses and map
+them into a non contiguous space.
+Now, this can really get away from having
+fragmentation.
+Because all of a sudden.
+The worst we can be, the, the most amount
+of memory we can be wasting is a size of a
+page.
+So, let's say that you have one byte on
+this page here and we call that as used.
+Well, you're, you're wost thing you're
+using is four, four kilobytes here if it's
+a four kilobyte page and this page and
+this page some other process can use
+because we have a flexible remapping
+system.
+It's a, an a, it's a complete mathematical
+map.
+So that's looking at it if you have one
+program.
+We can extend this pretty easily to having
+multiple programs at the same time where
+each program has a different page table.
+So if you have a processor, which is
+actually multiple programs, let's say it's
+time-multiplexing these programs, in
+physical memory you can actually
+intermingle all the different pages of all
+the different programs and do memory
+allocation where you try to pack the
+memory as tight as possible or re-use the
+memory as much as possible.
+And these really flexible page tables here
+will allow the remapping to be arbitrary.
+So you don't have these frag, at least you
+don't have an external fragmentation
+problem.
+You may still have what's called internal
+fragmentation, where you're just not using
+the page tables very effectively.
+So this is interesting up here.
+Let's figure here, we have OS pages.
+So, what, what's, what are OS pages?
+Well, the OS itself needs its own code and
+its own data.
+And many times in a paging system, DOS
+itself may not use a page table to go
+access memory.
+Because it needs to go, let's say, start
+up another program, so it needs to be able
+to touch these bytes here, and go, you
+know, kill a program or load some data
+from a particular application.
+So many times, the OS is, to large extent,
+held to a higher standard here.
+And the OS can actually go and touch all
+the physical memory and not have to go
+through a mapping layer.
+Okay, so here we have private address
+spaces per user.
+So, something we have not addressed yet
+is.
+Where do we store this stuff?
+And, how big are these page tables?
+Well, they can get pretty big.
+If you want to basically have a program
+that can address four gigabytes of RAM.
+You're going to need.
+A page for each four kilobytes of those
+four gigabytes, that's a lot of pages.
+So you need to store this somewhere.
+So the naive approach is you just have
+specialized register files in your
+processor that hold the entire page table.
+Unfortunately, that ends up being well,
+for a 4-gigabyte space with 4-kilobyte
+pages, ends up being something like, with
+I think with a 32-bit page table entry, we
+end up with something like 4-megabytes.
+And if we have 100 processes running,
+that's 400 megabytes in which to store
+somewhere.
+Well,
+And these we probably don't want to keep
+it in registers, or register files in our
+main processor.
+Now, conveniently, as we have more and
+more RAM.
+This allows us to have more and more
+processes to run.
+It allows us to use more memory, cuz we
+have more RAM in our machine.
+But also, we have more places to store
+page tables, if we want to put them in
+RAM.
+Okay, so.
+Maybe we'll put our page tables in RAM,
+because as RAM goes bigger, we might need
+more page tables, but we have some place
+to go put it.
+And it's always the case that.
+Well, if, if we design this correctly.
+If our page tables entries are designed
+correctly.
+That the size of a page table to represent
+a certain amount of ram is gonna be less
+amount of ram that you have to store in.
+So some fixed overhead.
+So let's take for example, a page table
+entry that takes four bytes to represent
+four kilobytes of memory.
+That's a 1,000 to one compression.
+So as you get more ram, you're guaranteed
+to always have some place to put it
+because your ram size will grow 1,000x
+faster than your page, page size.
+Okay.
+Challenges of storing this in RAM.
+If we want to go access a page.
+When we go to access a page here, we have
+to index this table.
+So every load we do, before was just a
+single load.
+But now we're gonna have to do a load to
+go read the page table, and a load from
+the actual physical memory location.
+Huh.
+Well we just doubled our number of memory
+references that we have.
+And that's, that's kind of a bummer.
+So, what do we, what do we do about this?
+Well, well before we talk about that, lets
+talk about where to store the page table,
+and the size.
+And then we talk about techniques to speed
+up the access.
+.
+So here let's take a look at where, where
+to store, a page table.
+If we have our linear page tables, what
+we've been talking about up to this point.
+You can actually just go store them in RAM
+and they'll map down to different points
+down here, and this, this works decently
+well.
+Unfortunately these still have to be
+contiguous themselves.
+So we might get fragmentation problems in
+the page tables themselves.
+Or different page tables fighting with
+each other, for memory.
+They're hard to move.
+So we like to think about some way to go
+solve this.
+We'll hold off for a second on how to
+solve that.
+But this is something to think about.
+It's kind of unpleasant here, to think
+that.
+Your page tables themselves, cause
+fragmentation.
+So, I just want to sort of recap and show
+the mechanics of this, of what's, what's
+in our page table.
+So in, in our page table what we're going
+to store.
+Is, we're gonna have.
+Well, first of all, we're gonna have, a,
+a.
+Instead of having a base and bound
+register, like we had in the base and
+bound architectures.
+We're gonna have a base that points to the
+base of the virtual that points to the
+base of the page table.
+And then, we're going to have some
+structure in round.
+Or structure in the page table here.
+And what does the structure look like.
+Well, there's probably a valid bit.
+There's a, a physical page number which
+points to some place over here.
+And maybe there's some status bits also.
+We'll talk about those more in a minute.
+But, you probably want some status
+registers there.
+Contracts some information like how often
+a page is being used, which pages are
+used, maybe some statistics.
+Maybe you want to know whether you can
+read the page or write the page.
+Now,
+This last node here is, is sort of the key
+to time multiplexing of processor between
+different processes.
+As different programs execute and your
+time slice are preemptively multi task
+between different operating systems or
+just give an applications of one operating
+system.
+What you're going to do you're actually
+going to change this base register.
+To something else.
+And effectively what this does, is it
+completely changes your entire map of
+memory as you're executing, and this is,
+pretty, pretty fancy if you think about
+it.
+You can just, one, one right to one
+register and all of a sudden all of the
+memory looks different.
+And the protection is totally different
+for the, the application.
+Now, you might be thinking to yourself, if
+I'm running the operating system, and I
+change this register.
+All of a sudden, it changes the entire map
+of memory.
+How do I not crash the operating system
+instantaneously?'Cause Cuz all of a
+sudden, the operating systems code just
+got to some other location.
+Well, there's some, there's some magic
+behind, hind the scenes here.
+This is what I was saying, is that there
+are a couple approaches to this that.
+The basic approach is that the operating
+system, will not use paged memory for its
+own purposes.
+It just uses physical memory for
+everything and there's some special bit
+that says that you're in operating system
+mode and what you're doing basically
+doesn't abide by the paging system.
+That's one approach. Another approach is
+you'll have entry's in the page table here
+that are all the same in every process And
+it always maps the operating system in, at
+a certain location.
+So we can change this willy-nilly, but all
+the things you go to change it to, will
+have the operating system mapped to the
+exact same location.
+That's another approach that people use.
+And this whole thing's kind of in between
+those.
+Just to flip back here, one thing I do
+want to point out is it's important that
+an application is not able to modify its
+own page table or modify other
+applications page tables.
+And hence, you know, this application here
+tries to go access something.
+It looks up at the page table, and it
+says, oh, that's down there.
+It's important that this does not, like,
+overlap with someone else's page table.
+All of a sudden, you'd allow an
+application to go, be able to change its
+own memory mapping.
+And that would be quite dangerous.
+Okay so far we've talked about oh,
+actually before we move off this Let's
+hope that, exact mechanics of this.
+So you have a virtual address.
+Has this virtual page number in the
+offset.
+This is actually indexed into this table.
+Just a basic index.
+It's, it's one huge table.
+I just indexes in it here and got some
+bits and those bits get basically replaced
+over the to, to, to take the virtual
+addressing of physical address, over take
+the virtual addressing we take the virtual
+page number and we are going to remove
+that or do that indexned here and what
+comes out of here is going to be used to
+be the new high order bits of this
+addressing, we are going to call that the
+physical address.
+One last note about this, we talk about
+here a disc page number, we're going to
+talk about this more at the end of today's
+lecture.
+But it's possible that you might want to
+use this location here to say the bits for
+that page are not here right now, they
+maybe on disc.
+We'll talk about, wanna talk about more
+advances is virtual memory sub system but
+lot of times a convenient place to locate
+that information is in the page table
+itself.
+Okay,
+So let's, let's crank through some math
+very quickly here.
+This page table is relatively large so
+let's take a example here, a 32 bit
+address space.
+It has four kilobyte pages and each page
+table entry, PTE, is four bytes.
+So that's two to the twenty page table
+entries, each of those is four bytes big,
+this is a megabyte times four, we end up
+with four megabytes.
+Okay, so that's four megabytes for this
+table per user process.
+And this assumes that we only have, let's
+say four gigabytes worth of address spaces
+address space.
+Four gigabytes, four gigabytes address
+spaces.
+That's not too horrible if you have a
+thousand processes running,
+That is pretty bad.
+And if you go type top on your system and
+you go look to see how many processes are
+running.
+You probably have, a few 100 running.
+So if we use this linear page table notion
+and you got a 1,000 processes running, all
+of a sudden you'd be using four gigabytes
+of memory which is your entire dress space
+on a 3.2 bit machine.
+Just for the page tables and have no place
+to put actual data.
+So I'll give you guys a hint here that
+people typically don't usually use linear,
+linear page tables.
+Because it's not very storage effective.
+Now, what are some approaches to making
+more storage affective?
+You can go to larger pages.
+So instead of having four kilobyte pages,
+we have one megabyte pages.
+So is, that would, that would take the
+number of page table entries and
+dramatically shrink it.
+And it would also directly shrink the
+linear page table size.
+Some downside is you start to have some
+more internal fragmentation.
+So if you use one byte onto a new page,
+and the whole rest of the page is empty,
+you'll be wasting a megabyte minus one
+versus four kilobytes minus one.
+So you'll have a higher amount of internal
+fragmentation.
+Another challenge is that, on a page
+fault, you're going to have to pull in a
+lot more data.
+Instead of pulling off of disk we'll say
+four kilobytes of memory.
+You might pull a megabyte.
+It's just bigger, bigger numbers to deal
+with, and, and this could be painful.
+So let's, let's think about actually the.
+Let's, let's move from a, old computer to
+a more modern computer.
+So a more modern computer, we have much
+larger, address spaces.
+We want to access larger, amounts of
+memory.
+So, you know, my laptop has six gigabytes
+of RAM.
+Well, six gigabytes of RAM, that's bigger
+than two to the 32.
+We can't address that, in a 32 bit
+machine.
+And in fact my, my laptop is a, 64bit
+machine.
+So.
+Let's, let's crank through the math now.
+For, instead of having a 32-bit machine,
+having a 64bit machine.
+Well, if we have relatively large pages
+let's go for a megabyte page.
+And, well, a megabyte page is going to
+give us two to the 44 page table entries.
+And these page table entries themselves
+are probably bigger because the output of
+them has to be lets say, 64 bits instead
+of 32 bits because the page address is
+larger now.
+Well, all of a sudden, one process, page
+tables 35 terabytes.
+Well, my laptop is a 64-bit machine, but I
+don't have 35 terabytes of ram in my
+computer.
+Doesn't, just won't, won't physically fit
+in my laptop.
+Can't, can't lift up 35 terabytes in
+today's, today's technologies.
+That's a bummer.
+So can we just not go to page systems with
+64-bit address spaces or larger address
+spaces?
+Well, no.
+The world's, the world's not that,
+unforgiving.
+We do have some, some saving grace here.
+We can think about going to different
+arrangements of our page tables.
+And the other nice, thing is if we go to,
+to more space dense arrangement or page
+tables or we can go to the notion that our
+page tables.
+They'll always have every single page
+being used.
+So for instance, in this linear page table
+here, I have some, slash locations.
+And what this means is this is some
+location in memory, which doesn't have
+anything mapped there.
+So if this is not mapped.
+Why do we want to store or use the storage
+for that space?
+So, we can actually go with a sparse
+representation of our page tables that
+only have the portions of the page table
+that we actually need.
+And it's possible that if you bet, if
+every single page in your page table is
+filled out, you may not be able to get
+away with a sparse representation, and you
+might need all 35 terabytes to map one
+process,
+This is one process.
+If you have a 1,000 processes, multiply
+this by a 1,000.
+Well the, the, the saving grace there is,
+by definition, if you're gonna have one
+process which is going to map two to the
+64.
+Locations of memory.
+That means you have 264 locations of
+memory probably in your address space
+somewhere, and that's much larger number,
+in your physical machine, rather, that's a
+much larger number than 35 terra bytes.
+So this compression of the page table
+entry always being smaller than the page
+itself, allows you to always store the
+page table entry into the memory that you
+have because it always grows to be able to
+fit inside of the amount of physical
+memory you have.
+So how, how do we go about doing this?
+Well,
+One representation that we can think about
+is having a heirarchical page table.
+So instead of having one big table that is
+linear, we have a table we index in two,
+which tells us where to go look for more
+data.
+And then we look in that table to look for
+even more data.
+So here we actually show a two level page
+table.
+And what's interesting is if we have an
+address here, we index into here.
+We can actually rule out huge portions of
+the address space very quickly by just
+leaving this particular entry in the
+higher levels of the page table empty.
+And then, as we go drill down a little bit
+farther, we can also have empty entries.
+So what this, if you're going to look at
+our, our virtual address here, we're
+actually going to use different portions
+of the virtual address to index into
+other, other structures.
+We can build, we can take this sparsity
+into account.
+Another cool trick we can do is we can
+actually reuse, if you have hierarchical
+page table like this, you can actually
+reuse sort of middle level page table
+entries between different processes, if
+they're mapping the same space.
+So, for instance, if they're mapping the
+same instructions, you can actually just
+reuse all these page table entries between
+two processes and have the in, have
+multiple pointers coming into here.
+One thing that this does not change is you
+still have one page table base pointer per
+process or per user.
+You don't need to have bases over here
+because the bases of the second level come
+out of the first level.
+So it's a tree and here, this is just a
+two level but there are plenty of
+architectures that have more than two
+levels of page tables.
+So if you go, try to build a two level
+page table, which is relatively unsparse.
+On something like a 64 bit machine, it
+still becomes very large.
+So as you have more and more address
+space.
+Your address space by definition has to be
+less sparse.
+If you have a sort of fixed amount of
+memory in it.
+So, what people will do is, they'll
+actually go to maybe three levels or four
+levels of page tables.
+Now, some down sides of this is we just
+took something that was, we took a load,
+which took one memory reference.
+And we had to add an extra memory
+reference to go look up in our page table,
+which was in memory to go find the actual
+address of, the physical address.
+And all of a sudden, we turned it into
+three memory references.
+One to do the actual load.
+One to look in here, and one to look into
+here.
+So every level of page table that we add
+could potentially add another load.
+That's not, that's not very pleasant.
+.
+But before we get to that, and ways to fix
+that, let's look at how this gets laid out
+in the memory.
+So before, we had all of the page tables
+sort of up here, and then had to deal
+with, with fragmentation between the
+different page tables.
+But now, because we have a multilevel page
+table, we can allocate it out of our
+physical memory addresses, sort of in an
+ad hoc manner.
+And one of the, the cute little tricks
+that most operating systems do, and most
+systems do, is they make the size of one
+of these levels of tables, to be the exact
+size to fit in a page cuz then you can
+locate it, easily inside of a page.
+And you can allocate it like a normal user
+land page, and just sort of mix and match
+it somewhere into the different locations
+and, and intermix it.
+So it's pretty convenient.
+This solves our external fragmentation
+problem for our page tables themselves.
+And we can use sparsity in our address
+space, to use less space for our actual
+page table.
+So, page table itself smaller,
+Down, down side is we might have to do
+multiple memory references to be able to
+resolve a page table address.

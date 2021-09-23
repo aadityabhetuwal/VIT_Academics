@@ -1,0 +1,13 @@
+﻿L10S5:
+
+In Lecture Quiz 1:
+Time: 7:10
+
+Question:
+Do we need to decode the instruction in order to use the BTB to determine the address of the next instruction?
+
+Choices:
+
+A. Yes
+
+B. No

@@ -1,0 +1,39 @@
+L7S2:
+
+In Lecture Quiz 1:
+Time: 0:34
+
+Question:
+
+Given the instructiion sequence, st R1, (R2); ld R3, (R4); When can we execute the load?
+
+Choices:
+
+A. Before the store
+
+B. Only after the store
+
+C. If load is not dependant on store, we can execute load before store.  If it is dependant, we need to wait for store to complete.
+
+D. Does not matter
+
+------------------------------------------------------
+
+In Lecture Quiz 2:
+Time: 9:02
+
+Question:
+
+If a memory load address hits in both the store buffer and the cache, which one do we use?
+
+Choices:
+
+A. Cache
+
+B. Speculative Store Buffer
+
+C. Either
+
+D. None of them
+
+

@@ -1,0 +1,699 @@
+But before, before we do that, I wanted 
+to talk about programming and a 
+competitor to using shared memory for 
+programming. 
+So, so far, we have looked at a shared 
+memory architecture to communicate from 
+one core to another core. 
+So, what does that means is one core does 
+a store to some memory address. And 
+sometime in the future, another core goes 
+to read that memory address and gets the 
+data. 
+What's interesting about that paradigm is 
+the sender of the data, 
+the 
+core which is writing the data or doing 
+the store does not need to know which 
+core is going to read the data in the 
+future. 
+Or it's very possible that no one will go 
+read that data in the future. 
+And in shared memory architectures, that 
+doesn't, that doesn't affect anything. 
+We can actually have one core writes a 
+piece of data in the memory and some 
+address and given this implicit name, we 
+effectively have some associative match 
+where you can look up based on the 
+address, the piece of data and go find 
+the piece of data sometime in the future. 
+Now, you probably need to use locking and 
+to, to guaranteed causality between one 
+processor writing the data and another 
+processor reading the data in shared 
+memory but you don't need to know the 
+destination. 
+In contrast, we're going to talk about 
+explicit message passing as a programming 
+model. 
+Now, there are lots of hardware 
+implementations, you can go implement 
+this. 
+But let's start off by talking about 
+exclusive messaging as a program model to 
+communicate between different threads, 
+processes, or cores. 
+[COUGH] And what we're going to have here 
+is we're going to add, 
+we're going to, we're going to have an 
+API or a, a programming interface here of 
+send, 
+where it names the destination, and 
+passes into it, a pointer to some data. 
+And in our messaging API, this is going 
+to take this data and somehow get it to 
+the receiver or the destination. 
+On the receive side, 
+the most basic thing they can do is you 
+can receive data. 
+Note this receive here does not denote 
+who it's receiving data from. 
+So, a common of thing you can do is just 
+receive in order, receive the next piece 
+of data that it gets in. 
+Now, that may not be super useful so you 
+may want to extend this to having the 
+receive actually take a, a source also. 
+But it's not required. 
+There are the reason I'm, I'm talking 
+about this in this abstract fashion here 
+is there's many different explicit 
+message passing programming interfaces 
+because it's just software that people 
+have implemented over, over the years. 
+but at the, at the fundamental level, 
+there's a send and a receive. 
+And you could think about having the 
+send, 
+or the send requires a destination and 
+receive can just receive of, of, 
+basically the input queue or it would try 
+to receive from a pre-recorded source, or 
+another way to do this is what they do in 
+in MPI, which is called the public 
+message passing interface, which is a 
+probably the most common programming 
+interface for messaging, is it won't take 
+a source, but instead, it will take a 
+tag, which is effectively a number which 
+says, what message type is the or not 
+message type, 
+sorry, 
+what, what traffic flow is it, 
+you sort of name the flow. 
+This is kind of a tag is, is sort of a 
+more generalized form of, 
+in TCP/IP, they have ports, for instance, 
+right? 
+And UDP has ports. 
+Okay. 
+So, questions so far about this basic 
+program model and why is it different 
+than loads and stores through shared 
+addresses. 
+Very different. 
+They are jewels of each other. 
+I'm going to tell you right now that you, 
+if you can implement one thing of shared 
+memory, you can implement messaging and 
+vice versa, and there have been lots of 
+fights over this, and at some point or, 
+or, the whole community realized that you 
+can do either with either. 
+You can do any programming model, you can 
+do one and the other. 
+Okay. So, the default message type we're 
+going to talk about is unicast. 
+So, that's one-to-one. 
+If you ascend to a destination, the 
+destination is one other node or one 
+other process, 
+or one other thread. 
+The reason that I say, process, thread, 
+and node is depending on how API is 
+structured. 
+You might have, you could use a, a 
+messaging, exclusive message passing 
+system on something like a uniprocessor. 
+We have different threads or different 
+processes running and you are only 
+messaging for one process to another 
+process even though it is one core. 
+But there's a pretty natural extension of 
+that. 
+You can take those two processes and put 
+them on different cores, and have them 
+communicate using the same interface. 
+We could also do this between two 
+threads, but that's less common. 
+Okay. 
+So, that, so unicast is one-to-one. 
+Some messaging networks and some 
+messaging primitives will actually 
+program models will have a couple of 
+other choices here. 
+We can have multicast. 
+So,- this is communication from one node, 
+but instead of having a destination here 
+which denotes one other location, it can 
+denote a set of other people to 
+communicate with. 
+It is still messaging except for 
+destination, we've expanded our notion of 
+destination here so it can be a set, not 
+just a single thing. 
+[COUGH] We can also have broadcast, 
+where you can have one node, instead of 
+having destination here, you can have 
+some magical flags which says, 
+communicate this with every other node in 
+the system or every other process in the 
+system or every other threat in the 
+system or every other process in that 
+process group or thread group there is. 
+There's ways to sort of say that in these 
+software protocols. 
+just for a quick question here. 
+Has anyone here programmed an MPI? 
+Okay. And once in a while, perform a 
+programming. 
+Good. So, 
+we'll talk briefly. 
+I'm going to show a brief code example 
+here of one process communicating with 
+another process via a very common 
+messaging library called the message 
+passing interface or MPI for short. 
+So, let's look at this piece of code. 
+It's a C code and what's happening here 
+is, okay we start our program, 
+we have my ID. 
+So, the, the program model of MPI is that 
+it will actually start the same process 
+on multiple cores or multiple processes 
+or multiple not, not, it's not threads 
+but multiple processes or multiple cores 
+will start up the exact same program. 
+So, this is sometimes called SPMD or 
+single program multiple data program 
+model. 
+SPMD. 
+So, the SPMD model here, what you're 
+going to notice is that actually we're 
+going to execute this program twice. 
+One on the one core, and one on the 
+second core. 
+Now, you're going to ,, well, if you're 
+executing exact same program, are they 
+going to do the exact same thing? 
+Well, let's take a look. 
+Okay. 
+So, we have this thing called my ID. 
+This is what tells us in what core we 
+are. 
+And there's something here called 
+numprocs, which is going to tell us how 
+many processors there are in the 
+computer. 
+And we fill these in. 
+So, you see here, we start off by calling 
+MPI INT MPI INT sets up the message 
+passing system from a software 
+perspective. 
+Then we call MPI communication size with 
+some magic parameters. 
+And it's going to fill in this field, 
+which tells us how many processors there 
+are in this, in this MPI program. 
+When you launch an MPI program, there's a 
+special MPI Start command that you will 
+have to run, which will actually, is, it 
+takes a parameter of how many it takes 
+parameter of programmer trying to run and 
+multiple processors that you are trying 
+to run, and the number of processes that 
+you are trying to run it on. 
+So, our program now can dynamically 
+detect how many processors were running 
+on. 
+It can also detect what's called our 
+rank, which is our ID. 
+So now, we can actually detect before the 
+first process or the second process 
+launched in a two-process system or which 
+one we are, and will fill in my ID with a 
+rank. 
+And this is a library which will figure 
+this out for us. 
+In this, this MPI implementation. 
+Okay. 
+So, we are assert now. 
+We say the number of procs equals two. 
+this is just to make sure we're not 
+running on three processors or ten 
+processors or something like that. 
+We want strictly two and And not one, and 
+not 
+so that will, that will fail if we get a 
+problem there. 
+Okay. 
+So now, this is, this is where we can do 
+different things. 
+So, single program multiple data. 
+The reason it's called this is we can 
+actually make decisions based on our 
+processor ID or my ID here. 
+So, we'll do something which says is my 
+ID zero? Do this else, do this other 
+piece of code, 
+okay? 
+So, is everyone want to wage your guess 
+here what this program does so far? 
+So, the one, one processor is going to be 
+executing this, the other processor is 
+going to be executing that. 
+First processor executes a send. 
+[COUGH] Let's, let's look at this first 
+line here and see what happens. 
+This is the data we're trying to send so 
+we're sending x, which is an integer, 
+which we load with the number 475, which 
+is our class, or course number. 
+[COUGH] And we send that with a 
+particular tag. 
+So, MPI is structured around this notion 
+of tags, 
+which is how you can effectively connect 
+up a sender and a receiver. 
+[COUGH] Oh, sorry. 
+That's how you can connect up multi, 
+multiple pieces of traffic between 
+senders and receivers. 
+The other way that you figure out is by 
+looking at, 
+there's a 
+a number of who you're sending and 
+receiving to, so this is the core number. 
+So, what this says here is send x to rank 
+number one with tag, tag, 
+we're going to say tag is 475 also, 
+and this MPI rest of this stuff here, 
+don't worry about. 
+And this is, this is a length. 
+So, this is going to say, send one word 
+of size integer to processor one with a 
+particular tag. 
+And this MPI COMM WORLD basically is 
+extra flags you can pass there which 
+says, do I want to send to ev, all other 
+MPI sub processes or you can make 
+subgroups? 
+There's this notion of groups that MPI 
+has but it's kind of, more complicated. 
+Okay. So, at the same time, this other 
+program is executing here. 
+The first thing it goes to do is it 
+receives. 
+So, if it gets here first, it's just 
+going to block and wait in this receive. 
+Conveniently, this first processor did 
+ascend, and has a matched receive here. 
+So, it's going to receive with tag 475 
+length one of an MPI integer from zero, 
+and return as a status code. 
+So, it's going to fill in y with the data 
+that got sent on this message. 
+That's pretty fun. 
+We just communicate information between 
+two processes. 
+Okay. So, let's, let's look through 
+what's happening here. 
+Process zero as you do the send. 
+So, it's going to send 475 to processor 
+one. 
+[COUGH] Processor one could have gotten 
+here early, at this receive. 
+And processor one does not execute any of 
+this code. 
+And it has different address base, x's 
+and y's are different, 
+we have no shared memory here. 
+It gets here, and it's going to do 
+receive. And at some point, the send 
+shows up and the, the message shows up to 
+the receiver. 
+It gets received and put into y. 
+So, it just fills it in which is why we 
+pass the address of y. 
+[COUGH] Now, we're going to increment y 
+by 105, 
+so we did some computation on this node. 
+At the, at the same time while were, 
+we're doing this receive, and we're doing 
+this increment, and we're doing this 
+send, 
+process zero is basically just sitting 
+here waiting, 
+trying to receive. 
+So, we're doing, we're having process 
+zero. 
+Sends some data to process one. 
+Process one is going to do some math on 
+it that's going to increment the number, 
+and it's going to send that number back. 
+So, it does the send back here which have 
+y again. 
+And we're going to send y to process zero 
+of length one, and when the message shows 
+up, we're going to receive in the process 
+zero, 
+and process zero is going to print out a 
+message. 
+okay. 
+What, what does it say? 
+Received number 580. 
+Yes, it should go [UNKNOWN] 580 A, 
+not 580 not 580 without an A. 
+Because 580 without an A is not the 
+parallel programming class, 
+that's the security class next to it. 
+But 580 A, you should go to it. 
+So, it prints out the number. 
+So, it can communicate from the one 
+process to the other process and back 
+with messaging. 
+So, one of the things we should note here 
+is, we are both moving data and we are 
+synchronizing at the same time in this 
+message. 
+So, it's, it's doing two different 
+operations here. 
+So, this is a great question. 
+So, this is a programming model right 
+now. 
+We're not going, you know, there's many 
+different ways to implement MPI and 
+people to implement MPI. 
+The interface of these MPI send, MPI 
+receive, are many different ways. 
+So, people have implement this, implement 
+this over a message, hardware message 
+passing network, which does not have to 
+go into the OS, for instance. 
+You send and it actually, there's, 
+effectively hardware there which 
+implements MPI send and receive, sends it 
+out over the networks and receives it on 
+the receive side and there's some 
+interconnection network in the middle. 
+That's one way. 
+Another kind of way is that you actually 
+run MPI over a shared memory machine. 
+At which point, MPI send. 
+This is going to sound kind of funny. 
+It basically takes the data, copies it 
+into RAM somewhere and then when the 
+receiver goes to receive it, it looks to 
+open in the hash table, finds the 
+location in RAM and doesn't reach from 
+that pointer and that's, that's an 
+option. And actually, that is one of the 
+most common ways that people run MPI 
+today is, that doesn't have to go in to 
+the OS because it's just shared memory. 
+on small machines, people run MPI that 
+way. 
+And it actually has good, 
+has typically had a better performance 
+than sort of the equivalent thing of 
+writing the short memory program. 
+And the reason for that is you've 
+effectively, explicitly made the 
+communication or you've made the 
+communication explicit. 
+So, that coherence protocol, you're 
+basically going to be build to optimize 
+for producer-consumer. 
+You have a right to some location. 
+And then, someone else is going to read 
+it, your not going to have random false 
+sharing problems, your not going to lots 
+other problems. 
+So, that's pretty common. 
+where MPI has the biggest use today is in 
+massively peril computations. 
+So, this is sort of the supercomputers of 
+the world. 
+sort of the, all the supercomputers minus 
+the vector of supercomputers who 
+typically don't use MPI, 
+but the massively parallel computers. 
+So, like the biggest computers in the 
+world right now, 
+the 
+I don't know, 
+the Roadrunner computer at Los Alamos, 
+for instance, and the similar sorts of 
+computers like that. 
+They will have special network cards that 
+implement MPI effectively and they do it 
+in user space. 
+Now, another way to do it is that you can 
+actually implement MPI over TCP/IP going 
+through the operating system. 
+And that's pretty common when people just 
+run small clusters of computers is MPI 
+send and receive will trap into the 
+operating system. 
+It will go into the library first and 
+then up, the library will watch you read 
+and write to the sockets. 
+At some point, that will go out over the 
+network card. 
+All of those are possible and all of 
+those have very optimized MPI 
+implementations because this is the most 
+widely used parallel messaging library 
+for high performance application and has 
+the largest [UNKNOWN]. 
+So, people have optimized this quite a 
+bit. 
+Okay. 
+So, this, this brings us to the question 
+of, a lot of words in this slide, but I 
+do want to sort of talk about this, of 
+message passing versus shared memory. 
+So, we have two different parallel 
+programming models. 
+Message passing, where you have to 
+explicitly name your destinations. 
+And shared memory, where you went to some 
+random location at some point in the 
+future, someone goes and reads from it 
+and you don't know who the reader is. 
+It could be any of the processors in the 
+system. 
+If, you, you could just read around them 
+it could be random. 
+It could be literally random like you 
+read some random number and it tells you 
+whose going to do a reading of that 
+location. 
+But if you think about it, because you 
+have any, you can write two locations 
+someone else can go read it in shared 
+memory. 
+You are effectively having a one to all 
+communication versus message passing 
+allows your microarchitecture and your 
+system to do the optimize around 
+point-to-point communication. 
+Okay. 
+So, let's compare these two things. 
+we have message passing here. 
+In message passing, 
+typically, memory is private per node or 
+per process or per core. 
+So, memory is not shared. 
+Shared memory by definition, memory is 
+shared. 
+Message passing of explicit send and 
+receives in our software code. 
+So, we're actually going to put a MPI 
+send and MPI receive. 
+We're actually going to have sends and 
+receives. 
+Conversely, shared memory, we have these 
+implicit communication via loads and 
+stores. 
+And the load and the store names an 
+address but it does not name a core 
+number or a process number or a thread 
+number. 
+[COUGH] Message passing moves data. 
+We do a send and we put some data in 
+there. 
+Also by definition of receiving a message 
+on the receive side, there's some 
+synchronization there. 
+There's a producer-consumer relationship 
+from the sender to the receiver. 
+In shared memory, you have to explicitly 
+have synchronization. 
+sorry, I should say explicit. 
+You need to add explicit synchronization 
+via fences, locks, and flags. 
+So, you need to add something in there to 
+do synchronization. 
+And if you don't, 
+you don't, if you don't have 
+synchronization, you could have race 
+conditions. 
+You can get the wrong data. 
+You can pick up the incorrect data, 
+which is a, a pretty common programming 
+error in shared memory programming. 
+[COUGH] So you don't need to know the 
+destination, you don't need to know the 
+destination up here. 
+[COUGH] From a, from a programming 
+perspective, what I wanted to point out 
+here is message passing is very natural 
+for producer-consumer style computations. 
+So, if you have one node producing some 
+value and another node reading the value, 
+it's very, very natural. 
+You set up, you set up a you send, you're 
+sending from one node to the other node 
+and receive it at the other node and you 
+have a channel between them and you can 
+communicate. 
+And you can sort of send data in there, 
+it's all in order, 
+we'll say, and you can just send down the 
+channel stuff comes out the other side. 
+Very natural for producer-consumer. 
+Shared memory, 
+you have to implement producer-consumer 
+like we did on last lecture, where you 
+have, like a Python memory, and locks on 
+that structure. 
+But what is easy on shared memory, which 
+is hard to view in message passing, is if 
+you have a large shared data structure. 
+Let's take, for example, you have a big 
+table. 
+And you're trying to process this table 
+in parallel and you have, I don't know, 
+a big you have lots of little files. 
+And you give each of these files to a 
+different processor. 
+The processor reads the file and what 
+we're trying to do here is we're trying 
+to build a histogram. 
+So, it's going to read some number out of 
+a file and based on that number, it's 
+going to look at a shared data structure 
+and increment that location by one. 
+Now, because it's shared memory, you want 
+to make sure the two processes or two 
+processors or two threads or two 
+processes or two processors is not trying 
+to increment the number at the same time, 
+so you probably want to lock that 
+location in the table or lock the whole 
+table, increment it, and then unlock it 
+so you don't have two people trying to 
+increment it at the same time. 
+But it's very natural to build a shared 
+table in shared memory and have locks on 
+that shared table and have different 
+people operating on that shared piece of 
+data at the same time. 
+So, the interesting thing here is that 
+you can actually tunnel shared memory 
+over messaging. 
+And you can tunnel messaging over shared 
+memory. 
+So, let's look at the first example here 
+of how to implement shared memory on top 
+of messaging. 
+You could do this in software. 
+And in software, we, how we do this is 
+effectively try and turn all of our loads 
+and stores into sends and receives. 
+Maybe from, and there's maybe like one 
+centralized node which has a big notion 
+of memory. 
+That's one way to do this or you 
+distribute it somehow. 
+It's going to be pretty painful to do. 
+But people have implemented systems like 
+this, where you actually implement loads 
+and stores or your compiler will go and 
+pick out loads and stores and turn them 
+into messages. 
+A more common thing to have happen is to 
+actually have hardware that automatically 
+turns communications into messaging. 
+So, we are going to take this motion of a 
+programming model and instead, we are 
+going to turn into a broader motion of 
+entities trying to communicate via 
+explicit communications that are sent and 
+then sort of interconnect. 
+And this is actually the most common way 
+these days that people go about 
+implementing these large shared memory 
+machines. 
+This is actually, the memory traffic will 
+get packetized. 
+And we'll talk about packetization in a 
+second. 
+And it will get sent over a network and 
+then received and then some receiver will 
+do something with it. 
+So, an example here, let's say, we have 
+this core here and this core wants to do 
+a load. 
+And the, the, the, the data is in main 
+memory. 
+[COUGH] On our bus here, the core could 
+just shout, I need address five. 
+And the memory will shout back, got it, 
+address five has the value six. 
+If we have a switch interconnect, 
+we put switches in here. 
+We can have the core actually packetize 
+the memory request. 
+So, we'll take this load and it will make 
+a message, send it over the network, 
+and it will show up at the memory. 
+The memory will read the message, 
+make a response, 
+and And it can send it back over the 
+network also. 
+So effectively, what we have here is we 
+can actually tunnel shared memory over a 
+message network. 
+And this is actually, for large cache 
+coherence systems. 
+The most common thing that happens. 
+We'll be talking about this in greater 
+depth in two classes when we have our 
+directory based protocols, 
+which are effectively implementing shared 
+memory over these switched 
+interconnection networks. 
+You could also implement messaging over 
+shared memory and this is pretty common 
+in small systems that have shared memory. 
+They have no other way to communicate. 
+And this is exactly what we talked about 
+last lecture. 
+We had a FIFO, we had head and tail 
+pointers, 
+producer can effectively enqueue onto 
+this queue in main, main memory. 
+Consumer can go read from it and you 
+could implement messaging this way. 
+So, I guess, what I'm trying to get at 
+here is messaging and shared memory are 
+duals of each other. 
+They may be more natural for one thing or 
+another, but you can implement any 
+algorithm, you can implement one in the 
+other. 
+And that's been shown at this point. 
+

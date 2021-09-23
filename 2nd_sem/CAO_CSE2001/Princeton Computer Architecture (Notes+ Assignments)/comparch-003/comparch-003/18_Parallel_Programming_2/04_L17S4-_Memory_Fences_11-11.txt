@@ -1,0 +1,289 @@
+Okay, so now we get to talk about issues 
+of sequential consistency and how to 
+actually go about implementing these 
+things. 
+So going back to our, valid interleaving. 
+We start to ask ourselves, how do we 
+build a sequentially consistent model 
+with out of order processors, 
+or out of order execution of memory. 
+Well we already said in our out of order 
+system that we can re-order loads to 
+different addresses. 
+We can re-order loads to the same 
+address. 
+Doesn't really matter. 
+Well, if you go take that, 
+all of a sudden they just breaks a 
+sequential consistency. 
+Huh. 
+We said we could reorder a store in a 
+load in our out of order processor if 
+they were to different addresses. 
+We said we could reorder stores and load 
+the other way. 
+We said we could reorder stores in 
+stores. 
+So out of order memory systems and auto, 
+auto processors effectively break 
+sequential consistencies. 
+So how you break, how do you implement a 
+processor which is useful? 
+And is out of order, and we want to go 
+out of order for performance reasons. 
+Also cache has started to become a big 
+problem here for performance. 
+If we want to have true sequential 
+consistency you're going to have to 
+somehow figure out how to not store any 
+data in your cache. 
+Because the second that you store data in 
+your cache, 
+you're going to have to go, let's say 
+it's a right back cache if you do a store 
+to your local cache and you write a one 
+to it, 
+and some other processor tries to read 
+it, well it's not going to be able to see 
+that data. 
+So we need to be very careful here of 
+when is data actually visible to other 
+processors if you have a cashe involved 
+in multi-processor system. 
+So we are going to move towards little 
+bit more weak or the relax memory models. 
+So as I said last class, 
+almost no processor actually implements 
+a, a truly sequentially consistent memory 
+system. 
+They're all weaker than that. 
+Now the question is how weak do you want 
+to go. 
+and this starts to come up because it's 
+a, it's a tech trade off between what the 
+programmer can wrap their head around 
+versus effectively performance in an out 
+of order system. 
+So what we can do is we can think about 
+going to weaker memory systems, 
+and when we do that, we are going to make 
+the programmer decide when a load in a 
+store can be reordered, or when a store 
+in a store can be reordered, or when a 
+load in a load can be re reordered. 
+So let's look at these four different 
+cases independently here. 
+Reordering a load with a load, 
+reordering a load with a store after it, 
+reordering a store with a load after it 
+and reordering two stores. 
+And note we're not talking about the same 
+memory addresses here at all. 
+We are talking about two different 
+addresses, but sequential consistency 
+even says for different addresses we need 
+to worry about this. 
+So how many of these extra dependencies 
+can we remove and we're going to 
+introduce this notion of a memory fence 
+or sometimes we call memory barrier 
+operation which is a serialization point 
+that says all of the previous 
+instructions before well, I will be 
+careful what I say there actually. 
+My references is actually a serialization 
+operation which says all of the memory 
+accesses or at least the named memory 
+accesses before a certain point have been 
+completed before the memory fence 
+completes. 
+And, all of the operations after it do 
+not complete, have not started or 
+completed. 
+Before the memory fence completes so this 
+really is a barrier on your memory 
+operations and the reason I'm being a 
+little bit hesitant here is the basic 
+memory fence will say that all memory 
+operations before the memory fence 
+completes and that none after the memory 
+fence have started when the memory fence 
+completes. 
+But people have introduced a little bit 
+even weaker versions of memory fence over 
+time of course, for performance. 
+And you start to see things where. 
+You'll have only load memory fences, 
+where it barriers against all the loads 
+previous. 
+Or you have, one you need directional 
+memory fences which will say only look at 
+all the stores that happen after this 
+point and don't allow any of them to 
+happen before this point. 
+So, people have actually introduced 
+instructions in modern architectures that 
+have all these things. 
+And, probably one of the weaker ones if 
+you actually want to go look at a really 
+weak memory model, is go read about the 
+itanium memory models, extremely weak 
+memory model. 
+and they, they. 
+Need to have fences all over the place. 
+And the, the trade off here, the 
+performance trade off is how many fences 
+you need to put in. 
+Versus performance you get from 
+reordering of memory operations. 
+So let's look at a couple, let's, let's 
+name a few of these things, cause 
+everyone likes naming. 
+And these are 
+computer architecture research names. 
+These are common across the industry at 
+this point effectively, 
+One of them is called total store 
+ordering. 
+So in total store ordering, this is not a 
+big step away from sequential 
+consistency. 
+The stores, some total store ordering. 
+Loads do not get reordered with other 
+loads. 
+Loads do not get reordered with other 
+stores. 
+Stores don't get reordered with other s, 
+stores. 
+But a store followed by a load? 
+Can be reordered. 
+So a load can be moved above a store 
+here. 
+And if you want to enforce the order 
+between the store and load you need to 
+write this. 
+You need to do store word and then fence, 
+loadwork. 
+And this guarantees that this load is 
+going to happen after that store in the 
+processor. 
+Partial store ordering is a little bit 
+weaker than that. 
+So partial store ordering, loads of other 
+loads don't get reordered. 
+Loads of other stores don't need fences, 
+but stores followed by loads, which is up 
+here, 
+and stores followed by stores also need 
+fences to guarantee ordering. 
+And then finally we get this class of 
+weak ordering, and frankly, most 
+processors these days actually fall into 
+some category of weak ordering, and 
+there's sort of different questions in 
+how weak it is. 
+but we're not going into that little 
+detail here. 
+And here, you actually need a fence to 
+enforce all of these orderings, so it's 
+kind of, kind of interesting, interesting 
+to think about. 
+The nice thing about fences is that. 
+While these operations are expensive and 
+are big serialization points, the memory 
+fences, you only need to pay for them 
+when you care about the ordering. 
+When you don't care about the ordering, 
+the computer architecture can reorder 
+things and make everything go faster. 
+It's only exactly when you care about it 
+that you need to introduce defenses. 
+one thing I was going to say is some 
+compilers will do some of this work for 
+you. 
+Introduce defenses, for you. 
+And usually one of the ways that it's 
+done actually is if you see atomic 
+operation. 
+So if they see, if a compiler sees 
+something like a lock operation or P or a 
+V, in your code and it's sort of a 
+special way to 
+signal back to the compiler. 
+It'll know that you need to make sure the 
+memory operations have all been 
+serialized at that point. 
+Usually also atomic operations like test 
+and set are fences on their own right. 
+which helps, but sometimes compilers can 
+even figure out where other fences are 
+needed for other memory addresses. 
+And one of the things that I want to say 
+here is that fences don't actually take a 
+argue bit. 
+It's not going to take an address to go 
+fence on, 
+and the reason for this is we really want 
+to do is we want to make sure all the 
+previous memory operations, because in 
+the question of consistency we haven't 
+said anything about the addresses. 
+We just said previous memory operations 
+in one thread don't move after a 
+subsequent memory operation. 
+Okay, so let's look at an example here of 
+where we might need to introduce a 
+different, different levels of fences 
+here. 
+So here we have our producer consumer 
+model. 
+And one of the things we were worried 
+about in our original examples, 
+we were worried about these two stores 
+getting reordered. 
+Well, we can force that by putting a 
+memory fence operation in here, 
+and saying, it's a store, store. 
+So no stores can pass any other stores, 
+and this'll guarantee that these happen 
+in order. 
+But we don't really care, in this case 
+we'll say, if, well, 
+this actually already has an arc, so 
+we're not, that's not going to get 
+reordered, because this register is, is, 
+is dependent there. 
+But let's go over here, and take a look 
+over here. 
+If we have full sequential consistency, 
+we would not be able to reorder these two 
+loads. 
+Well for performance maybe we want to 
+reorder those loads because one of the 
+input registers isn't valable. 
+Because it's the result of a long 
+multiply for instance, or something, 
+something like that. 
+So you might want to reorder into your 
+out of order processes for performance 
+reasons. 
+In true sequential consistency you 
+wouldn't be able to do that. 
+But with this weaker memory model we can 
+reorder that, but then guarantee 
+correctness by introducing a fence 
+operation here. 
+And this fence operation is going to to 
+say. 
+After these loads are done. 
+These loads need to complete before this 
+load starts. 
+So you can sort of guarantee that if our 
+head equals our tail, you know at that 
+point that you're, you're safe to go 
+execute the rest of this code here. 
+
+Any questions about that so far, 
+about the, the fences and why? It's kind 
+of a pay as you go, if you will. 
+

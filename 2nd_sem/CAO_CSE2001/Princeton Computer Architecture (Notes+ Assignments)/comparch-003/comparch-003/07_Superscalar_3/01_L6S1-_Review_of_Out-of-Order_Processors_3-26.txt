@@ -1,0 +1,86 @@
+Okay, so today we're gonna pick up where
+we left off and continue talking about out
+of order processors?
+And things are gonna start to get a little
+complicated, but that's good.
+We don't want to build, well, we want to
+try to build simple things, but we also
+want to build high performance things, so.
+Let's start talking about some more
+complex, out of order processors than we
+talked, talked about last time.
+So last time we talked about In order, in
+order, in order processors, and we
+introduced a scoreboard, and then we
+started to talk some about in order, in
+order, where the front of the machine is
+in order and the issue is in order while
+the write back and the commit are out of
+order.
+It also uses scoreboard, and today we're
+going to start talking about things that
+even have higher performance.
+And this is sort of, roughly put in sort
+of order of performance and sort of what
+people build if they actually want high
+performance in their computer systems.
+And we're gonna start talking about in
+order on the front end, out of order in
+the back end, and we're gonna have to
+introduce things like re-order buffer, and
+a store buffer.
+Then we're gonna talk about a machine
+which has in order front end and all the
+back stages are out, out of order.
+Which may not make a whole lot of sense,
+because out of order commit starts to look
+a little odd.
+Likewise that's the, the case for this
+processor.
+And, and, so why does out of order commit
+look a little odd?
+Well, when you start to have out of order
+commits it's very possible that you could
+if want to have a precise exceptions
+point.
+It, depending on how you sort of implement
+that processor, and depending on where you
+put the commit points.
+If you put the commit points let's say at
+the end of the pipe it's very possible
+you'll commit results to your register
+file, or your architecture register file
+before you know that those results are
+good.
+So you've basically just executed
+instructions and committed information
+that's not correct in program work.
+And we'll show you some of that today.
+Then finally we're gonna talk about sort
+of a, the highest performance thing here,
+which is a, in order, fetch.
+Out of order issue, out of order execute,
+and right back, and then finally an in
+order commit.
+So this, you can have precise exceptions,
+have a commit point at the end of the
+pipe.
+And for this we need to introduce an issue
+queue, which is where the instructions
+sort of live for a while as they're
+getting ready to go issue, and this allows
+us to do out of order issue.
+Just to recall back our motivating
+examples.
+Example, we're gonna be using this example
+throughout today's lecture again.
+Two different instruction code sequences
+not dependent on each other.
+You should be able to execute these things
+in parallel if you had enough parallels on
+your machine.
+And we talked about this already.
+So I'm gonna skip past the, in order, in
+order, in order machine.
+And get to, in order, in order, front end
+an issue, and out of order right back in

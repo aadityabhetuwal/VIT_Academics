@@ -1,0 +1,437 @@
+So, what is computer architecture?
+Computer architecture, we're trying to
+take an application, or something that a
+human wants to do, so for instance,
+calculate a spreadsheet, play a video
+game, play some sort of music, and we want
+to figure out how to map it down to
+physics.
+So what do we mean by physics here?
+Well, physics is, we have in the world we
+have particles and they bounce around,
+they interact, we have photons bouncing
+around in the world, and we need somehow
+translate what humans want to do into what
+the physics can do.
+And one of the problems with this is, this
+is a really big gap.
+So how do you, go from application
+directly to physics?
+You have physics bouncing around the
+world.
+You have mechanical systems.
+And without some level of abstraction,
+it's very hard to go from the application
+directly to the physics.
+Now, in the broader sense, what computer
+architecture is trying to do is it's
+trying to come up with the abstraction and
+the implementation layers.
+That are needed to be able to bridge this
+gap.
+So, we're gonna put a bunch of different
+layers in here.
+And by making smaller abstraction layers
+and smaller layers, we're going to be able
+to solve subsets of these problems and not
+have to change everything here in the
+middle, just one.
+Let's say the physics changes or the
+application changes a little bit, we'll be
+able to reuse a lot of the work that we've
+done along the way.
+And computer architecture is the study of
+these layers, and figuring out how to take
+the physics and turn it into applications
+that humans want.
+Now.
+I wanted to point out that in the natural
+world, it's pretty challenging to directly
+jump from application to physics, but
+there's a few examples.
+So one example I wanted to bring up
+actually is the compass.
+The compass is a nifty little device that
+directly takes physics and gets pushed up
+into an application.
+But there's very few other examples.
+I think book is a okay example of this but
+otherwise people build lots of abstraction
+layers in between here.
+And one other thing I wanted to point out
+here is that we're trying to efficiently
+use manufacturing technologies.
+So what I mean by that is, when physics
+changes, or we move to smaller
+transistors, or we move from, let's say,
+silicon to gallium arsenide or some other
+implementation technology, that changes
+the bottom layer here, but we want to
+still be able to reuse a lot of the other
+work that we've done over the years.
+So, let's take a look at the abstractions
+in modern day computing systems.
+We start off here, physics.
+We have fundamental physical laws of how
+particles interact, and we move up to
+devices.
+So, what do I mean by devices?
+We have transistors, and we can build
+different types of transistors.
+Mosfets, BJTs, we can build other, other
+types of FETs, and we start to build
+circuits, bigger circuits out of this, and
+out of those we go and build gates.
+And from gates we can go to RTL, or
+registered transfer language here, which
+is sort of our verilog coding.
+And then we start to get into what this
+course is about, which is different types
+of architecture.
+So there's microarchitecture, which is how
+you do you go and actually build a
+specific implementation of a chip.
+And then we're, above that we have
+instruction set architecture, which gives
+us some portability on top of that.
+And then we get into operating systems and
+virtual machines, Programming languages,
+and algorithms.
+And then finally we get to the algorithm
+the application programmer sitting on top.
+So in this course, in computer
+architecture, we're only gonna be focusing
+in this three middle layers here,
+instruction set architecture, or what I
+will sometimes refer to as big A computer
+architecture.
+Microarchitecture, or, sometimes what
+people call organization, of computing
+systems.
+And, register transfer language and we'll,
+we'll also overlap a little bit into the,
+the abstraction layers above and below
+here.
+So, we'll talk a little bit about some
+operating system concerns and virtual
+machine concerns.
+And we'll talk a little bit about how the
+tran-, the technology and the gates
+influences the computing system.
+So one important point here about computer
+architecture is it's constantly changing
+because different constraints and
+different applications are changing.
+So, people have new applications that they
+come up with.
+They come up with ways, or people come up
+with different applications.
+I now want to have a smart phone.
+Well, that didn't exist twenty years ago.
+And this pushes down different
+requirements and these different
+requirements actually suggest how to
+change the architecture.
+If you, for instance want to do a lot of
+video processing that can actually
+influence your computer architecture so
+you add specialized instructions to do
+video processing.
+Likewise technology constraints push up,
+so as we go to smaller and smaller
+transistors, we'll say the smaller and
+smaller transistors let's say go faster,
+but the wires go slower, well that's going
+to influence your computer architecture.
+And a lot times new, new technologies make
+new architecture possible.
+So, what do I mean by that?
+Well, lets say all of sudden, you get a
+big bump in transistors, you get twice as
+many transistors.
+Well now, architectures and micro
+architectures that didn't use to make
+sense, start making sense, because you can
+for instance fit a lot more computation on
+one chip.
+And, what's, the interesting thing here,
+is that, computer architecture is not done
+in a vacuum.
+So, computer architecture actually
+provides feedback up and down this
+abstraction layer stack.
+So, it will give feedback, and it will
+actually influence the research directions
+that technology looks at.
+And will influence research directions and
+influence different applications that are
+possible.
+So this is not all done in a vacuum, the
+computer architect actually sits in a very
+key location in this abstraction layer
+stack here, cuz you can push up and push
+down, and you're not just forced to work
+with what you're given, if you will, from
+a technology perspective.
+But that might take a few years.
+So let's talk a little bit more about what
+this class is about, but we'll, we'll do
+it by way of a little bit of history.
+And to put a little bit of a Princeton
+connection in here, we're gonna talk
+computers back in the late '40s, early
+'50's, nineteen, 1940s, 1950s.
+So, here's actually a, a picture of the
+IAS, or the Institute for Advanced Study
+Machine, which was built in the Institute
+of Advanced Study, which is maybe about a
+mile and a half away from this classroom.
+And it was designed by Jon Von Goyman,
+and, and to give a little bit of insight
+here.
+It was first moved in Princeton in 1952,
+it was actually started in the late'40's
+and took them a couple years to get, to
+get working.
+And one of the interesting things here is
+that this machine is actually built out of
+vacuum tubes.
+So, everyone thinks about transistors
+today.
+Well, before we had transistors we had
+little glass tubes that actually looked
+like light bulbs, and inside of those
+there were switches that could be
+switched.
+So, very similar idea to what our
+transistor can do, but, instead you had a
+evacuated glass tube, and you had a little
+transmitter, it was a cathode ray tube.
+And then you had a gate that could open
+and close inside of this.
+So people were building computers long
+before transistors, and people were
+thinking about computer architecture long
+before transistors.
+And people were even thinking about
+computer architecture and these sorts of
+technologies even before vacuum tubes.
+So there was electromechanical systems, a
+good example of this actually was
+originally in phone systems.
+They had these cool electromechanical
+switches.
+So when you take your old rotary phone and
+you sort of turn it and then it goes,
+tick, tick, tick, tick, tick, tick, tick,
+tick, tick.
+What that's actually doing is, it's
+sending pulses which are turning a
+mechanical, a little mechanical arm inside
+of a relay system, and people built
+computers out of those electro-mechanical
+relays.
+So you can have switches that turn, change
+switches, similar sorts of ideas to
+transistors.
+And even before that people had looked at
+building mechanical systems.
+So there's mechanical adding machines for
+instance.
+And now of days we, of course, have
+transistors.
+So, it was computing then, in the fifties
+and if we fast forward to today, we have
+lot, computers look very different.
+In this figure here, ya know, this thing
+was the size of a room.
+Pretty big room TV scale sort of, a person
+is maybe yea tall in this figure thing.
+It's a, sort of normal-sized room, but,
+still sort of room sized.
+But today we have lots of different
+applications.
+And computing looks very different.
+So, we have computing, let's say, in small
+systems.
+So we have a little sensor network-,
+networks, and little sensor nodes
+distributed.
+We have fancy cameras.
+We have smartphones.
+We have mobile audio players and iPods.
+We have laptops, like my laptop here.
+We have self-driving cars, we have big
+servers, we have Xboxes, and there's a lot
+of variety now in what computing systems
+look like.
+So, the influence of this technology,
+computer architecture, has been very, very
+broad.
+And we even go on to seeing things like
+routers, flying, unmanned autonomous
+vehicles.
+We have GPS's, which are little computers
+that can basically fit on your wrist these
+days and tell you exactly where you are.
+E books, tablets, set-top boxes and the
+list goes on and on and on.
+And what, what, I want to get across here
+is that computer architecture has a very
+rich history.
+And this history is continuing and it's
+very relevant today.
+So we're not studying something which no
+one cares about anymore.
+People are sitting there sort of ready to
+get the next generation computer
+architecture.
+People, and, and it used to be you know,
+you want your faster desktop computer.
+And that may not be as important today,
+but what is important is people want their
+faster smartphone.
+They want to enable voice recognition on
+the go.
+They want to be able to, in scientific
+applications, they want to build a model,
+some health system that's really complex,
+that you weren't able to do before.
+So, it continues on and on.
+It is very relevant today, and it has a
+very rich history.
+In this course we're gonna talk a little
+bit about the history, we'll mostly focus
+on the technology.
+Sometimes when people teach computer
+architecture classes, they have much more
+emphasis on the history.
+This class, we're gonna Touch on history a
+little bit, but more focused on the, on
+the technology considerations.
+So here's a chart that's from Hennessy and
+Patterson's Computer Architecture, or A
+Quantitative Approach, and what this graph
+is trying to show is, is something very
+fundamental to computer architecture, and
+it's what's been driving our industry.
+So what we see here is we see different
+processor designs plotted on a log plot.
+So this is ten, 100, 1000. This is a log
+plot and it says performance versus years.
+So, if you look at this, this plot, you'll
+see that, well this roughly looks like a
+straight line, and a straight line on a
+log plot is an exponential increase in
+performance.
+So, we've seen computing going up
+exponentially faster.
+And this is a, a really fundamental to
+driving what's been going on in our
+industry and why computer architecture is
+so important.
+And I do want to say that, you know, this
+exponential increase is, comes from two
+things.
+It's not all computer architects, I'd love
+to able to sit, stand here and say, "we
+did all this." Well, no, a fair amount of
+this is from getting, better, better
+technology.
+What I mean that is the, lower down layers
+and the implementation technology, like
+the transistor technologies.
+And some of it is from having better and
+better computer architecture.
+And what is really important here to note
+is even if you have better and better
+transistors.
+A lot of times what happens if you look at
+this graph is what's happening is you're
+getting more transistors, but those
+transistors are not necessarily
+exponentially faster.
+So, what computer architects have to do is
+we need to figure out how to take buckets
+and buckets of more transistors and turn
+them into more performance.
+And that's what this is many times called
+is it's called Moore's Law.
+If you've heard that term before, what it
+is, is we're trying, Moore's, Gordon Moore
+said that every eighteen months to two
+years, you're going to get twice as many
+transistors which, you can have for the
+same amount of dollars.
+That was what was originally said.
+People sort of transformed that now into
+meaning your computer's gonna get twice as
+fast every year.
+That's not what, Gordon Moore originally
+actually said.
+He said he can get twice as many
+transistors for a certain amount of
+dollars.
+And people have also sometimes taken this
+to mean that you get twice as many
+transistors on a chip every year.
+It's not quite what he said, but close
+enough approximation.
+And when, I don't quite have the graph
+here.
+But if you look at computing in general
+across, this, this is all across
+transistor based technologies.
+But if you go farther back into the past,
+you can actually plot other technologies,
+like vacuum tube technologies, and relay
+based technologies.
+And it also fits on this, this graph
+relatively well.
+So sort of, if you continue down here,
+you're gonna see vacuum tubes show up.
+And it's sort of still on this
+exponentially increasing curve.
+Okay, so let's look at, there's two
+inflection points in this graph that we
+wanna look at.
+First one's right here, you can see that
+the slope changes a little bit.
+Well, what, what happened here?
+This was the introduction of reduced
+instruction set computers, or risk
+computers.
+So we got a little bit of a, a crank up
+there when people came out with the first
+risk.
+And, another thing you notice is, this
+graph keels over a little bit here, and,
+we are gonna be talking a lot about this
+in this course, is, what happens or why,
+did this happen?
+So, what, what happened here?
+Well, sequential performance, so this is
+the performance of a single program; was
+getting faster exponentially.
+But then, I don't know, depending on who
+you ask.
+I like to use 2005 as the number but
+somewhere between 2003 and 2007,
+sequential processor performance started
+to, to really have a, a problem.
+But overall performance of your processor,
+still continuous to go up today.
+And what happened is we had to move to
+multi-core processors or multiple cores on
+a single chip.
+And hopefully, the hope is, that this
+graph will continue on here with multiple
+cores, If we can figure out how we can
+effectively paralyze our programs, versus
+our sequential performance tapering,
+tapering off.
+Cuz it would be very harmful to computer
+architecture and computing industry if all
+of a sudden our computers stopped getting
+faster, no one would be buying new
+computer chips.

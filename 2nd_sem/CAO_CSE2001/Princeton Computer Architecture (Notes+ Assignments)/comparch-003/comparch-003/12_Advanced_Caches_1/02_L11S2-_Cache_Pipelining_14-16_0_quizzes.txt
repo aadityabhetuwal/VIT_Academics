@@ -1,0 +1,18 @@
+﻿L11S2:
+
+In Lecture Quiz 1:
+Time: 9:25
+
+Question:
+In a Pipelined Cache, what happens when a load occurs, but there is data in the Delayed Write buffer?
+
+Choices:
+
+A. The data in the cache is returned.
+
+B. The data from the Delayed Write buffer is returned.
+
+C. Subsequent loads need to check the data in the Delayed Write buffer and if there is an address match, the data from the Delayed Write buffer is returned and not the data in the cache.
+
+D. Subsequent loads need to check the data in the Delayed Write buffer and if there is an address match, the data in the cache is returned and not the data from the Delayed Write buffer.
+

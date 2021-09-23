@@ -1,0 +1,489 @@
+So this is where some people got the idea
+that maybe there, maybe there is a better
+way.
+And I wanted to point out that there's
+only, this is only the tip of the iceberg
+of what we'll call better ways of having
+better instruction sequences or better
+encoding standards between compilers and
+the hardware.
+This is actually a open, sort of, research
+topic now.
+Very long instruction word processors or
+VLIW for short.
+Is one take on it.
+There's been a fair amount of work done
+after this, which we're not going to talk
+about in this class.
+Sort of in the last five to ten years,
+that has looked at this in a little bit
+more detail.
+Especially given sort of,
+Multi-cores, and can you schedule across
+multiple cores,
+Or there's a project. There was a project
+out of the University of Texas at Austin,
+which tried to schedule across, something
+that sort of looked like cores.
+But wasn't quite cores.
+That was sort of, we'll call a super VLIW
+but had some dynamic aspects and some
+static aspects.
+But for right now let's talk about very
+long instruction word processors.
+Okay where is, where does the name come
+from?
+Let's start there.
+Well, these were things that were actually
+originally called long instruction word
+processors.
+The name kind of fell out of favor.
+At, at one point people made a
+differentiation between long instruction
+word processors and very long instruction
+word processors.
+And it was kind of on how many
+instructions were packed together.
+The, the differentiation has largely sort
+of fallen out of favor now, and people
+mostly call all of these things VLIWs or
+very long instruction words, cuz it's,
+it's harder to say what is long, what is
+very.
+It's kind of just a extra term.
+It's also, it's kind of like people
+talking about Large Scale Integration
+versus Very Large Scale Integration versus
+Ultra Large Scale Integration or you know,
+people just sort of keep tacking on extra
+letters in the front.
+But let's talk about VLIW instruction
+sequences,
+And, and what is, what does one of these
+things look like?
+Well, VLIW instruction.
+Will actually have multiple, operations
+within one bundle.
+So typically, this is you call a bundle or
+an instruction, which with multiple
+operations inside of it.
+So, in this example here.
+We have six operations that can be
+executed in this one instruction, or in
+this one bundle.
+And, typically, there in a sort of fixed
+format.
+So let's say we have, you can only, can
+execute two integer operations, two memory
+operations, and two floating point
+operations, per cycle, and that's what
+you're allowed to encode.
+So instead of having on a disc a
+sequential sequence of instructions now we
+have a sequential we still have a sequence
+of instructions or sequential sequence of
+bundles.
+But each one of those instructions or each
+one of those bundles will actually encode
+multiple independent operations.
+So let's look at it as sort of an example
+code sequence of this.
+So for instance, you could have something
+that looks like this.
+,, ,, .
+Let's say.
+, So what's interesting about this is we
+can see that there's actually two
+operations in this first instruction, in
+this first bundle.
+The second one only has one operation,
+And this multiply and this add will
+actually execute semantically at least
+they can execute in parallel.
+Now what's interesting,
+Cuz you look at this, I, I had purposely
+wrote this to show a, what looks to be a
+read after write or write after read or
+some sort of dependence between these two
+registers and these two instructions here.
+This small and this add.
+But that's not what's actually going on
+here.
+In a very long instruction word processor,
+the, within one instruction, within one
+bundle, these sorts of dependencies are
+norg.
+So, just because this reads our three and
+this writes our three, they're not
+dependent on each other.
+The subsequent instruction is dependent on
+our three, let's say.
+If this was R3, then that would probably
+be the result there.
+But within one bundle, it doesn't actually
+matter.
+So the semantics of the instruction set
+are everything within one instruction, or
+everything within one bundle, are parallel
+with each other.
+And there's not dependency checking.
+What's nice about this is we just took all
+that piece of hardware that we built. We
+took all that instruction checking, all
+the dependency checking, all the
+scoreboarding and we just threw it out the
+window.
+We don't need that hardware anymore in
+this instruction set, or in this
+architecture.
+So that's pretty cool.
+So we actually took out a bunch of
+hardware that we didn't need and we
+basically let the compiler do that
+checking for us.
+Now there's a question of this mul, this
+multiply takes multiple cycles, whether
+this instruction here picks up the result
+of our three, sorry I should be drawing
+the other way.
+Or let's say the ad had longer latency if
+it doesn't pick that up, and we'll talk
+about that in a minute.
+There's sort of two different choices
+there, in VLIW designs.
+Well let's, let's look at our slide here.
+Typically in sort of traditional VLIWs,
+each operation has a certain amount of
+latency.
+So, that's a guarantee.
+Unfortunately, beacuse of this, the
+architecture of the machine is very tied
+to the compiler.
+The compiler needs to know how long each
+operation takes.
+So that's sort of the downside.
+And in a typical VLIW.
+There's no data interlocks.
+So we don't even have a score board.
+Now there are some objections which do
+enforce in a walking that are VLIW's.
+But in sort of the traditional, most basic
+VLIW, you don't have a score board.
+You have no interlocking.
+So, if you would have let's say, this
+subtract operation.
+Which read register one, which the mall
+wrote.
+And the mall one size of flowing point
+model,
+It took four, four cycles.
+In the most basic operation, this mall
+here,
+We'd actually get the old value of R1, so
+we'll not get this value.
+Instead of, we get the original value R1.
+But we'll talk about that in more detail
+in a second.
+That's, there's a sort of choice there in
+VLID designs.
+But yes, so we, we, reduced our hardware.
+We don't have a registry namer, we don't
+have an issue window, we don't have a
+reorder buffer, we don't have a
+scoreboard, and we let the compiler do a
+lot of the work.
+Downsides to this.
+We're not able to react to dynamicism very
+well, or dynamic problems.
+So cache misses, branch mispredicts,
+things like that.
+Because we're not going down border,
+because we don't all have all that extra
+hardware in there.
+We can't go schedule around those
+problems.
+So that's a, that's a, that's a, that's a
+downside to these architectures.
+Now,
+People have thought really hard about how
+to make VLIWs have some of the benefits of
+superscalars and out-of-orderness, and
+out-of-order superscalars.
+So at the end of lecture today, and
+probably in the next lecture, we'll talk
+about some of the techniques that people
+have added in the, back in the VLIWs, that
+bring us somewhere in between an
+out-of-order processor and a VLIW
+processor.
+And get some of the benefits of both.
+Okay.
+Two, two models.
+This goes back to.
+When you have an instruction which writes
+to a register, and the latency of that
+instruction is coded to be longer than
+one.
+Which value do you pickup?
+Do you pickup the old value,
+Or do you pickup the new value if you have
+instruction which is effectively in the,
+the shadow of the other instruction.
+So the first VLIW model and this is, this
+is a sort of a classical naming scheme I
+did not come up with this.
+It's called the equals scheduling model.
+So the equals scheduling model you have, a
+instruction, and the lead-in to the
+instruction is specified, the compiler
+knows it.
+And, if you have an instruction which
+tries to read a value that gets written
+to.
+Before.
+The first instruction actually does the
+write, it'll get the old value.
+So let's, let's go through an example.
+Over here.
+So we're going to have our multiply,
+again.
+Okay,
+So here we have a mall and an add which
+are bundled together. So they're going to
+execute concurrently.
+And we have and, an instruction, or and
+operation in the second instruction,
+second bundle here.
+I should say they're using brackets and
+semicolons to delineate sub operations.
+Er, the brackets delineate entire
+instructions or entire bundle.
+The semicolon is just there to delineate
+between instructions,
+Or two operations within one instruction.
+And here we have an ant.
+We have what looks to be a read after
+write dependence here.
+Something like that.
+And let's say our pipeline looks like
+this.
+We have X0 which does ALU ops.
+We have Y0, Y1, Y2, Y3.
+And then we have let's say a two stage
+memory pipeline.
+And somewhere over here, you know, we have
+sort of right back.
+So this looks similar to sort of pipes
+we've looked at before.
+But now comes the question.
+Let's say multiplies go down this four
+stage pipe, very similar to things we've
+looked at before.
+Loads and stores go into the memory pipe
+and ALU operations go into the x pipe.
+Should this and get the result and
+multiply, if it's scheduled one cycle
+after it, or should it get the old value
+of R1, the previous value of R1?
+So we're gonna define in the equals
+scheduling model that the mutiply value
+for R1 is not ready until.
+The end of Y3.
+So in the equals model, this and, the, the
+compiler is not trying to express a read
+after write dependence.
+This does not actually exist.
+It gets the old value of R1.
+And the compiler knew about this.
+And everyone's okay with this.
+Now if this and was let's say three more
+cycles later, it would actually get that
+value and it would be a read after write
+dependence.
+So in the equals model we're just saying
+that the operation takes effect exactly at
+the specified latency and never earlier.
+Some positives to this, is you get some
+pretty cool registered usage.
+So if you think about it here, register
+one was live after this multiply.
+So effectively, this gives us a little bit
+less register pressure.
+We can have a little bit more registers in
+flight.
+Without having more physical registers or
+without having more architectural
+registers at all.
+We can basically have more registers.
+Because it doesn't go, it doesn't go dead
+when you override it.
+It goes dead when this multiply takes
+effect.
+So this said, we don't need any register
+renaming.
+But the compiler really depends on not
+having the registers visible early.
+Unfortunately, this causes some problems.
+This sort, these sorts of architectures.
+This is actually the, sort of, first
+formulation of very long instruction word
+processors looked like this.
+There's these equals architectures.
+The major problem with these actually
+comes around if you have things that are
+unpredictable mixed in with this very
+predictable code sequence.
+So let's say you take an inerot[sp?].
+Let's say we just put some unimportant
+instruction here, some subtract operation.
+The subtract takes an interrupt.
+Now, semantically, this multiplication is
+add complete.
+Because the interrupt doesn't happen until
+the instruction after it.
+Doesn't happen until this subtract
+operation.
+Hm.
+Okay.
+Now you've fallen to the interrupt handler
+for the subtract.
+What happens when the and goes to execute?
+Does it actually pick up the correct value
+of R one, here?
+No.
+It picks up the new value of R1.
+It was supposed to pick up the old value
+of R1.
+So that's traditionally a problem with EQ
+or equals scheduling model architectures.
+People have solved some of these problems.
+Or sometimes, when people build these
+processors, they don't have interrupts.
+So some of these VLIW equals, processors
+were not able to handle, you know, handle
+interrupts at all.
+So it's something to think about.
+That's through the, the, the first case.
+I also get a little more forgiving case.
+We'll call it the less than or equals
+model or LEQ scheduling model.
+So here, in this model, a value is allowed
+to become value a, a,
+A register value becomes valid with a new
+register value,
+Any time between when it issues and the
+scheduling leniency.
+So what this means is the compiler still
+can't schedule an instruction early,
+So we can't go and try to read the value
+early, but you're guaranteed not to have a
+problem, when there's an interrupt if,
+let's say you come back and you filled in
+the right value.
+So compilers, who have schedules around
+this and knows not to schedule something
+too early.
+So you still don't have to implement
+interlocks.
+You still don't need a scoreboard but, you
+can now have precise interrupts.
+Some other positive things pop out of
+this.
+You end up with binary compatibility
+preserved, when the latencies are reduced.
+So let's say you make a faster processor,
+where you'll multiply instead of taking
+four cycles.
+Only takes three.
+That's, that's, that's a positive here.
+You may not get more performance from it,
+but at least you won't get incorrect
+execution.
+So that's, that's, that's a positive,
+positive outcome here.
+Okay so a little bit of history.
+Usually I try to not make harp on history
+too much in this course.
+Even though I really enjoy it.
+But, let's this, this, the VLIW processors
+is a,
+I wanted to make one point that, a lot of
+this research is relatively recernt,
+recent.
+So if you go look at the dates on this,
+you know, these first processors, and the
+first real VLIW processors was done in
+like, the late 80's.
+So this is not going back to the 60's.
+This is like a portion of computer
+architecture work, which is actually very,
+very recent.
+The, the first long instruction word
+processor is actually a floating point
+systems, FPS, that's what it stands for
+processor.
+And this was actually a, a co-processor to
+VAX machines.
+So, something that could speed up your
+floating point on a VAX machine.
+This was very much the most basic VLIW
+processor.
+There was no interlocking didn't take
+interrupts it was really sort of for hand
+coded vector arithmetic and floating point
+math.
+Probably when people talk about VIW, the
+thing that pops in the head, to their head
+first, is actually the Multiflow trace
+processor, which was made by a small
+startup company called Multiflow.
+This was an outgrowth actually of a bunch
+of research that was done at Yale, by Josh
+Fisher and a bunch of his students.
+And, I won't go into too much detail here,
+But one of the interesting things is they
+really, really did have a long, very long
+instruction work here.
+1,024 bits long instructions.
+So, so this, this is like a, a beefy
+instruction.
+This is a, and it can have anywhere from,
+seven, fourteen, or 28 operations per
+instruction,
+And this was not dynamic.
+What this actually was is this is how they
+made different configurations of their
+machine.
+So they actually had wider machines that
+were more expensive and narrow, narrower
+machines that were cheaper.
+So it's sort of a family of processors,
+and they customized the compiler to this.
+Josh Fisher actually is much more of a
+compiler guy, probably, than an architect,
+by training, and you can sort of see that
+in his groups work in the PhD's that come
+out of it.
+He now works for HP, HP labs and sort of
+semi retired.
+At the same time actually.
+There was also another company that was
+commercializing a very, very similar idea.
+This was the siderome.
+Sidra, SIDRA five, This was Bob Rao, who's
+another, very famous computer architect.
+He was a, a professor at the University of
+Illinois, and he developed a lot of these
+things and then sort of left and started,
+Sidrome.
+And, some of the interesting things in
+that processor is they have this cool
+thing, instead of having a register
+renamer, they had a register file, that
+the naming of the register sort of changed
+as you did, sort of, function calls.
+We'll talk more about that later today or
+maybe tomorrow,
+Or maybe next lecture.
+But moreover what we really want to get
+out here is this is, this is very recent.

@@ -1,0 +1,21 @@
+﻿L21S4:
+
+In Lecture Quiz 1:
+Time: 7:54
+
+Question:
+How can we take advantage of memory being co-located with the processor in a distributed shared memory architecture?
+
+Choices:
+
+A. Shared data can be located in the memory bank which has the average access latency to all processors
+
+B. Non-shared data can be located in the memory bank which has the average access latency to all processors
+
+C. Shared data can be located in all memory banks
+
+D. Non-shared data can be located close to the processor which uses it
+
+
+
+

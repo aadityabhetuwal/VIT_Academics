@@ -1,0 +1,463 @@
+Today, we move on to our new topic.
+Vector computers.
+So, a little bit of introduction on
+vector,
+Vector machine is a vector processor.
+Broadly, it's a way to get at having data
+level parallelism.
+Many times for, let's say, array
+operations, you're going to want to take
+one whole array and add it too another
+whole array.
+And let's say, these arrays are large.
+Does it really make sense to have a
+processor sit in a tight loop doing load,
+add,
+Store, load, add, store, load, add, store
+in a loop? And it's the insight that comes
+out that if you have computations that
+work on vectors or matrices or even
+multi-dimensional matrices,
+You can think about building an
+architecture where you don't have to have
+as much instruction fetch, instruction
+decode bandwidth.
+And you don't have to sit there and fetch
+new instructions and continually operate
+on those new instructions.
+You could just have an instruction which
+encodes some large amount of computation.
+Because its all the same, it's the
+insight.
+Also, in today's lecture, we're going to
+be talking about single instruction
+multiple data architectures.
+This is kind of a degenerate case of
+vector architectures.
+And a good example of this is something
+like multimedia extensions or MMX in the
+Intel processors or Ultivec in the power
+PC architecture.
+The newer thing that Intel has added now,
+they all call SSE.
+Streaming, something extensions.
+I actually don't know what the second S
+stands for.
+And then they also now have something they
+call AVX, which is even wider.
+They can, can,
+Basically and continually add in more
+instructions to make the short vector
+nature better.
+And then, finally today, if we have time,
+we'll be talking about graphics processing
+units.
+So, I have some examples here.
+This is the ATI FirePro 3DV7800 and then
+we have the Nvidia equivalence, Nvidia
+competitor, which is the Nvidia Tesla, I
+think this is C075.
+Both of these, these are both very fast
+processors. And what is interesting is,
+these started out as graphics, graphics
+processors.
+So, they started out to play video games
+effectively or to do some sort of
+rendering of three-dimensional data.
+So, you're taking some data,
+You operate on it and there's massive
+parallelism there.
+Lots of different triangles in a, in a
+three-dimensional image, for instance, in
+three-dimensional rendering.
+And people have this insight that, that
+same processing architecture that is good
+at rendering triangles might be good at
+doing, let's say, dense matrix operations
+also. And we've seen this outgrowth and
+we've seen a whole programming model come
+up around this and this is, this is very
+recent. to some extent,
+These architectures don't come from the
+same lineage as some sort of normal
+processors.
+They come from, really come from fixed
+function hardware that was there to
+design, there to render video games and
+three-dimensional sorts of scenes.
+So, their architectures look quite a bit
+different and the naming is very
+different, so if you go pull, pick up the
+manual, it tells you how to program one of
+these things and you come from a computer
+architecture background, you're just not
+going to understand any of the words.
+Your book actually, the Hennessey and
+Patterson book has a very good table which
+translates some sort of, traditional
+computer architecture words to GPU words
+and that makes life a lot easier.
+Okay.
+So, let's get started.
+Looking at vector processors, and let's
+look at the programming model first before
+we look at the architecture.
+So, this would be software model, not the
+not what the hardware looks like, yes.
+So, to start off here,
+A couple things to note is in the
+traditional vector architecture, you're
+going to have some scour registers.
+And these are the registers like in a
+normal microprocessor.
+They just hold one value.
+Thye're maybe, let's say, 32 bits or 64
+bits in width.
+And then, you have a second register file,
+which holds.
+Vectors.
+And when you go to access one of these
+vectors, it's the same thing as a register
+file, file here.
+If you go to access, let's say, vector
+register three, or something like that,
+you're going to, that doesn't denote one
+value.
+Instead, it denotes many values at one
+time.
+And typically, we have a fixed width here
+drawn, but typically these things have
+very long widths.
+So, for instance, something like the Cray
+processor or the Cray-1 processors, had a
+maximum vector length of 64 elements where
+each element was 64 bits.
+So, it's a lot of data that you're, you're
+sort of moving around at one time with one
+operation.
+And an important piece of sort of
+architectural or least program model
+hardware here is the vector-length
+register.
+The vector-length register says, how many
+of these elements are actually populated?"
+And we'll see why that's important.
+But for right now, let's just think of
+having the vector-length register be
+equivalent to the maximum number of
+elements in the vector.
+So, think of it as having 64 elements and
+the vector-length register just says
+there's, you're always operating on all 64
+bit, entries of data in parallel.
+Now, if we go look at the program model
+connected to this, we need to add some
+extra instructions now.
+In our Scalar processors, or all the
+processors we've been talking about up to
+this point,
+It operates on one register with one other
+register.
+And that still exists in this model.
+But it operates only on these Scalar
+registers.
+Now, the reason why we still have the
+Scalar registers around in this model, is
+we want to have things like branch
+conditions, address computation, things
+like that are not vectorizable.
+They don't, you know, you don't have 64
+addresses.
+Maybe, maybe you do in certain cases.
+But typically, you're not going to have
+that laying around.
+You're just going to have an address and
+you need to load from address and sort of
+for branches, you need to do the branching
+based on some value,
+And not all 64 values.
+But, we now add some special extra
+instructions.
+So, if you go look in your book, they
+develop this architecture they call VMIPS
+or vector MIPS.
+And they add some extra instructions here
+which look very similar to normal MIPS but
+all of a sudden they put some Vs at the
+end here.
+So,, VV which means it operates on a
+vector with another vector.
+They also developed some instructions
+which have a V and a S, which is the
+Scalar so you can do a vector plus a
+Scalar which would be something along the
+lines of if you were to have, let's say,
+add vector Scalar where you're adding one
+vector with a Scalar register where the
+scale register, let's say is loaded with
+one.
+You could do this add and it'll increment
+every element of the vector by one.
+You also have load in stores, which can
+pull out very large chunks of memory and
+put back very large chunk of memory from
+the arrays in memory.
+But if you look at what's going on in one
+of these instructions, we're taking one
+vector, another vector, putting it into
+Some sort of arithmetic operation and then
+storing it into another register.
+This is a register-register vector
+architecture.
+There has been some register-memory and
+memory-memory vector architectures out
+there, where instead of naming registers,
+vector registers, you can name places in
+memory, but the vector-vector oh, excuse
+me the register-register variants are, are
+the most popular.
+Just like the register-register Scalar
+computer architectures are now the most
+popular.
+One thing I did want to point out here is,
+we've said nothing about how many ALUs
+there are in this architecture.
+This is just the abstract programming
+model.,
+So, don't get this confused with having
+one, two, three, four, five, six
+functional units or something like that.
+This is just a abstract model right now,
+we have not talked about the hardware.
+So, this brings up, how do we get data?
+And we have a instruction here that we'll
+call load vector.
+Load vector has a destination, being a
+vector and the is, Is a register, and you
+might have another offset in the register.
+But let's say, there's only one register
+in our, in our basic load vector operation
+here.
+And this is the address that points to the
+base of the vector in memory.
+And when you go to do this load, it's
+actually going to pull in from memory into
+our vector register.
+You could also start to think about having
+interesting offsets or strides here.
+So, that's what this picture here is
+trying to show is we have a base pointer
+pointing to by register one, it's a Scalar
+register and note it's has different
+naming, these have Vs and these are Rs and
+then,
+We have a stride here which says, where in
+memory to take from.
+So, you can think about having something
+where you can do basically multiple
+locations in memory.
+But you want every fifth element or
+something like that.
+So, you could load register two here with
+five, register one here with the base
+address,
+And then, do this load vector instruction
+and it'll take each fifth piece of memory
+of some data size and load it into the
+vector register.
+And this is our abstract model, but at
+the, at the beginning here, let's assume
+what's called the unit stride which
+basically means this here, is always one,
+so its always getting the next value in a
+row.
+We'll, we'll talk in more complicated
+cases about having non-unit stride.
+Okay.
+So, let's look at what this does to code.
+Here we have a basic code example, it's
+going to multiply element-wise..
+Different elements of a, of a, of Vector
+here, A and B, and deposit it into Vector
+C.
+Now, this is in memory because this is C
+code so these are actually arrays.
+Now, obviously this is not a, you know,
+array multiplication here, cuz array math
+is much more complicated.
+This is a element-wise multiplication.
+If you go look at the Scalar assembly
+code.
+Well, first of all, we need to have a
+loop.
+We have to load the first value, load the
+second value, do the multiply, do the
+store.
+This is showing code for floating-points
+double precision multiplies.
+Then, you have to increment a bunch of
+pointers.
+Check the, the boundary case and, and loop
+around.
+On your vector architecture, life gets a
+little bit easier here because we can do
+all 64 of these in one instruction, we
+don't have to loop.
+And all you really have to do is load,
+load, load vector, load vector, multiply
+and store.
+And this instruction on the top here loads
+the vector length register.
+And we look at the vector-length length
+register here of 64, cuz we're trying to
+do 64.
+But if we were to load the vector-length
+register to, say, with 32, we would only
+do the first 32 multiplications.
+And you can set that vector length
+register all the way up to maximum vector
+length.
+So, the vector-length register,
+There's, there's this value here we call
+the vector-length register max.
+Which is the width, the, the, the, the
+largest,
+It's going to be length of a vector.
+The vector length register says for the
+given operation we're about to compute,
+How many of those operations we should do?
+So, you could either easily have,
+something with, a vector length of a
+thousand.
+But you only want to do, let's say, the
+first 64 operations so you can load your
+vector-length register of 64 and only do
+64 operations.
+A good example for this actually is some
+of the super computers.
+Cray, Cray machine have relatively short
+vector-length maxes, but if you go look at
+something like NEC the Japanese
+supercomputers, the NECSX8 or nine or
+something like that which is, I think,
+actually now probably the fastest computer
+in the world or the SX9, I think is or
+whatever is the, the newest.
+I actually, I think it's the SX9 the new
+Japanese vector shift computer.
+They have very long vector-length maxes so
+they can actually have a vector-length of
+a thousand. So that, in one instruction,
+they can basically encode a thousand
+operations which is pretty, pretty fancy.
+But they can, you still need to be able to
+set the vector-length because maybe you
+don't want to do all a thousand all the
+time.
+Okay, so why, what is this vector stuff
+coming has some advantages?
+,, if you go back to sort of the early
+vector machines, so something like the
+Control Data Corp 6600 or the Cray-1 they
+have
+Very deep pipelines.
+And if you think about the architecture
+we've been building up to this point, we
+had to add a lot of forwarding logic and a
+lot of bypasses to be able to bypass one
+value to the next value.
+Well, if you have a very deep pipe line,
+And you observe back to back multiply or
+something like that, you're going to stall
+a lot.
+But in a vector computer, because you know
+you're operating on, let's say, 64
+operations at a time anyway,
+This actually allows you to take out a lot
+of the bypassing.
+So, while these vector architectures have
+no bypassing in them.
+Because if you're going to be operating on
+64 things, and your pipeline length is six
+anyway, there's no possibility that you'll
+ever actually have to forward data back
+to, let's say, itself or something like
+that in the early you could do all the
+bypassing between different operations in
+the register file itself.
+Also, you know, deep pipelines are good
+cuz you can have very fast clock rates.
+So, to give you an example, the old Cray-1
+had a 80 megahertz clock.
+Now, you might say, 80 megahertz ooh,
+that's, that's not very fast.
+But, you know, 80 megahertz back in the
+probably late 60s' early 70s,' was very
+fast clock rate for a processor.
+I mean, these were supercomputers, mind
+you, but they were very aggressive and
+they can do that because they had deep,
+deep pipelining and lots and lots of
+logic, and these things were physically
+large.
+I mentioned the memory system.
+And, vector computers have some
+interesting changes that you have to think
+about in the memory system.
+One of the things you can do is, because
+you have so many memory operations going
+on,
+You can use vector load.
+You can actually overlap going out to main
+memory with doing the next load
+effectively, even if you're doing them
+sequentially.
+And most these vector architectures have
+many, many memory banks.
+And what's nice is if you have unit
+stride, you know that your one operation,
+your one load is going to, to go to this
+bank, the next operation is going to next,
+that bank, that bank, that bank, that bank
+and have basically a very good bank
+distribution or bank utilization.
+And this is assuming right now that we are
+actually only doing one memory load at a
+time.
+And I have a little note up here that
+says, okay, well, each load takes, let's
+say, four cycles.
+Busy bank time and you have twelve second
+link to get out to memory in this Cray-1
+machine.
+Well,
+On a normal architecture, this would be
+pretty bad, because you'd be stalling,
+twelve cycles, let's say, to go out to
+your memory system.
+I mean, that's, that's not the end of the
+world but that's, that's not great if you,
+like have a, a load, and then a use, a
+load, use and just keep going back and
+forth, between those load and use.
+But in the vector architecture, because we
+have a long vector length and we're
+loading 64 different values and we know
+that they're going to have good
+distribution over many different memory
+banks,
+We can effectively do this one load and we
+can overlap the latency in the memory
+banks with each other.
+So, we'll start one load here, and then
+one lead here, one load here.
+And if, you know, it has four cycle
+occupancy on the respective bank, and we
+have a 64-entry vector, definitely by the
+time we wrap around and get back to using
+this bank again, that first operation will
+be done.
+So, it's a relatively effective way to
+increase the bandwidth of your
+architecture and guarantee that you're not
+going to have bank conflicts.

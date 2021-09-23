@@ -1,0 +1,760 @@
+Okay, so, now that we've gone through the 
+beginning excersises of what a directory 
+based distributed shared memory machine 
+looks like. 
+Let's talk about how to actually figure 
+out where the directory is. 
+So you have an address. 
+And usually these systems you don't want 
+to do it on the physical address spaces. 
+You're not going to want to do this on 
+virtual addresses. 
+You don't want to have to run this, 
+This is because you're sharing data 
+between lots of different systems. 
+At this point you're sort of, out of the 
+system bus. 
+Your address is no longer virtual. 
+You've gone, you've gone through the 
+translation look inside buffer or then 
+MMU and you've figured out what the 
+physical address is. 
+So, 
+to figure out what the directory is, or 
+sometimes called the, the if in a 
+distributed memory machine the home node. 
+Or is the it's a number of which one of 
+these directories to go to. 
+And there's a lot of different ways to do 
+this. 
+But one of the more common ones, is to 
+just use some bits out of the address. 
+So you take the number of directories in 
+the system. 
+Take the log base two of that. 
+And then, you take that number of bits to 
+be the home node number. 
+So when you take a cache miss, and it's 
+not in your cache. 
+And you need to go figure out and do the 
+load of that data, we'll say. 
+You send a message and the message ID and 
+the destination of that message will 
+actually be the home node. 
+And hopefully, your interconnect knows 
+how to route the data to that directory. 
+Now, 
+taking the high outer bits has some 
+benefits. 
+Lets, lets take a look at that. 
+As we discussed already in a, in a 
+non-linear form memory access 
+architecture, the OS can control the 
+placement. 
+I can do this because based on these high 
+order bits, you can actually determine 
+where, which node in the system or which 
+directory in the system you're going to. 
+So you can actually basically allocate 
+memory, allocate your stack, allocate 
+your instruction space, based on the 
+physical address and the OS commands 
+that. 
+because the OS has absolute authority 
+over where physical addresses get doled 
+out to. 
+Downside is a directory or a home node 
+can become a hot spot. 
+So let's say all of a sudden, all of the 
+processors in your system try to access 
+one page of memory. 
+There's like a, a hot page which has all 
+the locks in the system. 
+And, you're in some threaded program and 
+you have to access those locks a lot. 
+Well, if you look at that, that's all 
+going to be down here. 
+It's going to be sort of low order 
+addresses. 
+It might be from sort of here down, 
+whatever your page size is will say. 
+So even, even if you're not having false 
+sharing, anything like that. 
+You typically would try to pack all the 
+data onto a page or a structure or 
+something like that, and it's pretty hard 
+to interleave it based on the very high 
+order bits of your, of your address. 
+And especially considering a program has 
+effectively no control of the high order 
+bits of a physical address, 
+that's managed by the OS. 
+So if you do this, one node can become a 
+hot spot, because these are all alias to 
+the same directory. 
+So all, all the messaging traffic goes to 
+one node and this almost starts to turn 
+back into a bus. 
+Now, we have one directory, all traffic 
+has to go there. 
+It's a little better cause we don't 
+necessarily need to invalid all other 
+locations, but the directory and the 
+bandwidth in the directory starts to 
+become critical. 
+Hm, well that's a tough one. 
+The flip side is you can start to try to 
+have the low order bits determine where 
+your directory is, 
+or which home node you're using. 
+So, you still have the, the offset within 
+a cache line. 
+But then you have the number the, the 
+bits of the physical address that can 
+determine what home node your going to be 
+the low order bits. 
+Well, this ends up being very well load 
+balanced, 
+because you'd choose different home nodes 
+effectively atrandom depending on which 
+cache line it is. 
+So you know two cache lines will same 
+cache line will go to the same home node 
+or the same directory. 
+But if you have certain different cache 
+lines in which it is pretty common 
+because it is pretty hard to content all 
+unwanted cache lines. 
+This is up much data in one cache line. 
+[COUGH] You'll spread across the 
+different controllers and you'll 
+effectively have some good distribution. 
+Flip though is the OS losses placement 
+ability here. 
+So it's, it's tricky, 
+it's a tricky trade-off here to think 
+about. 
+some people have even built systems where 
+it's configurable. 
+this gets a little more advanced. 
+And I touched on this in the last slide 
+of, of today's lecture. 
+But, [COUGH] you could think about having 
+some systems where, 
+depending on the actual address and 
+depending what comes out of your, page 
+table. 
+Maybe making different, choices of how to 
+do the mapping. 
+But everyone has to agree on the mapping. 
+Which gets a little bit tricky because 
+the directory has to agree on the 
+mapping. 
+And all of the caches in the system have 
+to, agree on the mapping. 
+Okay, so let's take a look at what is 
+inside of a directory. 
+So we added this new hardware structure, 
+and whenever we add a new hardware 
+structure I like to look at all the bits 
+inside of the hardware structure. 
+So we add a new arbor structure, and this 
+arbor structure has an entry per cache 
+line in 
+in that particular memory connected to 
+the directory. 
+So if you were to look across the entire 
+system, there will actually be an extra 
+piece of data for every single cache line 
+in the system. 
+And the naive approach to this will habit 
+such that every single cache line in the 
+system, whether it's. 
+Sorry, not every single cache line, every 
+single memory line in the system. 
+So if you've ten terabytes of memory in 
+the system, the naive approach is going 
+to have a directory entry for every 
+single block size chunk of memory, a 
+cache box size chunk of memory in the 
+system. 
+And these are held in big tables, 
+typically they're held in SRAM. 
+You might try to put them in DRAM. 
+And what do we have here well the 
+directory needs to know what state the 
+cache line is in and we're going to look 
+at three different states in our basic 
+protocol here shared, uncached, and 
+exclusive. 
+So everything starts out as uncached it's 
+out in main memory. 
+When it gets pulled into a cache's read 
+only, 
+the directory is going to okay that is 
+now shared. 
+If it gets pulled into a cache 
+read/write, the directory is going to 
+note that as exclusive. 
+Now, if it's in shared or exclusive, we 
+need to know what node, well if it's 
+exclusively, you know, uniquely what node 
+has that? 
+So we can go message it when we need, 
+need to go invalidate it. 
+And if it's shared, we need to know the 
+list of all possible places that it could 
+be, that we're going to have to send 
+messages to. 
+And this is better then having to 
+broadcast or send messages to all the 
+nodes in the system. 
+So we're going to have what's called a 
+sharer list here. 
+Which is a, in a naive full map directory 
+is going to have one bit per core in the 
+system, or per cache in the system. 
+And it's either just going to have one or 
+a zero in it. 
+So if it's a one that means that core has 
+a share or read only copy of the data. 
+And when some other cache goes to get it 
+in writable in its cache it's going to 
+have to invalidate, let's say this one or 
+zero with core's cache. 
+Now if you're exclusive, 
+your not going to have multiple bit set 
+here. 
+Cause this basically means that, that 
+core has a writable copy and we can't 
+have if we want to keep the data coherent 
+we won't want multiple, we don't want 
+multiple copy writings in the system. 
+So as you can see here, denoted only one, 
+one here. 
+And if it's uncached, we don't need to 
+track anything there, we just got, don't 
+cares. 
+[COUGH] There's one other state here that 
+I, I have and it's pending. 
+And this usually actually turns into a 
+couple sub-states there's different ways 
+to track this. 
+At the directory, 
+these transactions take multiple steps. 
+You're going to send some data and start 
+transitioning. 
+Let's say, you want to get a data, data 
+writable. 
+Well it, that, the directory's going to 
+have to invalidate all the other copies. 
+It can't do this instantaneously, but we 
+want to provide the appearance of a 
+atomicity or, or, or that the operations 
+are atomic in some way. 
+So typically, you'll actually have some 
+sub-states that are shared, that are 
+stored here, which are something like, oh 
+this cash line is currently transitioning 
+from, I don't know, U to E. 
+Don't allow some other transaction to 
+happen to it right now. 
+Just kind of block that. 
+Another way to do that, the one way is to 
+store it actually in the directory, as a 
+state bit. 
+Another way is you have some fully 
+associative structure, a side structure, 
+which just has all of the cache lines 
+currently in flux. 
+And, the directory's smart enough to know 
+that if some other request comes in for 
+that line, while it's in flux just to 
+NACK that request, or negative 
+acknowledge that request and tell the 
+other cache to retry. 
+So you can do it either way. 
+but it gets pretty complicated. 
+We're not going to talk about all the 
+details of that but we'll talk about the 
+high level transitions assuming that they 
+are somehow topic. 
+So here we're going to look at how MSI. 
+It fits together with this. 
+But you could actually think about doing 
+this with Mesi or some other protocol. 
+It's a little bit simpler, emphasize a 
+little bit simpler so we're going to look 
+at that. 
+Also the benefit of something like a Mesi 
+protocol is lessened in a directory 
+because if you pull something in, in the 
+exclusive state, which is unmodified at 
+the beginning. 
+[COUGH] And someone else wants to get a 
+read only copy. 
+You're basically going to have to send a 
+message to that core. 
+And that was inexpensive on a bus, 
+because it could just see the transaction 
+going across. 
+And it would just snoop it and would 
+demote from E to shared or something like 
+that, E to S. 
+But now, it actually turns into actual 
+work. 
+The directory's going to have to generate 
+messages. 
+And you're going to have to wait for 
+responses coming back from a cache which 
+had it in exclusive, so. 
+[COUGH] full mezies a little bit less 
+common when you stretch grow these 
+distributed shared memory protocols. 
+Okay, so this is a slide we had before. 
+This is MSI on a bus. 
+Well things change a little bit when we 
+go to MSI for directory coherence. 
+And before we go through this, I wanted 
+to point out, that there is actually two 
+different state machines going on here. 
+There's one state machine that is 
+happening in the cache controllers, so 
+actually, in the cache of a respective 
+processor. And then there's a different 
+state machine which is happening in the 
+directory. 
+And you'll see that they have different 
+letters here. 
+This is SU and E versus MS and I. 
+And, and we label these differently on 
+purpose just to, not, not get totally 
+confused. 
+And these state machines interact by 
+sending messages between each other, and 
+as messages flow between the directory 
+and the cache. 
+There will be both going through 
+different state transitions on this, on 
+this two tables. 
+Okay, so let's, let's jump into this. 
+This is the same modified, shared and 
+invalid states that we have in our bus 
+space snoopy and aside protocol. 
+We didn't change anything here. 
+And the rules, the rules the same. 
+If you haven't modified, you can do a 
+right to this and not to send any 
+messages. 
+If you have a shared, you can read the 
+data and not have to contact anybody. 
+If you have an invalid, and you want to 
+do anything with it, you probably need to 
+contact somebody. 
+Or you probably need to contact the 
+directory. 
+Before, we would have to send the 
+transaction on the bus. 
+Likewise, the transition from S to M or M 
+to S where you, used to communicate it 
+was the same. 
+So think about this as the same state 
+machine running, except running on a bus 
+where before we would send transactions 
+across the bus. 
+Now we're going to take those 
+transactions and turn them into messages 
+that we send to the directory and 
+messages that we receive from the 
+directory that we have to respond to. 
+So before when we were snooping traffic 
+crossed the bus which caused us to 
+transition different locations. 
+So here other processor has intent to 
+write and we saw that across the bus. 
+So we had to transition ourselves to the 
+invalid state. 
+Now, we're actually going to get a 
+message from the directory controller. 
+So let's, let's walk through this. 
+But it's, it's almost exactly the same as 
+what we saw before. 
+So this is the, the cache date for a 
+particular line for processor P1. 
+we'll start with the entry points. 
+We start off an invalid and let's say we 
+want to get a read, a readable copy of 
+this line. 
+So we're going to take a read miss. 
+So what we're going to do is plus serve 
+one is actually going to send a read miss 
+message through the directory controller. 
+And during that time, it does not have a 
+readable copy. 
+It cannot go and access the data. 
+It's, it's a, it's effectively still in 
+the I state. 
+[COUGH] Sometimes people will actually 
+have sort of a pending state here 
+depending on how you go to implement this 
+depends if you have a side structure sort 
+or something like a mishandling registrar 
+where you'll track that in. 
+Or you can track that in the, the cache 
+data itself. 
+[COUGH] So you're going to read miss. 
+You send the read miss message, and 
+you're waiting for a response. 
+This response is going to have the data 
+that you need. 
+And, it's going to be synchronization 
+points saying, okay you're safe to 
+transition to S. 
+Okay that seems pretty simple. 
+Similar sort of thing here for write miss 
+if we're in the in invalid state and we 
+do a write we're going to send a write 
+miss request to the directory controller. 
+It's going to do something and it may we 
+may have to be waiting for awhile here 
+cause it may have to go invalidate all of 
+the other lines in the system. 
+[COUGH] And then it gets a response and 
+once it gets a response we have a data 
+that we can transition to the modified 
+state. 
+So as we said, these arcs are pretty easy 
+you can read by P1 and nothing changes or 
+we can read or write from the M state by 
+P1 and we also communicate with anybody. 
+But now we have a few different messages 
+coming in here. 
+If we're in the shared state, 
+we have to be responsive to an 
+invalidation message. 
+Which is a little bit different than a 
+bus snoop. 
+So before, we saw another processor 
+trying to write. 
+That's when transition goes to I, but now 
+the directory controller sends us a 
+message which says, invalidate this line 
+and that will transition us to I here. 
+Note, 
+there will probably be a reply. 
+We will probably have to send a reply, 
+because the director controller wants to 
+know. 
+When all of the cache lines in the system 
+have been validated and it may take a 
+variable amount of time and its sending 
+messages so it wants to wait for a reply 
+to come back so we're going to have to 
+send a reply. 
+So this arc here is similar. 
+Except, we need to write back data, cause 
+we had modified data. 
+We had writable data. 
+We get an invalidate message from the 
+directory controller. 
+So we need to write back the data, and 
+then reply afterwards. 
+Similar, similar sort of idea here. 
+Okay, 
+so that leaves two arcs left here in the 
+middle. 
+We're in shared, and we want to do a 
+right to a, to that cache line. 
+So, our cache we have in the shared 
+state. 
+We want to do a write to it. 
+[COUGH] Before we can actually do a write 
+we have to send a message to the 
+directory saying, I'm doing a write miss 
+here. 
+I want to get this data writable. 
+And we have to wait for a reply before we 
+transition here. 
+[COUGH] because we have to wait for the 
+directory contror to communicate with all 
+the other cache's so that they don't have 
+redoing copies and we can have a writable 
+copy. 
+So it's going to invalidate all the other 
+readable copies in the meantime. 
+And then finally, we have an edge coming 
+this way which is from modified down to 
+shared. 
+And this is a little bit different. 
+well, it's the same idea here. 
+Another processor is tying to do a read. 
+So we have in a modified state when 
+another processor tries to do a read. 
+So we receive a read miss message. 
+We don't need to invalidate the data, 
+but we need to write back the data. 
+because we have the most up to date copy, 
+because we had it modified. 
+So we're going to go into write back the 
+data and that's going to be response, 
+and then we're going to transition to 
+share and state. 
+We can keep a read copy of this, because 
+the other, the other core is, is, is only 
+having a, a readable copy of it also. 
+Okay, 
+so that's the. 
+Any questions about that so far? 
+Okay, 
+so two interesting arcs that we're going 
+to add in here is this one and this one. 
+Which we didn't have in our base MSI 
+protocol. 
+And you know, you may not need these. 
+But what these correspond to is, if our 
+cache has the data in it and then because 
+of let's say a conflict miss, or capacity 
+miss it gets bumped out. 
+It might be a good idea to go update the 
+directory, 
+and tell the directory that in the future 
+if some other cache wants to go get that 
+data, that it doesn't need to go contact 
+you again. 
+[COUGH] So, if it's in the modified state 
+we can write back the data because we 
+have dirty data we write back that the 
+directory and then we notify the 
+directory saying we don't have a copy of 
+this anymore you can transition to having 
+it uncached. 
+Likewise here, if we have a read-only 
+copy we may or may not want to do this. 
+If we, if there's, you know, extra 
+bandwidth on the, on the interconnect we 
+might want to send a message when we do 
+an invalidation here. 
+And this is not an invalidation because 
+of an invalidation message, but this is 
+an invalidation, because it just gets 
+bumped out of the cache. 
+We may want to notify the directory 
+saying please remove us from the sharer 
+list. 
+And if the sharer list is already empty, 
+the, the directory might change the cache 
+line from shared to being uncached 
+completely. 
+but I do want to point out that these are 
+not strictly necessary. 
+The reason they're not strictly necessary 
+is, if we build the cache controller 
+system such that if you're in the invalid 
+state for a particular cached line, and 
+you get some message coming in that would 
+have been let's say this message, or that 
+message, or some other arc. 
+We can just reply back saying yeah, we 
+don't have it anymore. 
+We're invalid, you know, we don't really 
+care about that, that transition. 
+So if you were, you were here, the only 
+message that's going to come really to 
+you is an invalidation message that would 
+just take you to this state anyway. 
+So, we can just ignore the message or 
+just reply the same as we would to the 
+normal invalidation message. 
+Okay, so directory state transition looks 
+a little different here. 
+We have uncached, shared, and exclusive. 
+[COUGH] As we said, shared means there 
+can be multiple read-only copies in the 
+system. 
+Exclusive means there's only one cache in 
+the system with that data. 
+What's interesting here is if you were to 
+actually have a MESI protocol running, 
+that would not change the protocol 
+running in the directory. 
+Because exclusive here is effectively the 
+same, same state, 
+with respect to how the directory sees 
+the line you won't have to do anything 
+different. 
+Okay, so let's walk through a few 
+transition here of the state of the cache 
+line in the directory and this is not in 
+the cache. 
+Let's start off uncashed and let's say 
+we're getting a message which is a read 
+miss from processor P. 
+Well, we should transition to S now. 
+We should give it a readable copy and we 
+should reply with the actual data and we 
+should put P on the sharer list, so that 
+we know that if someone else needs to go 
+invalidate that line we need to go 
+contact P. 
+Now that we're in the shared state, let's 
+say there's other read misses from other 
+P's other processors here. 
+Well were going to give it up the data 
+and we're going to add it to the sharer 
+list so we're take sharers and add to it. 
+The processor the sharer list is just 
+going to grow. 
+Okay lets, lets start here and go the 
+other way where an un uncached in all the 
+sun in we get a rightness from proster P. 
+Well we give it the data and the sharer 
+list or the owner is going to get P 
+uniquely on to it, ever going to give it 
+in these causes day because we're on 
+cache reform. 
+We don't want to contact anybody else. 
+let's look at this art here before we go 
+to these. 
+So this is a little bit different. 
+Quite a bit different than what we had in 
+these slides, because it's doing 
+something different. 
+But in this state here, we know, let's 
+say, processor P zero has the data 
+exclusively. 
+But all of a sudden, a different 
+processor, let's say processor two goes 
+to access the data. 
+Well, we already have the data in the 
+exclusive state. 
+So we're going to stay in this exclusive 
+state because some other caches going to 
+want to get it exclusive, but it's 
+different cache. 
+So what has to happen here is we need to 
+go invalidate the data out of P zero. 
+P zero is going to write back the data, 
+it's going to transition to the invalid 
+state. 
+[COUGH] The, we need to then provide the 
+data to the new processor P2 we'll say 
+and add that P2 to the sharer list. 
+So we can, we can transition to this 
+state and then finally let's look at the 
+edges between these two points oh, 
+actually let's go this way first. 
+if you've data that gets ridden back. 
+so this is that arc, which I said is 
+similar to the arc here, which is 
+optional. 
+Let's say you have data that gets right, 
+ridden back here. 
+Actually this, this arc may not be 
+optional, 
+let's think about that for a second. 
+This arc may not be optional. 
+no it's still optional. 
+because you can just NACK the message 
+effectively, and, and tell it it's in 
+main memory. 
+okay, so let's hear, and you see a data 
+write back happening. 
+So, message gets sent to you which is the 
+equivalent of this arg here. 
+The data was writeable, was exclusive to 
+some cache, and it's no longer writeable. 
+It's probably a good idea to go contact 
+the directory, write back the data, and 
+clear the sharer list. 
+The sharer list is empty, so it knows 
+that no one has a copy of it, at that 
+point. 
+Okay few other financials here, okay we 
+are in the shared state. 
+So we have multiple read-only copies. 
+And one cache comes along and says,"Oh, I 
+need to do a writeness message." I need 
+to get a writtable. 
+Well, now we actually have to go through 
+a pretty long process. 
+We're going to walk through the entire 
+sharer list and send messages to all the 
+sharers in the sharer list saying, 
+invalidate this copy and tell me when 
+you're done. 
+We're going to collect all the responses 
+at the directory. 
+And once all the responses have come 
+back, we know no one else has readable 
+copy. 
+We can give the data value to the 
+requester. 
+And add it to the sharer or owner list. 
+Okay, 
+last arc here is from E to S. 
+This orange arc and that happens if we 
+have a particular line as writable in one 
+cash, and another cash wants to go read 
+it now. 
+Will send a read miss the other cache is 
+going to downgrade from E to S, excuse me 
+from M to S in its vocal cache. 
+But the directory is going to transition 
+from E to S here and we have to go get 
+the most up to date from the node. 
+So, we're going to send a fetches and a 
+fetch request to the node that had it 
+before and exclusive, once you get the up 
+to most up to date data you can forward 
+that to the new reader and everyone and, 
+and we add their processor to the sharer 
+list. 
+Okay, 
+so questions about that one so far? 
+These, these do start to get a little 
+complicated because you have multiple 
+state machines interacting. 
+Okay, so were going to speed up a little 
+bit here. 
+I include this chart from your book just 
+to give you an example of. 
+We went through, very quickly here, all 
+the different messages. 
+And, this chart here sums up all the 
+different message types. 
+And from who they could go from and who 
+they could go to. 
+And this is, this is in your textbook. 
+and sometimes messages need to 
+communicate addresses. 
+Sometimes they need to communicate data. 
+Sometimes they need to communicate which 
+node the message is coming from. 
+To add it to the, the sharer list. 
+But I'm not going to go through this 
+into, to great detail. 
+One think I did want to say is, these 
+message types here, do not include 
+[INAUDIBLE]. 
+So, when you go to request something, 
+there's replies that come back. 
+These replies after, that's not drawn in 
+this 
+diagram. 
+We, we see data value reply but that's 
+not, that's just what of, actual data. 
+There's not like a, response coming back 
+from the sharer acking the, the sharer, 
+or acking the invalidator or something 
+like that. 
+Another type of message that is pretty 
+common, that is not drawn here is a 
+negative acknowledgement. 
+So it's pretty common if you have a cache 
+line that is being transitioned, it's in 
+a pending state, at the directory, and 
+get a request coming in. 
+You might need to tell that cach retry 
+later. 
+I can't handle this case later right now. 
+

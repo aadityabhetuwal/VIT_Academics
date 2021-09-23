@@ -1,0 +1,437 @@
+Okay.
+So let's start talking about performance.
+'Coz the whole reason you built cache is,
+is to you know, have lower power and
+higher performance.
+And let's, let's go back to the iron law.
+So what is, what is the cache trying to
+do?
+Well, what a cache is trying to do is if
+you look at that iron law of processor
+performance, when you do a load or a
+store, we're trying to decrease the clocks
+per instruction to process that load or
+the store.
+So if you have to go all the way out to
+main memory in a cache miss we'll say, or
+if you don't have a cache.
+It's gonna take a long time.
+But if you shrink the cost per instruction
+for a load in the store everything gets,
+gets faster so you can actually, actually
+go, go faster here.
+So as a sort of showing here, we have some
+loop that does some loads, some adds, and
+here it takes a, a cache miss.
+If, if we can somehow do things to the
+cache which reduce the probability of a
+cache miss, we can shrink the amount of
+time it takes.
+To do that and the whole program will run
+faster.
+So, reducing our number of cache misses is
+good, using our cache to actually keep the
+data local and also, sort of, as you can
+see here in this diagram, this first load
+here it's in the cache.
+So it doesn't have to go out to main
+memory.
+So, it just hits in it, if it's a properly
+pipe lined cache, those return the data on
+that load.
+Just want to introduce, yeah, in this
+diagram, two things, processor to cache
+and coming back, that's a hit in the
+cache.
+Miss takes longer, it just takes more
+cycles.
+Okay, so this is an important slide cause
+it uses some important ways to think about
+caches.
+So we want to categorize the types of
+misses we have to cache.
+So this is figuring why we would have
+these different euristics inside of caches
+based on the different policies and
+different ways that you'd actually have a
+cache miss.
+And a lot of times people call this the
+three Cs of caches.
+Okay, the first C, A compulsory cash miss.
+So what that means is that the first
+reference to a block and you're going to
+take that cache miss even if you have an
+infinite size cache.
+It's just you can't get things into the
+cache unless you go to try to access them
+the first time ever.
+So that's what a compulsory cache miss is
+that first reference.
+You can try real hard.
+You can see by have a prefecture,
+actually, to try to reduce the amount of
+compulsory cache misses.
+You could think really hard say, oh, I
+think I'm gonna access this data sometime
+in the future.
+I should go get it.
+And then when you go to actually access
+it, you won't take a cache miss.
+So that's, that's a possibility.
+Okay, the second C that contributes to our
+performance of caches is the capacity of
+the cache.
+So, traditionally, a larger cache will be
+able to fit more data, well that's always
+true.
+But traditionally a larger cache you will
+have a lower miss rate if you have a
+larger cache.
+So let's think about that, this is an
+important question here.
+Will a larger cache always have a lower
+cache miss rate than any smaller cache?
+Within a loop, let's think about what
+kicks data out.
+If you have a cache that is let's say
+eight lines and you have a cache that is
+sixteen lines.
+By definition the addresses that with
+alias in the bigger cache, are gonna alias
+in the smaller cache also if you go let's
+say, from am eight or a sixteen entry
+cache, to a eight entry cache.
+So it's actually if you're going up by
+factors of two, at least, your cache miss
+rate, is always going to be better with a
+larger cache.
+Or, or the cache miss rate's gonna be
+lower with larger cache.
+The one place it could actually come up,
+is if you have, if you try to change the
+hashing function.
+So if you have a cache that is, let's say
+two thirds the size...
+Well, you have a cache that is let's say
+eight entries and you have a cache that is
+twelve entries.
+So there, there [inaudible] locations are
+gonna be different if you actually think
+about having different patters there.
+But it's likely that the larger cache will
+still be better there.
+So large, large is good.
+That's, that's assuming like sort of
+direct mapped cache.
+You could, you know, depending on your LRU
+strategy probably, or your, your
+replacement policy there's some other
+caveats there you have to think a little
+bit harder about.
+Okay.
+So finally, what's the last thing that can
+cause a cache conflict to occur is, or
+cache miss occur is conflict in the cache.
+So this means that we don't have a high
+enough associativity in two different
+pieces of data.
+Or two different clocks alias to the same
+location and they're fighting for that
+location.
+So is, there's a conflict there and one of
+the, the pieces of data that gets kicked
+out before you have the time to go read it
+back in.
+So you have a load and then another load,
+but in the mean, in the, in the middle
+time, you have a load to a different
+address, which happens to alias to that
+same location in the cache.
+The hash function points to the same
+location, and they're gonna fight for that
+resource.
+So that's a, that's a conflict.
+Okay, so let's put some data behind this
+and look at some ways to make caches go
+faster.
+Okay, so, let's, let's look at what we are
+plotting here on this graph.
+On the X axis we have different sized
+caches.
+Sixteen kilobytes, 32 kilobytes, 64.
+So we go up by factors of two all the way
+up to one megabyte.
+On the Y axis here we have access time, So
+how long it takes to access the cache.
+So if we go back to, to this average
+memory latency equation.
+We take the miss rate times the miss
+penalty plus the hit time.
+How, how long it takes to actually go sort
+of look stuff up and find something in our
+cache in the first place.
+Well if we can reduce the hit time,
+that's, that's good.
+So if we take cache which let's say takes
+I don't know.
+Two nanoseconds to access.
+And on a one gigahertz machine, that'd be
+two clock cycles.
+And we can somehow, you know, replace it
+with the cache, which takes half a
+nanosecond to access.
+That's, that's, that's good, it means we
+can actually fit that in one clock cycle
+in a one gigahertz machine.
+In fact, we can probably go all the way up
+to, you know, sort of, one nanosecond on
+a, on a one gigahertz machine before we
+spill over into the next clock cycle.
+So you can sort of think it, think about
+that.
+So, first thing is, actually, small and
+simple caches could be good.
+Every one thinks capacity, capacity,
+capacity but, in your sort of processor
+core, if you can reduce the hit time,
+that's a good thing.
+So, just to give you some idea here, as
+you, as you scale back, you can have, to
+the smaller caches the, time it takes to
+access the cache goes down.
+So the next, next thing we do is we try to
+reduce.
+The miss rate.
+And there's a couple different ways to do
+that.
+These are just sort of some basic
+optimizations in the cache lectures.
+Later in class we're gonna go through at
+lot more optimizations for caches.
+But one thing you do is think about
+looking at the block size.
+So the examples I've been giving, we're
+talking about 64, byte block size.
+But you could think about having either a
+smaller block size or a larger block size.
+And in fact this, this happens.
+People, the, this, this graph here, you
+know, 64 looks like, sort of the lowest
+misrates is a good spot.
+But this is really dependent in your
+applications space.
+So if you have applications which just
+sorta stream through memory, you probably
+want a bigger block size.
+If you have more random patterns, you're
+not getting any reuse.
+It might make sense to even have a smaller
+block size.
+So, this, this data is from your textbook
+actually.
+This is plotting [inaudible].
+Rates with different cache sizes.
+So each of these lines here is a different
+size cache.
+So you can see four kilobyte cache,
+sixteen kilobyte cache, 64 kilobyte cache,
+an 256 kilobyte caches.
+And you can plot those, those two things
+against each other and see where the, the
+sort of sweet spot in this curve is.
+We're trying to minimize the miss rate, so
+how often we actually take that cache
+miss.
+Okay.
+So there's some, there's some positive
+things here about having different having
+larger cash sizes.
+Let's talk about that.
+S if we have a, excuse me.
+Larger box sizes.
+If we have a larger box size we need less
+tag overhead.
+So we talked about that already in the tag
+look up slide.
+The, you can, if you have longer block
+sizes you can think about having uhh.
+More burst transfers from your D ram.
+So in D ram, typically they like to give
+you sort of large chunks of data at a time
+and not little chunks of data.
+Cause there's a overhead cost in firing up
+the D ram, and there's what's called the
+call address strobe, and the row address
+strobe and rasser cast time.
+And you do that for memory every other
+memory access.
+So if you can sort of pull in larger
+chunks of memory at a time, you only have
+to do that once for the large amount of
+data you bring in.
+So that pushes you to actually want to
+have larger block sizes.
+And, you could even think about having
+similar ideas here for, sort of, on-chip
+buses if you have larger block sizes,
+you'll probably be using that on-chip bus
+more effectively, coz, there is some
+overheads and some turnarounds, usually,
+for arbitrations for buses.
+Okay, so on the right side we have the
+downsides of larger block sizes.
+If you have larger block size, you might
+be pulling in data you are not using.
+So if I have a 256 byte block, cash block
+versus 64 byte block.
+We're gonna be pulling in four times as
+much data.
+And if we're only trying to access let's
+say one byte in a data, we just wasted a
+lot of main memory bandwidth to hold that
+byte in.
+So, we need to be cognizant of that.
+And that's why this curve is not, you
+know, increasing in one direction or the
+other direction.
+Because, on first, when I sort of first
+took a computer architecture class, I
+thought, oh, you know, as you increase the
+block size, student performance go up or,
+or shouldn't the cache-miss rate go down
+in this graph.
+And it's, it's not true because you start
+to waste bandwidth at some point.
+Also if you have larger block size by
+definition, you have fewer blocks.
+So if we have let's say 256 byte blocks
+versus 64 byte blocks, by definition this
+is sort of four, four times fewer blocks
+in the cache.
+The same amount of data.
+So if we have a, you know, four kilobyte
+cache, we're gonna have the same amount
+the same amount of data.
+It's still a four kilobyte cache.
+But there's less blocks in that cache, so
+you're not gonna be able to have as much
+random data in your cache at one time.
+So this is one technique to reduce a miss
+rate.
+Another way, in a perfect world, this,
+this fights off against small and simple
+caches, is that you just build big caches.
+If you build big caches, this means that
+when you go to access the data, there's a
+very high probability that the data is
+close to you.
+That, that sounds good.
+So here, we actually have miss rate
+plotted against cache size.
+And, and of course, the sort of different
+associ, different types of caches here.
+And let's see, there's one.
+It's one thing I wanted to point out here,
+This empirical rule of thumb.
+If you double your cash size.
+Your miss rate usually drops by root two.
+Sometimes people call this the square root
+rule.
+How do we derive this?
+Well.
+Sorry [inaudible] you guys.
+It says here it is an empirical rule of
+thumb.
+It is just a rule of thumb.
+Obviously, if this was perfectly true
+this, this line would be, you know.
+Nicely curved versus having some, like,
+bumps in it, But, this actually,
+surprisingly works out, pretty well, as a,
+a rule of thumb.
+So, and it doesn't really work very well
+for, very small caches, so typically, sort
+of, right in here it doesn't work well,
+Possibly, sometimes for very large things
+it doesn't work well, and for high
+associativity, this rule of thumb starts
+to break down, also.
+But, it's a good rule of thumb the rule of
+thumb to think about.
+Okay.
+So how else do we reduce the, miss rate?
+Well, same, same graph.
+But, this is also from, Hennessy and
+Patterson, your book.
+You can increase the associativity.
+So you can take a, I don't know, four way
+cache and turn into eight way cache.
+And some power cost associates that, with
+that, and there is also a clock cycle
+cost, typically.
+So, let's look at the, the rule thumb
+here.
+And the rule thumb basically says, a
+direct mapped cache of size N, has about
+the same missed rate, has a two way set
+associative cache, of size N over two.
+And this kind of, that sounds, crazy good.
+Like how is that possible.
+We should always go at least two ways at
+associative caches.
+But let's, let's look to, let's look at
+this graph, and see if this actually,
+actually works.
+So.
+We're gonna to look at a point.
+Let's look at a sixteen kilobyte cache
+that is direct mapped and compare it
+against a 32 kilobyte cache that is or
+excuse me, a sixteen kilobyte cache that
+is two ways associative, versus a 32
+kilobyte cache that is, lower associative.
+And, kind of what you're trying to see
+here is if this point is equals to that
+point.
+Well, it's not, but it's actually not a
+horrible approximation.
+We're sort of saying if we have a sixteen
+kilobyte cache with a higher sensitivity,
+our miss rate goes down, right?
+So it's going to be somewhere in here,
+versus a 32 kilobyte cache which has, is
+direct map which is this point here.
+Okay, well that doesn't hold there.
+Let's go look for another point here.
+Let's say 32 kilobytes to a say
+associative cache which is that point
+there over a 64 kilobyte cache that is
+direct mapped.
+Well that's almost on a straight line with
+each other, so it's almost exactly equal.
+And this is just an empirical rule of
+thumb that people have sort of figured out
+that as you double your associativity, you
+actually have a sort of, you can almost
+half your cache size and still have it,
+have the same miss rate.
+And, and likewise, like I said, as I said,
+this is just, empirical.
+There is no, no, reason why this has to
+be.
+And it's really dependent on your, sort
+of, data access patterns.
+But, I, I found that, I found that pretty
+interesting.
+Okay, so what's, what's the problem with
+building a two way set of associative
+cache always?
+Why do we not do that?
+So, the area for the data store, shouldn't
+actually, change very much.
+With those changes, your tag store, the,
+the tag data, you're gonna need for the
+higher associative one, you're gonna need
+more tag-check logic at least.
+Cuz you'll have to check, let's say, two
+tags in parallel.

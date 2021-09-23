@@ -1,0 +1,10 @@
+L18S3:
+
+In Lecture Quiz 1:
+Time: 2:40
+
+Question:
+
+Do stale values in the cache hierarchy matter? 
+
+Short Answer: Yes

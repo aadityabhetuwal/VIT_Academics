@@ -1,0 +1,400 @@
+Okay.
+So, we're, we're through three of our
+seven optimizations for today.
+Let's look at the next optimization.
+And this, this comes back to this
+fundamental problem that you can build
+something both big and fast.
+They fed off against each other. You can
+build really big cache, you could build
+big memory.
+You can have, you know, have boxes of
+memory that fill this entire room.
+You go in some data center, people
+actually build big boxes of RAM that would
+fill this entire room, but it's slow, it
+takes a long time to access it.
+It's a bunch of multiplexers, they need to
+sort of choose between all the different
+racks of RAM, we'll say, or if you have a
+32 megabyte cache, that's a lot of
+multiplexing and stuff like that.
+So, you can have something both big and
+fast.
+Now,
+Our solution to this, our multi-level
+caches is that you put progressively
+larger caches as you go farther out.
+So, you have a small cache which you
+access very frequently, and has a very
+fast cycle time.
+You put a L2 which is a little farther
+away but can hold more data.
+And then, you have, let's say, main
+memory, or maybe an L3 out here which
+holds more data but takes longer to
+access.
+So, that's really the insight here is
+that, you can have larger cache sizes as
+you get farther away and it helps to have
+larger caches cuz you will be able to hold
+more capacity.
+And you'll, sort of, gracefully decay
+versus falling off a cliff,
+Either you're in the cache or you're not
+in the cache.
+So that means multilevels of caches can,
+can fix this problem.
+The other thing you can do is, because
+this cache is farther away, it takes more
+cycles to access it.
+You can afford for it to be bigger and
+take multiple cycles to access it.
+So, kind of it by virtue of it being
+farther away, if it takes two cycles to
+access versus one cycle to access.
+But it already took you, lets say, a few
+cycles to get out to that cache,
+You know, you've got, you have the extra
+time to go do that.
+So, this is our multi, multilevel caches.
+So you'll see, lots of processors people
+will quote, the L1 cache size and the L2
+cache size, and the L3 cache size.
+One, one thing I wanted to say about this
+was that, there's actually some, some
+rules of thumb that apply to this.
+And they're kind of, kind of random and
+empirically found. But typically, in a
+processor design, you're going to want to
+make your next level of cache about eight
+times bigger than the previous level of
+cache to have it have some useful, effect.
+And this is just an empirical sort of rule
+of thumb that people typically apply, and
+if you go look at almost all the
+processors in the world, this almost
+always holds true.
+And the reasoning behind this is, you
+know, it takes extra time to go access
+this next level of cache. And, if you're
+just going to go up by a factor of two,
+it's not really worth it.
+And if you, sort of, run the numbers of
+back in the beginning, of the missed time
+multiplied by our missed rates.
+If a miss time goes up a bunch, the miss
+rate needs to go down a lot for this to
+actually make any, any sense to use.
+And if you only go up by a factor of two
+in cache size,
+Let's say, you have an eight kilobyte
+cache backed by a sixteen kilobyte cache,
+It just sort of works out but it doesn't
+actually help.
+Somebody said that it is rolled into that
+rule of thumb is how much time it takes to
+sort of, go to next level of cache.
+Because if it only takes, let's, say, one
+more tick or one more cycle to go to the
+next level of cache, the rule of thumb
+might break down.
+It might actually make sense to have a
+two, a multiplicative cache, or a cache
+that's only two sizes larger than the next
+INAUDIBLE. But in reality, people
+typically don't really build these things
+unless they're eight levels up. And you
+can, sort of, sit down and plot looking in
+the Hennessy and Patterson book, The
+Missed Rates.
+And you'll, you'll see that this rule of
+thumb kind of works out pretty well.
+Okay.
+So, now that we think we want to build
+multilevel caches, how does this affect
+the actual cache design?
+Believe it or not, having an L2 cache
+effects the L1..
+Hm, that's an interesting insight.
+So, a couple of things can happen.
+First of all, it might actually influence
+your design to even have a smaller
+low-level cache, or, or smaller level one
+cache.
+So, you can actually think about having a
+bigger cache so will give you the
+aggregate readout the L1, the L2 and the
+performance out of it might be a good
+trade and you can actually reduce your
+cycle time of your processor and that
+could be a good trade-off.
+And this is something like they what they
+did in the payment before where the cycle
+time was very important to them.
+They put a much smaller L1 cache and they
+had a backing L2 behind that.
+Cough And, another advantage of this is
+you can actually reduce you energy used to
+access the cache if you have L1 and L2 and
+you make your L1 smaller, cuz a lot of the
+work you're doing is in L1.
+So, if you make your L1 smaller, you're
+going to be firing up effectively less
+transistors.
+Another way that having a L2 and influence
+the L1 is you can potentially have the L1
+not be write-back.
+So, you can actually have it be write
+through.
+And this is a common thing.
+For instance, actually, the, the Tilera
+Processor, which I worked on, we do this.
+We have a right through from the L1 to the
+L2.
+It makes the L1 a lot simpler.
+It makes it so you don't have to have
+somewhere on this slide here,
+You don't have to have dirty data in your
+L1.
+And this is a big benefit.
+So, not having dirty, dirty data in L1
+means that you could potentially not have
+to have an error checking, or error
+correcting code on your L1 data because
+none of the data in there's important.
+It's all going out to the L2 anyway.
+So, if it's all in the L2 anyway, you
+could potentially just invalidate your
+entire L1 and the program is still
+correct.
+So, to really simplify error recovery you
+can sort of replace error checking with
+just pari, or, EEC with just parity. So,
+that's a big win of having, write through
+from the L1 to the L2.
+And, this is actually the reason that
+people typically do this.
+And we haven't talked about this yet,
+we'll actually talk about it at the end of
+the term cuz it actually will make
+multiple processors easier to build.
+Now, what do I, what do I mean by that?
+Well, if you have a cache coherent
+processor.
+So you have multiple processors, and they
+all have caches, but they're trying to use
+one piece of memory, or use one big shared
+memory, you have to go check everybody
+else's cache if you're looking for data.
+But if you have a write through from the
+L1 to the L2,
+Well, this is a benefit here because what
+this means is you have no dirty data in
+your L1, so you never have to, to check
+the L1.
+You only have ever have to go check the
+L2.
+And this is, this is a, this is a big win
+for coherence perspective because it just
+makes it a lot simpler.
+This is, this sort of goes back to our
+write buffer that we were talking about.
+If you have the L1 write through to the L2
+and you go to do, let's say, something
+that will invalidate or create a victim in
+your L1, you don't ever have to take that
+victim and write it out to the L2. If all
+your data's clean in your L1 at all times.
+Anyway, what I'm trying to get out at here
+is,
+You would think that just putting like a
+multilevel cache doesn't effect the,
+closer to the core caches, but it does cuz
+you typically design your whole cache
+system together.
+Another thing that, you know, affects is
+the inclusion policy.
+So, if we go look at sort of a Venn
+diagram of memory,
+And we have data which is stored in our L2
+cache, and we have a smaller L1,
+The data is stored in both, in a inclusive
+cache.
+In an exclusive cache,
+We data in our L2,
+And data is in our L1, and they are not
+the same.
+This is inclusive.
+This is exclusive.,
+Okay.
+So,
+If you go look at inclusive, you're going
+to say, I'm wasting space because I have
+to store, if any piece of data is in L1
+has to be stored in L1 and L2, and over
+here we only need to store the data in one
+location.
+So, you would think everyone would have
+always wanted to build inclusive caches.
+In reality, most people build inclusive
+caches and don't build exclusive caches.
+And, and, the, the reasoning behind this
+is that it gets hard to build multilevel
+exclusive cache.
+So, let's, let's look at this a little bit
+more detail here.
+So,
+The exclusive cache stores more data, so
+that's a positive.
+The negative here is that you need to
+check both locations when you have to do,
+let's say, a remote invalidate.
+So give our cache rehearse protocol, our
+multiple processor cache rehearse
+protocol, and we need to go check where
+data is.
+Now, instead of checking let's say, the L2
+and knowing the data from a time
+perspective that's in the L2 and is also
+in the L1.
+Now, we're going to check the tags
+INAUDIBLE.
+Exclusive caches, as far as I know, we
+could actually implement that these are
+sort of AUD. and some of the complexity
+involved in this, you really have to swap
+the lines between the inner type of caches
+where you take caches because data, which
+can't be used in the, the other cache.
+So, when you take cache from this from the
+one, let's say, from the L1 then pick on
+these to go to the L2 and when the data is
+coming in, that's a transfer from the L2
+to the L1.
+This gets hard, hard to be correct under
+all circumstances. You'll see once you get
+the hang of it there.
+And one little, one last little thing of
+why exclusive caches are hard to do is
+that if cache y size or the cache y size
+is different,
+You basically can't build a exclusive
+cache because you're swapping sort of,
+lines between these two things, and it
+just doesn't make any sense, doesn't
+anybody benefit.
+And, lots of times people like to have
+smaller block size in the L1 cache because
+you get more locations, more blocks to
+work than L2. And if, let's say, have
+those block sizes different, you can't
+necessarily represent let's say,
+In the L2 cache, which has, let's say, a
+64-byte block size, and the L1 which has a
+32-byte block size,
+Just go. You won't have all the data cuz
+it takes two of the smaller cache lines to
+put together one of the bigger cache line,
+so you can't really sort of, swap them cuz
+it's not compatible.
+So, in each, exclusive cache, this forces
+you to have the same cache size between
+two.
+But the, of course, is that you get more
+data.
+This, this is also the other reason why
+sort of, this for inclusive caches, if you
+guys are qithout the rule eight
+multiplication or making this cache a
+transfigure multiple cache prospective,
+that, that, that step up then kind of
+INAUDIBLE turn into a noise because, oh,
+yes, you were duplicating something which
+all you INAUDIBLE L2 cache size INAUDIBLE.
+Okay.
+So, a few set of examples are ubiquitous,
+multiple caches, some real, real
+INAUDIBLE.
+Cough Here, we have,
+You have the Itanium-2 this is a DYW
+Architectural advance dealing on your
+picture that we talked about from Intel
+and HP.
+And you sort of look at, they have a
+sixteen kilobytes, L1, and then L2 that
+should change both these things. So, it
+change the size and, and the base it's,
+it's bigger than any x multiplier.
+And they also changed the line size. And
+then,
+They even have a third level here,
+That is when you have two, might as well
+go to three.
+So they have a third level cache because
+they have a space.
+This is a expensive processor, they had a
+lot of space, so they put a level three
+cache here.
+And, in the third level cache, they
+actually increased the associativity quite
+a bit, a 12-way set associative.
+And, they made the cache a lot bigger,
+three megabytes.
+And the line size is the same as they're,
+they're almost the right size.
+Let's look at the, the latency here. They
+have single cycle latency in the L1,.
+That's usually kind of what you want, very
+fast latency in the L1, five cycles L2,
+twelve cycles L3.
+It seems like it steps up as it gets
+further away.
+If we look at the Power seven this was the
+ten ultimate power architecture from IBM,
+the Power eight that is, you know, just
+came out.
+Cough Here, you can see they, they have
+lots of cache in the middle,
+And this is a muti-core.
+So, eight cores here. Each of those cores
+has a 5-bit L2.
+They have a little bit bigger L1s that
+have 30 kilobyte I and 30 kilobyte D L1s..
+A little bit by INAUDIBLE L1, three
+cycles, INAUDIBLE L2.
+Then, the Intel processor we've seen
+before, and INAUDIBLE L3.
+But the L3 is huge, 32 megabytes.
+It's a lot and a lot of data out here.
+But it's also being shared between the
+processors.
+So, this will be about private L2s,
+private L1s, and a shared L3.
+So, interesting design.
+Its multilevel caches show often in
+basically all of modern processors,
+Npw we have multilevel caches.
+Okay.
+So, let's take a look at the efficacy of
+the multilevel cache.
+Cough This doesn't you feel like it's sort
+of just the L1 by itself.
+This is, I don't know, look at the, the
+miss penalty of that is going to go down.
+So, just for the, just for the L1, the
+miss penalty of this goes down because if
+you're missing your L1, before you had to
+go out to main memory, and that was
+expensive, but now you can go to your L2
+or L3. So, you're reducing this out.
+If you draw up a box around the L1, and L2
+and L3, everything together, this is both
+going to reduce your missed penalty and
+you're going to have more cache space to
+reduce your risk rate.
+So you're going to have this, this is
+reduced and broken this penalty, and in
+the risk rate together, dropping box for
+all your cache in the structure in a the
+multilevel cache system.

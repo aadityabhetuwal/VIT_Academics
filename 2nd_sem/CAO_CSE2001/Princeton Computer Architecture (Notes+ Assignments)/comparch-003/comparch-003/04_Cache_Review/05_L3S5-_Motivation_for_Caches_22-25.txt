@@ -1,0 +1,584 @@
+So, now that we've talked about these
+different memory technologies.
+Let's move on in talking about an
+introduction to caches, and why we have
+caches, and where this really comes from.
+From sort of, first principle's
+perspective.
+And, to start off motivating caches, let's
+draw the most basic memory system we can
+draw.
+So, on our abstract computer model, we
+have a processor and it connects to
+somewhere to store our data and our
+instructions, or our main memory.
+And, you know, the, the time it takes to
+actually access something like our main
+memory can many times be much, much larger
+than our cycle time.
+Or the latency can be, can be much longer.
+So, that D-RAM I passed around, you know,
+to get, to get a bite out of, or to get,
+like, the first bite out of something like
+a modern day's D-RAM.
+You're basically, it's going to be
+thousands of instructions.
+If you, if you, or probably not.
+It's probably right around a thousand
+actually, in a modern day computer.
+It's gotten a little bit better as we'll
+see on the next graph for, for a funny
+reason.
+But, and, and the bandwidth we're going to
+define as the, sort of, number of accesses
+per unit time.
+So, as I said, for the close in, arrays,
+you can usually access them much faster
+and have more bandwidth through them, sort
+of, by definition.
+But, for things far away, you have to, to
+have less bandwidth, kind of by definition
+cuz it should probably go through, through
+some pins, or some buses that go very far
+away.
+And then, we're going to define the
+bandwidth delayed product as the amount of
+data that can be in flight at the same
+time.
+And, as you have sort of things farther
+away and more bandwidth, this bandwidth
+delayed product gets bigger cuz you're
+multiplying, sort of, the amount of stuff
+the amount of bandwidth you have times
+where everything can be in the pipe.
+And you've, basically, have a, a big
+pipeline that serve thousands of values in
+flight.
+So, this is what I was eluding to about
+the, the gap happening between D-RAM,
+bandwidth, and processor performance.
+So, memory technology has been, sort of,
+slowly getting faster, and processor
+technology got a lot faster.
+The one thing that, at least, not so bad
+anymore for its, for a single scalar or,
+for single-processor performance we've
+sort of flattened out at this point.
+So, [laugh] now RAM is getting faster.
+Unfortunately, you know, this is still
+keep going exponentially here if you sort
+of look at multicore.
+If you have multiple cores in the same
+chip, you know, the, the amount of
+aggregate processor performance is, is
+going up relative to the very performance
+and, and things get worse.
+So, here we have a four issue, two
+gigahertz superscalar accessing 100 nano a
+second mem, memory, D-RAM, you know, can
+execute 800 instructions, during the time
+to access that one memory reference.
+And, you know, we have things faster than
+two gigahertz now, and we also have slower
+memories and we, we, you know, depending
+what memory system you put it in, it can,
+you know, some, some of them are roughly
+about a thousand instructions.
+Okay.
+So, what's, what's the important first
+order effect when we're looking at memory
+systems?
+Well, size does matter.
+As you have larger and larger memory
+systems, it just takes longer time.
+There's more capacity, and if you have to
+drive and you have to go physically
+farther, and you can't fundamentally fight
+the speed of light.
+It's going to take you a certain amount of
+time to go a certain distance.
+And, if that distance is farther, it's
+going to take you longer.
+So, you also have sort of, more fan out if
+you have bigger, bigger memory systems.
+So, physical size is, is important here
+when we're thinking about memory systems.
+Okay.
+So, let's now introduce a cache, or idea
+of why, why a cache is, is good.
+So, let's look at a notion of memory
+hierarchy.
+Unlike this picture where we had a
+processor connected to all of memory in
+the system, we're now going to put some
+intermediary levels.
+So, we have a processor, and we're going
+to put small-fast memories here.
+And we're hope, hopefully, going to try to
+hit the, or access these small and fast
+memories, instead of accessing this big
+slow D-RAM.
+Let's look at the, the capacity here.
+The registers, so your [unknown] registers
+or registers of whole bus, your program
+kind of specialize registers in your
+processor, has very small capacity.
+S-ram has more capacity, D-RAM has even
+more capacity.
+And, its sort of double, less than there
+to extenuate that you can fill a lot more
+in the same space.
+Though the latency follows that same
+hierarchy there.
+And, an important other thing to think
+about when you're building memory
+hierarchies is that on-chip memory
+bandwidth is typically a lot higher than
+off-chip memory bandwidth.
+If you're on-chip, you can run wires
+there, but the second you have to go
+off-chip, you have to go out the pins of
+the chip.
+You're going to be limited.
+And, what this really boils down to is the
+pins, or balls, or solder columns.
+So, modern day chips we don't actually
+have pins on them any more, instead we
+have ball grid array, what is little tiny
+solder balls.
+The size of those, the pitch of those is
+still much larger than the wire-on chip.
+The wire on chip is so much smaller than
+the solder ball, which is, or in
+modern-day actually, that's something like
+your x86 core i5 or something like that.
+Or, Intel core i5 actually has, what's
+called land grid array.
+Where you have a little array of little,
+the pads, little metal pads on the bottom
+of the chip.
+And then, there's these little pins are
+actually located in the socket on little,
+we call them, pogo sticks.
+But, they're basically little pieces of
+metal on springs and you put the chip in
+and then the little pogo stick hits the
+piece of metal and that's the contact.
+On older chips, you actually had the pins
+on there, on the chip itself, and these
+are sort of, put it into a big socket.
+And, in the middle is ball grid array.
+But, anyway, all those things, the
+connection technology to get off the chip
+is much larger.
+So, you can fit fewer of them on the same
+area than if you were to wire on chip.
+And that's really this, this insight here
+that on chip bandwidth is a lot larger
+than off chip bandwidth.
+And because of this, you're going to want
+to think about putting small, fast memory
+close by on chip.
+We can store, store data.
+Okay.
+So, what happens in this memory hierarchy?
+When we go to access data, if the data is
+in our fast memory here, we're going to go
+here, hit in our low latency, unscramble
+latency and come back.
+If the data is not in the fast memory, we
+have to go all the way out to our D-RAM
+and come back.
+And, memory hierarchy's work only if
+you're going to find useful data here.
+So, if you go build a small fast memory
+close by, but you never find any
+information in there that you need, why
+did you build this structure?
+You're just sort of doing extra work and
+burning extra power.
+And, this is one of the key insights of
+why we have caches, or what a cache is.
+Is that, when we go to build a memory
+hierarchy like this and we introduce
+something like a cache, by finding the
+data nearby, that's going to be faster to
+access.
+We need to find the data there with high
+probability.
+Otherwise, we should just not build it and
+just gone out to the main memory all time,
+you're just wasting everyone's time and
+area, and cost.
+So, memory hierarchy only works if you've,
+your fast memory actually is, is useful.
+Okay.
+So, let's look at different memory access
+patterns and try to come up with a couple
+of different techniques that we can
+exploit to increase the probability that
+the data we're going to need is in that
+small fast memory.
+So, we have an interesting graph here, and
+I want to explain what this is.
+And we'll, we'll look at a, a toy example
+first and then we're going to look at a
+memory trace, refer, memory reference
+trace from a real operating system with a
+real program running under it.
+So, let's start off with, something, some
+examples here.
+We have time on the horizontal axis, and
+we have address on the vertical axis.
+And, it's something like your machine,
+let's say, it has 4GB of RAM.
+We actually have sort of a line across
+here for every single address in the
+machine, and then we have time.
+And, as the program executes and goes and
+accesses different pieces of memory, we're
+going to put a dot on this graph.
+So, let's start off by looking at
+something like an instruction fetch.
+Typically, programs will execute in order.
+They'll execute the first instruction, the
+next instruction, and the third
+instruction at the addresses, sort of,
+monotonically increasing, unless you hit a
+branch.
+So, let's, let's take a look at some
+instruction fetches.
+We start off by executing some code.
+And then, we're going to actually execute
+a loop here.
+So, when we're in the loop, we're going to
+be executing the same piece of code over
+and over again.
+And if you look at that, from an address
+perspective, we start off, not in the
+loop.
+So, we have some address here, some
+different address, and then we execute
+these three addresses, and then we execute
+those three addresses again, and those
+three addresses again, those three
+addresses again.
+We keep fetching those three addresses
+over and over again from our memory
+system.
+And, at some point, we exit the loop and
+go execute something else.
+Okay.
+There's a pattern there.
+Now, we're going to think about whether we
+can exploit that pattern in a second.
+Next, let's talk about accessing the
+stack.
+So, computer programs typically have
+stacks.
+This is where you either spill or fill
+registers for.
+Typically, you also use it to pass
+arguments.
+And you spill and fill, most modern day
+compilers will do that, when you make a
+function call, or return from a function
+call.
+And the argument passing is around
+function calls, also.
+You'll put arguments that the, yet, the
+later functions need on, on the stack, and
+then you go execute that.
+Alternatively, you can store the arguments
+in the registers.
+But, on something like x86 will say,
+you're going to put arguments onto the
+stack, and you also put local variables
+onto the stack cuz, 'uz, because it gives
+you a convenient place to put it.
+So, let's take a look at what happens when
+you go to do a subroutine call.
+On a subroutine call, the stack is at one
+address.
+The stack pointer is somewhere here.
+And, when you go do a subroutine call,
+you're going to push all of your registers
+onto the stack.
+So, you're going to put something here,
+put something here, put something here,
+put something here, and the stack pointer
+is going to logically increase.
+And then, once you're in the function that
+you called, you're going to want to
+accsss, access, the arguments.
+And, those are usually very close
+together, they are all right next together
+on a stack, or you might have to go access
+the argument over and over again.
+You know, this is, if you don't have
+enough registers it's like at our first
+lecture we looked at a stack based
+architecture.
+And, in a stack based architecture, we had
+to actually push onto our stack the same
+value multiple times.
+It's pretty common to reuse the same local
+variable or reuse the same argument, just
+cuz you don't have enough registers.
+And, you want to go load that data from
+your stack over and over again.
+So, it's pretty common to access very
+close together on the stack, to be
+probably the same cache, within a cache
+line, or access the data very close by.
+And then, when you're done, you return
+from subroutine and you're going to pop
+all the data off the stack.
+So, time is increasing this way, so you're
+going to move in reverse order.
+Okay.
+Let's look at some data axises.
+The one I wanted to focus on here is
+actually vector axises.
+So, what's a vector axis?
+Well, this is something like an array.
+And arrays, a lot of times you'll be
+reading the first word, or the first byte,
+then read the next byte, the you read the
+next byte, then you're doing some
+operation across all of it.
+So, let's say, we're doing a matrix
+addition.
+We have one matrix and we're adding it to
+another matrix, and they're single
+dimensional matrices.
+You're actually going to be reading
+different addresses but they're going to
+be in some pattern, and they're going to
+be sort of close by.
+Now, if you're accessing, let's say, every
+fourth element in an array, this distance
+here would get larger.
+The, the address distance is going to get
+a little bit large and your access pattern
+is going to get a little bit farther a
+part.
+And, scalar values, these are sort of
+singleton values.
+So, a good example here is, let's say,
+this array that we're doing here is we're
+trying to take an array.
+And, instead of add two arrays together,
+we're going to take one array and we're
+going to add five to every single, or some
+variable, x which has we'll say, five in
+it, to every single element in the array.
+So, what your machine would, your
+processor would do is it would first load
+the thing you're going to be adding to.
+So, the, the data from the matrix, and
+then add, and then load from the scalar
+value, x, from main memory.
+Do the add and do store.
+Then, your load to the next location of
+the vector, load the file, load the x, do
+the add, put it back, and then continue
+that on.
+Okay.
+So, can we, can we try to exploit
+different types of vocality?
+And this slide is really important to
+grasp what's going on in caches.
+This is probably one of the most important
+slide in, in today's lecture, is to, to
+grasp what is going on here with the
+different patterns we're seeing, and how
+do we exploit these patterns.
+Okay.
+So, there's two type of patterns I want to
+talk about.
+And, your standard cache system is going
+to exploit these two patterns.
+But, let's first of all, look at them,
+them individually.
+And, we'll be able to see the patterns
+here.
+First one we're going to talk about is
+temporal locality.
+Temporal locality is this notion that if
+you access a piece of data, you're likely
+to access that piece of data again, in the
+not too distant future.
+So, it might be useful to keep that data
+nearby.
+So, temporal locality I'll say, again, is
+if they, if your location is referenced,
+it is likely to be referenced again in a
+short period of time.
+So, let's try to identify that in these
+diagrams so far.
+Okay, well, I see that a few places.
+These are giving access, we access some
+value, and we're going to access that
+value again pretty soon, and again pretty
+soon, and again pretty soon, and again
+pretty soon.
+And, we're basically, accessing something
+with high temporal locality.
+Likewise, these scalar values here, this
+scalar axis we're accessing again, and
+again, and again, it's this exact same
+address.
+And, the time between one axis and the
+next axis is pretty, pretty close by.
+Okay.
+Now, let's look at this and see other,
+other interesting access patterns here.
+Well, interestingly, on a stack, when we
+go to access a value and we're pushing our
+values onto a stack, it's very common.
+To access a value at say, address 1,000,
+and then go access a 1,000 + four, 1,000 +
+eight, 1,000 + twelve, 1,000 + sixteen,
+and access all of the nearby values.
+So, what are we going to call that?
+Is that a, is that a common pattern?
+Well, yeah, it's, it's pretty common and
+we, we see that here, we see it in loops
+for instructions.
+We're actually accessing one instruction,
+it's very common for us to go access later
+instructions very close by.
+Packed, let's say, next to it so this is
+pretty common that you just fall through
+in your code.
+So, we're going to define this and call
+this, spatial locality.
+And, spatial locality says, that if a
+location is referenced, it is likely that
+locations nearby it are going to be
+referenced in the near future.
+And these are both just heuristics.
+There's nothing magical about these.
+These are just heuristics of how programs
+happen to work out.
+And, but, we're going to build systems
+that try to leverage these two heuristics,
+or these two characteristics rather, is
+two types of locality to improve the
+performance of our processor.
+So, be able to use those small little RAMs
+that we're going to put in our memory
+hierarchy and actually store useful data
+in them.
+I also wanted to sort of point out that
+you can have both spatial and temporal
+locality mixed together.
+So, if we look at something like running a
+program which has lots of loops, we have
+spatial locality, because we're executing
+instructions nearby.
+But, we also have temporal locality here,
+because we're reusing all this data again,
+and again, and again in a short period of
+time.
+So, in the near future, we are accessing
+sort, of the same, same data over and over
+again.
+Even though it's not the exact same piece
+of data, it's, it's nearby, so we're sort
+of seeing both spatial and temporal
+locality exhibited there.
+Okay.
+So, let's look at, finally at a real
+memory reference pattern or real memory
+reference trace.
+And this has the same axises of what we
+saw before.
+We have time, and there's one dot per
+axis, and then we have memory addresses.
+I don't know what the unit on the vertical
+is, it's probably not, it's probably in
+like thousands or millions or something
+like that.
+And this is from a study that some people
+at IBM did many years ago.
+And, but we're going to look at this and
+see different patterns show up here.
+So, the first thing I want to circle here
+is spacial locality.
+So, we see that along this line here, we
+access the first piece of data at a, let's
+say, this address, and we then go on and
+access all of the data subsequently.
+So, this is as if we were like reading an
+array.
+We just read all the values in the array.
+So, we have spacial locality that because
+we went and accessed element one in the
+array, there's a, a high probability that
+we're going to go access other data values
+which are nearby in that array, in a, in a
+nearby time.
+Let's take a look at temporal locality.
+So, horizontal lines here are temporal
+locality.
+And, you can see that, this program is
+accessing this value over and over again.
+Or, at least, values very close by, it's
+hard to tell on this resolution, but this
+is temporal locality that we're accessing
+the same values or, or mostly the same
+values over, and over, and over again.
+And then, finally, we can see both
+temporal and spatial locality in these
+little blocks here.
+We can see that we're accessing similar
+sorts of addresses which is going to be
+spatial locality, and we're doing it all
+within a short period of time.
+So, we're, we're seeing temporal locality
+of reference.
+And, caches can exploit both of these.
+Caches are going to exploit temporal
+locality by keeping data that gets used
+and reused many, many times, nearby.
+So, when you see axises which are
+temporally, close by or, or, temporally
+spaced so in time or space nearby, what's
+going to happen is a cache is going to sit
+somewhere here before you get to a main
+memory system.
+And, when you go to access a value, it's
+going to memorize that and keep that value
+nearby.
+So, if you go to access it again, in time,
+and if your program exhibits temporal
+locality, that data value will be close by
+and you won't have to go out to the big
+slow RAM.
+And, caches can exploit spatial locality.
+And, the way caches go about exploiting
+spacial locality is that, when you go to
+access a particular piece of data, your
+cache is going to pull in data around that
+piece of data.
+And, we'll talk more about this next time
+how, how that works.
+But, we're going to segment data into what
+we call, cache blocks, or cache lines.
+And, that's typically, those, those cache
+blocks or cache lines are aligned.
+And, when you go to access a piece if
+data, it might be somewhere at the
+beginning, or at the end.
+But, or might be in the middle, you pull
+in all the data around that.
+And the, the heuristic here is that if you
+access some piece of data, let's say, you
+only go access the first byte in a cache
+line, you're likely to go access other
+bytes in a block.
+So, multiple, pieces of data around that.
+So, we are able to exploit spatial
+locality here.

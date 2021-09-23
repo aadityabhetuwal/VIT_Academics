@@ -1,0 +1,802 @@
+And now we're going to move on to talking
+about basic pipelines, and we will start
+off by just talking about how to build a
+pipeline and how to name things in a
+pipeline, and how instructions flow down a
+pipeline, and why you want to build the
+pipeline.
+And we start off with a very gentle
+introductions to this, instead of my
+talking about, a idealized pipeline, not
+necessarily in a processor.
+Pipelines show up many places in the
+world.
+They show up in car factories, toy
+factories.
+I know some people will say, you know,
+when you go use the washing machine in a
+laundry-mat you're pipelining cause you
+first put your, laundry in the washing
+machine and then take it out.
+Then you can put it in the dryer, we can
+put more work in the, or more laundry in
+the first washing machine.
+So we can, we see pipelines in lots of
+different places in the world.
+But we also see it, in, in this class
+we're gonna care about using pipelines in
+microprocessors.
+So let's think about an idealized
+pipeline.
+So I have, have a picture here of an
+idealized pipeline.
+What are some of the good, or what are
+some of the requisite.
+Conditions for an idealized pipeline.
+Well, first of all, all work, or all
+objects should go through all the stages.
+So here we have four stages in this
+pipeline, and there's no sort of squiggly
+lines where things sort of come out of the
+pipeline, or go around the pipeline, or
+exit early.
+It doesn't happen in this, this diagram.
+So, in an idealized pipeline, you want all
+of the objects to go through all the
+stages.
+You don't want any resources shared
+between different stages.
+So you don't want some resource here which
+is stared, shared between stage two and
+stage three So an example of this in a car
+assembly pipe pipeline or assembly line
+would be one tool which two different
+stages in the pipeline have to use or two
+different stages have to use that would
+cause what is known as a structural hazard
+in processor design.
+The propagation delay between all the
+different, of all the different stages
+should be the same.
+So the time taken for stage one should be
+the same as two, stage two, the same as
+stage three, the same as stage four in an
+idealized pipeline.
+And then, finally, the scheduling of an
+operation, or a transaction, or an object
+going down the pipeline should not be
+affected by what's currently in the
+pipeline.
+And, these conditions actually hold true
+for most assembly lines in plants where
+people go and build cars or something like
+that.
+There's no dependence between the
+different parts.
+A car comes into it.
+All cars are sort of, separate from each
+other.
+It's not, not really a problem.
+Unfortunately, if you go and look at
+something like a microprocessor and
+executing instructions.
+Instructions actually depend on earlier
+instructions.
+And they depend on it in multiple
+different ways.
+They can either depend on the data values
+or they can depend on the fact that you
+took a branch or a control flow
+instruction.
+So we have to look at these different
+hazards and we have to think about how to
+either solve them or deal with them and
+how we have to, to, we have to think about
+how to deal with non-ideal pipelines.
+So let's go one step beyond our microcoded
+disk processor design and look at a
+un-pipelined data path for the MIPS
+instruction set.
+So this is going to be similar.
+Or if you have already taken a computer
+organization class, you've probably seen
+similar sorts of unpipelined data paths.
+So, when on a unpipeline data path, where
+instead of the program counter here, we
+have some instruction, memory where we go
+and fetch our instruction out.
+And, this flows through, we fetch our
+registers from the register file.
+We flow through, we do the actual
+computation, we might have to go access,
+data from, data memory if we do a load or
+restore, and then finally comes back
+around.
+We write the result here and we increment
+or change the program counter.
+And, this is all done, in one cycle.
+And it's a very long cycle, cuz you launch
+here, you go through all this work.
+You do all these things.
+The data gets put back here, and you have
+to, it has to happen because we're
+unpipelined, we have an unpipelined
+processor here, it has to happen in one
+cycle.
+So this is kind of, not great from a cycle
+time perspective.
+It is good from a perspective of the
+number of cycles per instruction.
+It's always one because you launch
+instruction, you wait until it's done,
+then you launch the next instruction, you
+launch the next instruction, and each
+instruction it launches is one cycle.
+So let's, let's simplify this design, a
+little bit so we can talk about what's
+going on here in a little bit more depth.
+So, we're gonna simplify our un-pipelined
+processor design and just take out some of
+the, the extra stuff here and focus on,
+you learn from the program counter, it
+acts as the instruction memory all
+combinationly, you go through the
+registered file combinational logic, you
+go through the data memory, and you come
+back around.
+So, that would be something like a worst
+case load instruction, and, and the value
+gets run back here into the general
+purpose register file.
+So let's now move on to thinking about how
+do we build the same data path, but we try
+run a pipe line it now.
+Well the first thing we want to do is we
+want to cut the pipeline up or cut our
+design up.
+And we are gonna put in registers.
+And, it just, so happens that this is a
+convenient place to put registers for
+something like a MIPS datapath.
+And, some important things that you might
+recall from your digital logic design
+course is that when you go to pipeline a
+circuit, you need to make sure that you
+cut all lines which are going in this
+direction across the registers.
+So if we were to cut here, we need to put
+a register here, here and here cuz there's
+three sets of wires running from left to
+right.
+This feedback path here doesn't need a
+pipeline register cuz it's, it's flowing
+back and it's effectively running back
+into the register file here
+combinationally.
+And you know, the register file can either
+be clocked or unclocked depending on how
+you actually do this design.
+So we've pipelined our data path now.
+And we'll, let's put some names on these
+things, that we're gonna be re-using
+throughout the class.
+So we're gonna call this the, the fetch
+phase or the, the instruction fetch time.
+Sometimes in this class we'll either
+denote this with a upper case F, or we'll
+denote this with I F, for instruction
+fetch.
+The next thing we're going to do is we're
+going to decode the instruction, and we're
+also going to fetch the registers out of
+the register file.
+So the decode instruction this is how we
+take the tightly packed bits in the
+instruction and we blow it up into control
+wires.
+And the register fetch phase we're
+actually going to fetch from the register
+file and this is sometimes we'll denote
+with an upper case D, or sometimes we'll
+denote it with RF for register fetch.
+This is the execute phase.
+We're actually doing real work here.
+We're taking the ALU.
+We're doing some add, we're doing some
+multiply, something like that.
+Maybe some subtract or a shift operation,
+and we'll denote this with an upper case X
+or a, the letters E X, for execution.
+The memory phase we're accessing the
+memory here, the data memory and then
+finally the write back phase, and we'll
+denote this with m and then finally, or
+mem.
+And then finally the write back stage here
+we'll typically denote with wb or w to
+denote when we actually go to write the
+data into the register file.
+We have a whole pipeline stage dedicated
+to that.
+So, one of the, the important things, now,
+I, I just picked five different places
+here to pipeline this, this design, but,
+this is not accidental.
+What we're trying to do is we're trying to
+divide what was a long, a, a long time
+period, and cut it up into smaller chunks
+here.
+So we're trying to reduce our clock
+period, and we can do this by dividing the
+execution up into multiple cycles.
+And if we look at the time, the cycle time
+is greater than the maximum, or greater
+than or equal to the maximum of the time
+to access the instruction memory.
+The time to access the register file.
+The time to access the ALU.
+The time to access the data memory.
+And a time to write back.
+And those are the different things in the
+five stages here.
+So we're trying to.
+We're not, we're not trying to do anything
+here, but the, the time taken is greater
+than to or equal to the maximum of the
+rest of these times.
+And it's probably, in most pipelines,
+equal to the time it takes to access the
+data memory.
+The, the time to access the data memory in
+most, most processors is, is probably
+your, gong to be your limiting factor, but
+people will try to pipeline this, and
+we'll talk about how to pipeline that even
+more, so try to cut the memory in it in
+half.
+Okay, so that's the easy part.
+We pipeline the data, so let's now move
+onto a little bit more challenging
+question here of how to pipeline the
+control.
+So we're going to sort of look at our
+control unit and we're going to put down
+our hardwired control here.
+So the hardwired control is gonna take the
+instruction register and decode the
+instruction that comes in.
+Hm.
+Well.
+That's, that's okay.
+One of the problems here.
+When you start to look at this, is, well.
+Well actually, before we do that, let's,
+let's first look at how to use this
+processor, in a multi cycle yet pipelined
+fashion.
+So what do I mean by that?
+Well, let's say we're gonna.
+Use the same data path, and use the exact
+same control unit we had in the
+unpipelined MIPS processor.
+And in this design, the cycle time is now,
+lets say close to one-fifth of the cycle
+time we had before we add five pipeline
+stages.
+So our processor executes faster, But
+we're not going to pipeline our control
+unit.
+So what this means is we're going to fetch
+the first instruction, and we're going to
+have to wait for the instruction to go all
+the way to the end.
+Write the register file and be done.
+So what we just did here is we built a
+multi cycle yet pipelined processor.
+And this multi cycle yet pipelined
+processor has the clock period which is
+say, which is roughly one fifth of the
+time of the unpipelined one, but it now
+takes five cycles.
+So it's a wash.
+It's might be, it's probably a little bit
+worse cuz of some overhead, from the
+instruction overhead from the registers
+that you need to insert, but it's going to
+roughly, roughly be a wash.
+So let's say we want to start building a
+pipeline processor that can actually
+execute multiple instructions at the same
+time in different locations in the
+pipeline.
+In order to do this we need to go about
+adding pipeline registers to our control.
+And by adding pipeline registers to our
+control wires we can have multiple
+instructions flowing down the pipeline,
+and where these multiple instructions are
+in different stages in the pipe.
+So we can have one instruction here and a
+different instruction here and they have
+different control wires being asserted on
+them because we've pipelined the control
+wires.
+So now we're gonna start talking about how
+do we go about analyzing the performance
+of micro processors.
+And all performance basically boils down,
+this is just for performance.
+There is similar sorts of thing for power
+and area and other metrics you might want
+to care about when optimizing a processor.
+But in today's lecture, we're going to
+focus on optimizing for performance.
+There comes up this idea called the iron
+law of processor performance and it's
+this, excuse me, we talked about a bunch
+in the first chapter of the computer
+architecture or a quantitative approach
+book, and it boils down to the very basic
+formula where the time to execute the
+program.
+So this is the time it takes to run your
+program that you're trying to execute is
+equal to how many instructions your
+program has, times the cycles that it
+takes to execute one instruction for the
+program, multiplied by, the time per
+cycle.
+So as you see it's multiplicative, so if
+you can actually make any of these numbers
+smaller the time for the program will go
+down, which is a good thing.
+So if you can make any of these numbers
+smaller when it multiplies out we can make
+the time of the program smaller.
+And what you also note here is they're all
+equally weighted, so if you change any of
+them that's a good thing.
+One of the things that we should probably
+do is think about the dimensional
+analysis.
+Or, what is the unit on the time for the
+program?
+Hm.
+Well, let's derive it from the three
+things on the right side of this equation.
+Time per cycle.
+So what's the unit on time per cycle?
+It's going to be seconds per cycle.
+Or some time unit, or, or nanoseconds per
+cycle, well, let's, let's stick to seconds
+per cycle.
+Cycles per instruction.
+Okay what's the unit on that.
+Well the unit actually is cycles per
+instruction.
+So if we do the dimensional analysis on
+this cycles up here and cycle down there
+are going to cancel.
+And then finally we have instructions per
+program and the unit on that actually is
+instructions per program.
+So the number of instructions in your
+program divided by how one the program.
+And if we, you know, multiply this out the
+unit we're gonna get here for time per
+program is seconds per program or time per
+program that actually is the unit.
+Okay so let's think about where these
+different portions come from in how we can
+effect these three different quantities.
+So instructions per program, can that the
+affected?
+You just, you might say well, my program
+takes 100 instructions, and that's what it
+takes.
+Well the world's not that simple.
+If you had a different instruction set
+architecture, you might have different
+numbers of instructions.
+So if you have something like the MIPS
+instruction set, which is a reduced
+instruction set, you might actually have
+to take more instructions, to execute a
+program, than if you were executing on
+something like a X86 processor, where you
+have very complex instructions, or rather
+where you have like one instruction that
+can do a whole string copy.
+On something like MIPS, that would take
+thousands of instructions.
+So the ISA really matters.
+The other thing, the other thing that can
+matter here is the compiler.
+If you had a smarter compiler the compiler
+might be able to reduce or eliminate code
+which is redundant or not very important,
+or not important at all rather, or it can
+try to merge two instructions together.
+So a smarter compiler can actually effect
+your instructions for programming.
+It can actually change.
+The next thing is cycles per instruction.
+Well, this is actually dependent on your
+micro-architecture.
+As we talked about, we'll talk a little
+bit more in a second.
+The cycles per instruction, if you have a
+pipeline processor you might be able to
+execute, or you, you might take five
+cycles to execute an instruction, or
+complete the full instruction on something
+like the micro-coded, processor we already
+talked about.
+You might take ten cycles to execute a, a
+given instruction.
+So you can see there's different number of
+cycles per instruction on their dependent
+on the micro-architecture.
+And it also depends a little bit on the
+instruction set architecture.
+If you have a more complex instruction,
+you might need to take more cycles to
+execute that.
+So, something like the string move
+instruction, or the rep moves b
+instruction we talked about in the last
+lecture.
+On x86, we'll actually turn into multiple,
+micro-coded instructions on something like
+an x86 processor.
+And then, finally time per cycle.
+This is dependent on your technology, or
+rather the implementation technology.
+So, or the transistor and device
+technology.
+If you have faster transistors that will
+go down.
+It also depends on your
+micro-architecture.
+If you pipeline deeper, you can decrease
+the time, per cycle.
+Before we move off this slide let's,
+compare three different architectures that
+we talked about so far.
+Both the clocks per instruction, and the
+cycle time.
+And I wanted to find clocks per
+instruction here.
+So, clocks per instruction is how many
+clock cycles it takes to execute, that
+instruction.
+And the inverse of this, or if you take
+one over CPI, you get this other unit of
+measure which is very common in computer
+architecture called instructions per
+cycle.
+It's just, you know, the, the flip of
+here.
+So sometimes you'll hear us talk about IPC
+and sometimes we'll talk about CPI.
+And it's really important to know which
+is, which is which.
+So you want a low CPI and a high IPC cuz
+that means better performance.
+Okay, let's look at the micro architecture
+here.
+So we had our micro coded architecture and
+this took multiple clocks per instruction
+but the cycle time is relatively short.
+Okay.
+We had our single cycle unpipelined
+processor, so this is, everything is just
+a flow to the end, but there's no pipeline
+stages in it.
+And the clock cycle was one, but
+unfortunately the cycle time is long.
+So we have to do sort of all the work the
+micro-coded instruction did but it was
+doing it over multiple cycles, but we
+needed to do it in one cycle so we have to
+sort of add all those things together and
+it's all additive so we have a long cycle
+time.
+And then finally we have a fully
+pipedlined processor where the control is
+pipelined and the data path is pipelined.
+And here, the clocks for instructions
+coming out is one, and the cycle time is
+short.
+And as a question that I want to ask is we
+talked briefly about the multi-cycle
+unpipelined control processor.
+So this is the processor where the, you
+have pipelined the datapath.
+But you have not pipelined the control.
+And you launch an instruction that has to
+go down the pipe to the end before you can
+go and fetch the next instruction, but it
+takes multiple cycles.
+So, the question I have is, what should we
+put here in CPI?
+And what is the cycle time relative to the
+rest of these?
+So I'll let you think about that.
+And then that's, that's right, the clocks
+per instruction for this example is going
+to be more than one or in the five stage
+pipeline it's going to be five, or say for
+every instruction but the cycle time is
+going to be short.
+So, this not a great, great when you
+compare against the pipelined, the fully
+pipe lined processor because the clocks
+per instruction is five versus one, and
+they have the same cycle time.
+So, this is gonna be five times slower
+than something like that, on average.
+Okay, so let's graphically show some more
+clocks per instruction examples here.
+So if we look at the micro coded machine,
+we're going to be executing three
+instructions here.
+Instruction one, instruction one,
+instruction three, and time is increasing
+as you go to the right.
+Let's say the first instruction takes
+seven cycles to execute, the next
+instruction takes five and the third
+instruction takes ten.
+And if you do the math here, you end up
+with three instructions executing in 22
+cycles, or a CPI of 7.33.
+If you look at the unpipelined processor
+we have to, basically flow through all the
+data to the end, every instruction takes
+the same amount of time here.
+But the cycle time is long as I have
+drawn.
+So you have three instructions.
+It takes three cycles, the CPI is one, but
+the cycle time is high.
+And, in an ideal pipeline machine, we'll
+actually have multiple instructions
+executing at the same time.
+So time goes left to right on this graph.
+And, we'll be able to cut the
+instructions, and in an ideal world we'll
+have, CPI of one, and our clock frequency
+will also be short.
+And you can see, this is sort of smaller
+than those other solutions, and this is
+why we, start to think about pipe-lining.
+But we're using transistors to do this.
+Okay, so as, as we go along here, some of
+the questions that come up is, what are
+the assumptions we made about this
+pipeline?
+And why are we making these assumptions?
+And if the assumptions were to change we'd
+actually pipeline differently.
+So one of the assumptions is that you can
+put something like a cache in your
+processor and have very fast memory
+access.
+Because the memory access was so slow
+relative to the processor's speed.
+You probably wanna, wanna put that
+anywhere in your processor and you might
+want to pipeline the memory.
+Another assumption is that you have fast
+arithmetic logic units to do your, your
+math, and you also have multi-port
+register files, which, are maybe slower
+but you can still build them.
+So, if you take these sort of technology
+assumptions all together, this assumption
+is reasonable for a five stage MIPS
+pipeline.
+But it changes whenever technology
+changes, or rather device technology
+changes, and you have to reevaluate this.
+In this class and iin previous classes you
+focused on five stage pipelines, and we'll
+talk a fair amount about five stage
+pipelines, but we'll also talk about much
+deeper pipelines.
+We'll also talk about how to go about
+building those processors.
+And to give you an example some commercial
+designs actually this, this is outdated if
+you look at something like a Pentium four,
+they have or Intel Pentium four, I think
+there is about 44 stages in that pipeline.
+So they figured out how to cut up execute
+warning instruction into 44 pieces little
+pieces.
+Okay.
+So let's talk about pipe line diagrams.
+So one of the important things we need now
+is to.
+Think about the nomenclature, and think
+about how to draw instructions executing
+down a pipeline.
+Because if you want to an, answer
+questions about where an instruction is or
+how an instruction executes, we need some
+way to draw it graphically.'Cuz if you
+don't draw it graphically, it's, it's
+really hard to reason about, multiple
+things going on at the same time.
+And this is what we're gonna try to solve
+here.
+We're actually executing multiple
+instructions at the same time.
+There's parallelism going on, there's
+multiple instructions in flight, and you
+have lots of overlapping.
+So the first pipeline diagram were going
+to use here will plot transactions or
+instructions versus time.
+So we're going to put time on the
+horizontal axis here.
+So we have time T0 to T7, and it's
+increasing.
+And now we're going to have.
+An instruction flowing down the pipeline.
+And right now we'll look at an idealized
+pipeline with idealized instructions.
+We'll soon be looking at non-ideal
+pipelines with just dependencies between
+the different instructions.
+And this line is really important for this
+class and if you don't understand this, go
+back and watch this again.
+Because the understanding, pipeline
+diagrams is gonna be key to this class and
+being able to draw these yourself is going
+to be very, very important.
+So let's, let's look at an instruction
+flowing down the pipeline here.
+So, we have instruction one, at time zero,
+it's in the instruction fetch stage, at
+time.
+One, it's in the decode stage, and time
+two, is in the execute stage, and time
+three, it's in the memory access stage,
+and in time four, it's in the write-back
+stage.
+Okay, that's basic.
+Now let's put another instruction on here.
+It goes through the same set of stages but
+its shifted by one, because it can't go
+and use this resource.
+It needs to be fetched in the next cycle.
+So it's not gonna be executed in cycle T0
+or Time T0, it's gonna be fetched in the
+next time.
+And what you'll notice here is these
+resources, or these pipeline stages, don't
+have multiple instructions in them at the
+same time.
+They're restricted to only one in each
+pipeline stage at a time.
+So we put on more instructions here.
+And this is what our pipeline diagrams are
+mostly going to look like in this class,
+cuz we're going to have transaction or
+instruction versus time pipeline diagrams.
+And we're going to plot these out, and
+you'll see that instructions sort of flow
+down the pipe.
+And what's, what's really cool about this
+is, if you draw a vertical slice, or you
+draw one slice through here, you can
+freeze time, and see what is in every
+stage of the pipe.
+So if we freeze time here, t4, instruction
+five is in the instruction fetch stage,
+instruction four is in the decode stage,
+instruction three is in the execute stage,
+two is in the memory access stage, and
+then instruction one is writing back and
+finishing.
+And it's really important that when you're
+drawing these diagrams that only one
+instruction is in each stage at a time.
+If you ever draw something where you have
+let's say, this instruction is in the
+write back stage and this instruction is
+in the write back stage that's a hazard or
+a structural hazard.
+You made a mistake somewhere in your
+diagram, or you had to stall a processor
+or something else has to happen.
+So make sure that when you sliced your
+time vertically here, or look at one time
+segment that you don't have multiple
+things in that time segment at the same
+time.
+We can also draw a different pipeline
+diagram.
+So this pipeline diagram is instead going
+to plot space versus time or resource
+verses time.
+And this is going to be less common in
+this class, but it's still useful to think
+about.
+So, what we have here is we have time on
+the horizontal access.
+And we have resource on the vertical
+access.
+So we have here the fetch decode, execute,
+memory access.
+And then right back stage is the pipe.
+And we can see that we have different
+instructions flowing down the pipe.
+So instruction fetch has instruction one,
+then instruction two, and then instruction
+three, instruction four, instruction five
+flowing down it, and this is sometimes
+useful.
+Likewise you can cut vertically here, and
+see at a certain time all of the
+instructions in your pipeline.
+So, it's, it's a useful diagram.
+But it's a little less useful than the,
+the previous one.
+And when I refer to things as pipeline
+diagrams, I will be focusing on
+transaction versus time pipeline diagrams.
+Okay.
+So now, we're going to move off idealized
+pipelines, and talk about non-ideal
+pipelines.
+Or why pipelines are maybe not ideal.
+Then we're going to introduce in the
+purse, piece of nomenclature here, called
+a hazard.
+So, a hazard is.
+Anything where you have multiple portions
+of your pipeline interacting in a way that
+will cause, cause a problem.
+So there's three, three main types of
+hazards.
+We have structural hazards, data hazards,
+and control hazards.
+A structural hazard is instruction that's
+in the pipeline that needs a resource
+which is used by a different stage in the
+pipeline or some place else in the
+pipeline.
+A data hazard is when you have two
+instructions, and the two instructions are
+dependent on each other somehow.
+So the one instruction generates some
+data, and the other instruction needs to
+use that data.
+Well that, that's called a data hazard.
+You need to make sure you get the, data
+which is computed by the early instruction
+then somehow, move it to the data to the
+input of a later instruction.
+And that's, kind of, key to actually
+executing code on a processor is, being
+able to do that and we call this a data
+hazard.
+And then finally there's control hazards.
+Control hazards are another type of
+dependency, but it's a dependency which
+comes from having to change the control
+flow of the program.
+So an example of this is something like a
+branch or jump instruction, can cause a
+control hazard.
+So it's a dependency based on some control
+decision made by an earlier instruction.
+So if you have an earlier instruction that
+branches, the later instructions have to
+be the ones at the target of the branch,
+we'll say, and you can't just execute the
+ones which are the fall through for the

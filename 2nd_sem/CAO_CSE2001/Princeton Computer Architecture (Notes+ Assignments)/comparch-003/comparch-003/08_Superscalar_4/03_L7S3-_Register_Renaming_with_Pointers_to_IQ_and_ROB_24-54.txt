@@ -1,0 +1,644 @@
+Okay, so let's take a look at what we have
+to add to our pipelines.
+So we have our in order fetch, out of
+order issue, out of order write back and
+in order commit, plus that we had before.
+Note, it had variable length pipes.
+It had a reorder buffer.
+It had a feature storer buffer.
+It had a scoreboard, it had an instruction
+cue.
+So it had all the, the structures we
+talked about last time.
+And now we're going to add two more
+structures to it.
+And were gonna modify the structures that
+are there slightly.
+Now let's, let's talk about what this is
+gonna do.
+So the first structure we're gonna add.
+Is a free list.
+And the free list is gonna keep track of
+physical registers that we could go use.
+So the physical registers will probably
+have more physical registers than we have
+architectural registers.
+But you need to keep track of which ones
+are free to be used because we are gonna
+basically be allocating deallocating from
+the number of physical registers quickly
+while as we execute.
+The other structure here, we call the
+rename table.
+Sometimes this is called the rat.
+Which is the, sort of the intel
+nomenclature for this; or actually the rat
+is either this table or the table we were
+discussing in the Tomasulo algorithm
+variance of this but they're very similar.
+And what this table does is it's going to
+map from architectural register to the
+most up to date version in our physical
+register file.
+So, it's gonna say, with instruction
+that's sitting here, at our decode stage,
+where do we go find the value, cuz this
+gets complicated.
+We're going to, we just renamed
+everything.
+We have different names for everything.
+It's in some physical registers.
+We need to go figure out where the value
+is.
+And that's what this table, table does.
+We're also going to add two fields to your
+buffer.
+I'll talk about that in a second, and
+we're going to want to increase the size
+of the physical register file, so that we
+can get more performance.
+If we have the same number of physical
+registers as we have architectural
+registers, and we need to have at least
+one physical register for each
+architectural register, we're not going to
+get anymore performance from having a
+register renaming step to our pipe.
+Okay so this is kind of for completeness
+where everything gets written in the pipe
+in time.
+Two things I wanted to point out here, are
+the free list gets updated at the front
+and also gets updated here at the end, and
+the condition that you need to de-allocate
+a physical register, or a physical
+register gets a little complicated, and,
+or we'll talk about that.
+And the rename table, it gets red up here
+because that tells you that actually where
+you get the value.
+It also gets updated here when we actually
+emit an instruction down the pipe.
+And we also want to update some pending
+bits when we get to the end of the pipe.
+So that it knows whether to go sort of
+pickup from the physical register file or
+the architecture register file for roll
+back issues.
+Okay, so let's jump into these data
+structures and see what we add.
+Okay as I said we, we we're gonna add
+stuff to the reorder buffer.
+Here, now our previous reorder buffer
+looked very similar to this.
+We had some state where things were
+pending, free, or finished where we said
+dash, dash represents free and f means
+finished.
+It means the instruction got to the end of
+the pipe and is waiting to commit.
+We got a bit that says, well it was after
+a branch.
+You might have multiple of these branches
+if you allow multiple branches in flight.
+A bit that says a store not.
+A bit that says whether, it writes a
+register.
+So this says the destination is valid and
+that's important for us to know because we
+meet at the end of the pipe we need to
+know whether to actually commit some state
+into the architecture register file.
+And we have a, a field here, which we had
+before, which is the physical register
+file specifier.
+So this tells us where to go read from.
+That's, that's all, that's all good.
+But now we add some extra, extra bits
+here.
+And the first one is a architectural
+register file specifier.
+Okay, so this gets a little complicated.
+What, what are we thinking about here?
+Why do we need this?
+When we get to the end of the pipe and we
+are going to do commit, if we go back and
+look at this picture here, in the commit
+stage, we take something from the physical
+register file, put it into and the rear
+buffer drives this and says, okay copy
+that into the architecture register file,
+when the commit occurs.
+Well now we've renamed everything.
+So it's not an identity map from physical
+register number to architectural register
+number.
+So we needed to know where you could
+actually write in the architectural
+register file.
+And that's what this does.
+It just tells us where to go write.
+So, this is where we read from, this is
+where we write to.
+When this instruction, let's say it's the
+most recent instruction here that's turned
+to finish.
+It's going to go commit.
+We read the value from here.
+We write it into the value pointed to by
+here.
+And then we have one other field here,
+which is a little bit odd.
+We have the previous physical register.
+Why, why would we need that?
+That doesn't make any sense.
+It is the, what is, what is this doing?
+So this is something we actually read out
+of the rename table at the front of the
+pipe.
+And what it's going to tell us, is it's
+going to tell us.
+Let's say this was register four.
+This is where we, the in-flight physical
+register is, and this is the previous
+physical register that h-, held the value
+of register four before we did the update.
+And the reason we need to know this, is
+when we hit the end of the pipe, we need
+some way to de-allocate physical
+registers, and we're going to use this to
+track that, and we'll give an example in a
+minute.
+But what this is really going to do its
+going to say; oh we wrote to the new value
+of register four, which means that the in
+flight value, let's say it was register
+four, physical register 27.
+And the new one is physical register 30 or
+something like that, need to deallocate
+physical register 27 and we can do that
+when we reach the end of the pipe by
+committing this instruction out of the
+reorder buffer and cleaning up all the
+state.
+Okay.
+A, a quick picture here of the, the rename
+table, the renaming table.
+This is indexed by register.
+P tells us whether we have a write in
+flight.
+So it knows that, that value is not in the
+architectural register file.
+And p regulator tells us where in the
+physical register file to go find the
+value.
+And this is really important when a
+subsequent instruction is looking for that
+value, shows up, and it wants to get that
+value before it hits the architecture
+register file.
+It looks here, this tells us, tells us, oh
+its pending, its gonna be here in a little
+bit.
+Together with this and the scoreboard, you
+might even be able to bypass it early.
+In, in, a, in a good day.
+In a bad day we have to wait for it to get
+to the physical register file, but it's a
+lot better than having to go pick it out
+of the architectural register file.
+And finally we have a free list.
+And this is literally just a bit per
+physical register, which is very different
+than a bit per architectural register.
+And this is going to have, let's say we
+have big N physical registers.
+Or rather we have 256 physical registers,
+and we have a bit saying whether that
+register has been deallocated and is ready
+to be used, for future register renaming.
+Or whether the instruction, or whether
+there's a instruction using that physical
+register, or it's waiting to commit to the
+architectural register file, this will
+tell us that information in this table
+here, and just a bit that says whether
+it's free or not, pretty simple.
+Actually, before I go on here, I wanted to
+make a, make an interesting observation.
+Where, where does this register renaming
+become really important?
+Well, if we go look at something like the
+original Intel architecture, they had
+eight registers.
+If you want to run high performance code,
+you have to re-use those registers pretty
+quickly.
+So they got register limited very quickly
+when they tried to build faster and faster
+processors.
+So they had to introduce registry naming
+quite early in the Intel imp-,
+micro-architecture implementations.
+And they had many, many more physical
+registers than architectural registers
+very quickly, cuz eight isn't gonna get
+you very far.
+They, they can have, like about 100
+in-flight instructions.
+And, by definition you can't have that
+many inflight instructions, if you,
+maintain right after write stalling,
+effectively cuz, you're, you're going to
+have to rewrite some register.
+It's kind of like a, a, pigeon-hole
+problem.
+If you have more than eight instructions,
+at least one of those instructions is
+gonna cause a right after right,
+dependency and you're gonna stall the
+pipe.
+So, they're, they're not going to have
+more than say eight inflight instructions
+pretty quickly, if they did not do
+register renaming.
+So, they did register renaming pretty
+quickly, in their pipelines.
+Okay, so this gets us to the, the I chart
+here.
+Let's walk through, basic case, of what's
+in all these different tables as we
+execute our basic, simple code here.
+On the top we have the four instructions,
+two muls, and some adds.
+This was our original test case.
+Note there is all these dependencies
+through register four we need to worry
+about.
+There's both where you have to write,
+write after read and write after write
+dependencies.
+We're gonna execute it quickly here by
+pulling, as you can see, this add fires
+early, or issues early the, the final add.
+And this is really driven by the
+registering ini.
+So let's, let's take a look at what, what
+happens here.
+We'll try to interpret this.
+Here we have cycles.
+Cycles are also across the top of the
+stage.
+We, we show what's in the decode issue,
+write back and commit stage of the pipe.
+We leave out the execute stages cuz it's
+too much to draw here and it's drawn at
+the top in a different form.
+Let's first look at the renamed table.
+So.
+We're at the rename table.
+Or, we're actually gonna say we only have,
+for, for clueless here, let's say we only
+have seven architectural registers.
+But we're going to have let's say.
+Ten physi, or, eleven physical registers.
+So we're gonna have more physical
+registers than actual registers in this
+example.
+We start off and we say, Okay, well,
+register one.
+If you want to go find architectural
+register one, the values in physical
+register zero.
+And we could basically just, you know, we
+just come up with some allocation.
+And the circles mean that it's not
+pending.
+It's not in flight in the pipe.
+That's just sort of the base case.
+Everything is, the, the pipe has been
+relaxed.
+Everything is, is allocated, and we just
+drew a basic allocation here at the
+beginning.
+Now as we go to execute, some interesting
+stuff starts to happen.
+The first thing that is going to happen
+is, we are actually going to, here, issue
+this instruction, which writes to register
+one.
+We need to rename this, at this point.
+Register one will have to be named as
+something else.
+So in this table here, if we look, we
+register, we rename register one to
+physical register seven.
+Okay, that sounds good.
+What happens next.
+Well we next sit here, and we try to
+execute this instruction here, It says
+mall, and it goes to try to read register
+one.
+When it goes to read register one though,
+we can go look at the rename table and
+say, oh well that's actually in flight,
+and it's in physical register seven.
+So if we go look over here, we can draw
+this and say, oh that value is actually in
+physical register seven, and it's
+currently not ready, maybe, and, But P4,
+the other input, register five, to do,
+okay, yeah, register five got renamed to
+P4, is ready.
+So it's ready to go.
+Okay, let's, one of the other interesting
+things that happens here is we can see
+that as we go to allocate this, we have to
+remove it from the free list.
+So this list here is the list of all the
+free registers.
+We start off with four free registers and
+we sort of narrow it down as we start to
+do rights.
+At some point we run out.
+So I want to make an important note about
+this is that when we run out of physical
+registers we're going to have to stall the
+pipe, because we can't do any more
+renaming.
+We can't issue more instructions at that
+point.
+So that's, that's really, that's really
+important to realize that when you build
+your machines you have to have enough
+physical registers that you don't run out
+very often.
+Now, it's possible that you could still
+run out.
+So let's say you have hundreds of in
+flight instructions.
+And you only have, let's say, 64 physical
+registers.
+You might still run out, But the
+probability of that happening, my, might
+be relatively low.
+And the, your utilization, and, you know,
+you sort of bake into this your CPI.
+Your CPI may not be less than one, or may
+not be low.
+So, you know, the probability of that
+actually happening.
+You may not worry about it too much.
+Another cute little story here is there's
+actually been some interesting bugs in
+processors around the free list.
+So there were some alpha processors that
+actually leaked free list entries in their
+register file.
+So what happened was if you ran a certain
+piece of code for a long enough period of
+time all of a sudden this processor just
+ground to a halt cause it was not able to
+allocate more physical registers and it
+ran out.
+And ends up with fewer physical registers,
+architectural registers, and the machine
+just stopped.
+And this was a, sort of well-known bug in,
+in some of the early Alpha, I think this
+was actually in the first, out of, I want
+to think where was this, I think this was
+in the, 21264 had this problem.
+They, they fixed it.
+And, they pulled those chips off the
+shelf.
+And, you know, that's a, that's a really
+bad thing to, have happen, in your
+processor.
+How embarrassing.
+But as I said, if you run out, you're
+really not going to be able to issue more.
+But in this case we made sure we had
+enough.
+So we're not actually going to see any
+stalls.
+And let's look at how things get on the
+free list here.
+Cause that's a little bit interesting.
+In our reorder buffer, I said we had extra
+fields.
+If you recall, we had the previous
+physical register that this was allocated
+into.
+So, if we go look, at this instruction,
+which is the first instruction, go to
+execute that mull, R1 was in P0.
+So when that instruction commits, we
+actually put p0 onto the free list.
+And we're going to look at a case in a
+second why you can't do it earlier.
+Because it seems like you should be able
+to basically de-allocate physical
+registers earlier.
+You know, no one's probably gonna be
+reading that value.
+Why can't you just, you know, get rid of
+it early?
+But we'll look at in a second that a test
+case that, that, that's, that's a problem
+with.
+Let's see any, any other fun insights
+here?
+That's, that's about it, what I wanted to
+get across from, from this diagram.
+As, as the code continues on we end up
+with more and more free physical
+registers.
+One thing one thing I did wanna just to
+walk through this, understand this a
+little bit.
+Let's say we have this instruction here
+which is our one, two, three, four.
+It's our last instruction that we execute.
+Let's go see what it's doing here.
+So writes architecture register four, so
+let's just store that in the reorder
+buffer cuz we don't know where to go to
+the right.
+We had allocated p10 to that, and we did
+that right here, when we actually issued
+it.
+So he pulled it off the free list.
+And the previous thing that it wrote was
+P8, so when in, that ultimately commits,
+P8 is gonna end up back in our free list.
+So that's a, that's a nice little thing,
+the circles just show when the values are
+no longer pending, so they are actually
+not in the pipes anymore.
+And you can see that continuing here, this
+instruction here, which is the second
+multiply.
+When it commits it's going to free up P3.
+So P3 ends up on the list.
+P5, P5 ends up on the list.
+P8, P8 ends up on the list.
+And then if when we see true read after
+writes, for example right here we need to
+make sure to pick up that correct value.
+We do that by looking up in the rename
+table.
+So let's go find that in this chart here.
+So instruction two.
+Is let's see what it's doing here.
+So, that's gonna be right here.
+It's waiting on the eighth to be become
+ready, in order to issue.
+So it's signaling an instruction queue,
+and this is gonna stall.
+It's gonna stall all the way out to here,
+or to stall to right there.
+And that's when it comes out of the
+instruction.
+Okay.
+So let's look at freeing up physical
+registers, and what is a good policy for
+freeing up physical registers.
+So we're gonna have a different piece of
+code here we're going to look at.
+It's gonna be just a bunch of ads.
+And we're gonna look at.
+This code has some.
+Read after write dependency is in it.
+Namely R1 there.
+And, let's say, we try to go execute this.
+Well we, we're gonna, here's some
+execution order.
+We're gonna look at, oh sorry, that one
+there so, I meant point out for the read
+after write.
+A write after read dependency here.
+So let's look at some execution order and
+see what happens, let's say we allocate
+physical register zero, at the beginning
+somewhere for register one.
+And then when we do the commit, we free it
+up in our, free list.
+Well, lo and behold, another instruction,
+in time, comes along here, and allocates
+in the physical register zero.
+And it goes and writes to it.
+And we, like, free it up there.
+This instruction here which we'd renamed
+and earlier we had renamed our one for and
+we go to try to read this value, goes to,
+do the read and it looks in physical
+register zero.
+And I guessed the wrong value.
+Ooh.
+Yeah, we don't, we don't want that.
+So what's a, what's a good policy here?
+Let's say instead, we don't, free up a
+physical register until someone else goes
+to write that physical register.
+Or our subsequent instruction goes to
+write that physical register.
+Because then we know that, that physical
+register is in use, or could be in use by
+other readers of that value.
+So if we look at this case here, let's say
+we, write, physical register zero.
+And then we allocate a different physical
+register.
+Right?
+We allocate physical register two for this
+right here.
+Register eight.
+And then we de-allocate when we go to
+overwrite register one.
+So by doing that, we know when this R1
+gets written, that no one else can
+possibly use that physical register, that
+is after this instruction in program word,
+because we overwrote it, so the value is
+no longer visible.
+So that's, that's pretty, pretty nice.
+So that's, that's the a, a, a very good
+heuristic or very good way to get this
+correct; cuz you could just keep the
+physical register live until you rewrite
+the physical, or your rewrite the
+architectural register that physical
+register maps to.
+And at that point you can remove it from
+the number of allocated physical
+registers, and put in on the free list.
+If you do it early, with the out of order
+execution pipeline, you know, bad, bad
+things can happen.
+You can go read the wrong values.
+Okay, so this brings us to a couple
+optimizations on register renaming.
+The biggest one here is you can try to
+combine the architectural register file
+and the physical register file to save
+space, and the insight here is, if you go
+to try to combine these two things you can
+store the architectural register value and
+the physical register value in the same
+physical storage location.
+If that physical register's no longer
+pending.
+So if there's nothing in flight to it and
+you don't have to roll back, if you're
+just going to roll back to the same value
+anyway, why, why keep extra space for
+this?
+One, one change you need to do here is, so
+you're going to remove the architectural
+register file.
+Which you still basically need to know
+when you go to do a rollback of some
+speculative, say you take an interrupt, or
+you take a branch miss-predict, you still
+need to know where to go rollback out of
+and we're gonna do that by let's say
+having a second renaming table here, which
+allows us to keep track of just the
+architectural state.
+So we have a speculative renaming table,
+then we have an architectural renaming
+table.
+It just has pointers in it, instead of
+actual values, at the end of the pipe.
+And what's also nice here, is instead of
+copying values, we don't actually have to
+move something out of the physical
+register file into the architectural
+register file.
+Instead we just have to update a pointer
+in a table now.
+And we did the copy, to potentially also
+make rollback easier, cause we have to up
+date pointers now instead of actually
+copying an enter register file, which can
+take awhile or requires lots of ports or
+something else.
+So you, you can have a little table there
+to do this remapping for you.
+And as I say you can typically get away
+with less space than having for the same
+performance than if you were to having two
+separate structures.
+When it downsizes, you, you might need to
+have more Depending on how you implement
+this.
+You're architectural register file, and
+your physical register file are now
+together.
+It may be bigger.
+So your registered default access might be
+a little slower.
+Something like that could be, could be a
+down side, versus having it in two
+separate partition structures.

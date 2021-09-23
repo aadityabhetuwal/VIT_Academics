@@ -1,0 +1,670 @@
+Okay.
+So, now we're going to change off of
+machine model and talk about other aspects
+of instruction set architectures.
+And, to talk about what else is in
+instruction set architectures, well,
+there's the fundamental machine model, how
+many registers you have, whether you, what
+type of register access you have.
+Do you have stack-based?
+Do you have accumulator?
+Do you have a register-register, or a
+register-memory architecture?
+Also, you need to talk about what the
+fundamental operations that you have, the
+fundamental instructions that you have.
+So, let's look at classes of instructions.
+We start off with things like data
+transfer instructions.
+So, loads, stores move to control
+registers.
+So, this is what MIPS has.
+And, in this course, we're going to be
+relying a lot on MIPS, the MIPS
+instruction set architecture, a lot for
+our example cases.
+But , you have load, store move to and
+move from control registers, with
+different control registers.
+You have arithmetic logic unit
+instructions.
+So, things like adding, subtracting, and
+ignoring multiplication, division.
+This is an interesting one here, Set Less
+Than, that's kind of a fun one.
+It's a comparison operator.
+So, if you want to take two values and
+compare and see which one's less than the
+other, you can use Set Less Than.
+Load Upper Immediate, this is, moving a
+value into different location registers,
+how to shift operation.
+You can have control flow instructions.
+So, you can do branches, jumps, traps.
+And, one of the points I want to get
+across here is within, or between
+different instruction set architectures,
+people make different choices about which
+instructions to have.
+Some people have very complex ones, some
+have very simple ones, or some of the
+architectures are very complex ones, and
+some of the architectures are very simple
+ones.
+You have floating point instructions,
+adding floating point numbers, multiplying
+floating point numbers, subtracting
+floating point numbers.
+These are actually compare operations, oh,
+excuse me, this is a compare operation
+floating point numbers.
+So, compare less than for doubles, or
+double precision floating point.
+Here, we have conversion operations.
+So, it's conversion from a single
+precision floating point number to an
+integer number, or integer word op,
+number.
+So, this is a convert, this is a, this is
+the MIPS instructions.
+You can have multimedia instructions, or
+what's called single instruction multiple
+data.
+And, we'll be talking about send the bunch
+in this course, later when we get to data
+parallelism and vector units.
+And, this is actually an example out of
+x86.
+I wanted to give of stranger operations
+that sometimes show up as fundamental
+operations or fundamental instructions in
+instructions set architectures, is, this
+is an example called REP MOVSB.
+That's not two instructions, that's one
+instruction with a prefix and a space in
+between it.
+Yup.
+This is actually valid Intel assembly
+code.
+And what is REP MOVSB?
+Well, REP MOVSB is a string operation
+where it will actually copy one string
+into another string.
+So, if you have some text and you want to
+copy to another text, piece of text, you
+can do REP MOVSB and set up a number and
+it will actually copy.
+This is the more equivalent of something
+like store and copy.
+So, we can do that all in one instruction.
+So, in addition to these complex string
+operations, things like REPS MOV, REP
+MOVSB, we can see, there were sort of old
+jokes about having extra and extra
+instructions, and having really complex
+instructions.
+So, for instance, in the VAX architecture,
+they had instructions that could do very
+complex things.
+I think there was one that even did a Fast
+Fourier transform in one instruction.
+That's like a whole Fast Fourier transform
+or, across a huge data set in one
+instruction.
+So, you can see that there's a lot of
+choice between your classes of
+instructions and the ISA architecture, the
+instructions that architecture, architect
+has to sit down and think about what
+should be in an instruction set versus
+being left out of an instruction set.
+Another characteristic of instruction set
+architectures that the architect needs to
+think about is, how do you go and Access
+Memory?
+And, what are the different addressing
+modes that can be used?
+So, or how do you get operands from
+memory?
+So, looking at one example here, we have a
+register-based addressing mode.
+So, in a register-based addressing mode,
+we can only name two registers and put
+them in another register.
+And, this is a, a three operand format
+here.
+X86 will have only, two.
+But, you name, Register three, Register
+two, add them together and put them into
+Register four, for instance.
+And, one of the, the interesting things
+here is, this may not actually access any
+memory.
+We call them memory mode, but it may not
+actually access memory.
+If you have enough register space and your
+implementation or your micro-architecture
+actually implements all the registers,
+then it won't go access memory.
+But, it might access memory.
+So, for instance, there are machines out
+there where you have a register, register,
+register operation, or register, register,
+register instruction.
+But, the processor has no register file.
+Everything is out in main memory.
+So, it has to go read the data from main
+memory to go actually do the operation and
+it just sort of caches, or keeps the two
+operations that are needed.
+And it's all at the micro architectural
+level.
+So, this is all the big A architectural
+level and asking, what is the fundamental
+memory operations that can be done?
+So, that's a register-based addressing
+mode, we can have a media based addressing
+modes.
+So, here we have something like a constant
+of five being added to register, putting
+it into another register.
+So, here's our assembly code for that.
+You can have displacement-based
+addressing.
+So, in displacement we're going to take a
+register value, add it to a some constant,
+and then take that and look up in main
+memory, that location, and do some
+operation, let's say, of another register.
+But, this is displacement based, and it's
+called displacement because you can take a
+register and have some displacement off of
+it.
+You can have register indirect, and this
+is, pretty common on something like MIPS,
+or actually if you go look at the Itanium
+instruction set.
+They don't have displacement stuff, they
+only have register indirect.
+So, this is similar to the displacement,
+but you can't have a displacement.
+You can only go and read from a particular
+memory address that's stored in the
+register.
+You can have absolute addressing.
+This is actually not very common on most
+modern-day architectures.
+But, in the older, older machines, this
+was common so you take memory and take a
+constant, it's not out of the register,
+and go look up in memory, and then do some
+operation with that.
+You can have memory indirect.
+And this is kind of interesting way to
+denote this here.
+Mips very much does not have this.
+But, you could do a memory operation of a
+memory operation of a register.
+So , what you'd have is, in a register,
+you'd have an address.
+And then, you would take that address,
+you'd look up in main memory, get the
+data.
+And that itself is an address.
+And then, you'd look up in main memory
+again with it.
+So, it's sort of a double index based off
+a, a, a register sort of addressing mode.
+And, that's, that gets pretty fancy.
+So, if you look at something like VAX,
+they definitely had this.
+You can have PC relative, or program
+counter relative, or instruction pointer
+relative addressing.
+So, you can take the program counter, add
+some displacement, and then index memory.
+This is very useful for position
+independent code, or code that you don't
+know where it's going to be loaded.
+And, if you want to go access some data
+close to where the code is, you don't know
+exactly where the code is loaded.
+But, the program counter, because you know
+what instruction your executing, you can
+basically index off that and find memory
+around where you are, around where your
+loaded in main memory.
+So, this is for a PIC code.
+You can also have scaled.
+This is something that x86 has where you
+can actually take a register, and add it
+to another register and multiplied by
+something else.
+So, in x86, this is called SIB, scale,
+index and base mode.
+So, you can actually take a displacement,
+add it to some, to registers and multiply
+it.
+And, this is very useful if you're trying
+to index through and array of some size.
+So, if you have an array of four byte
+words, you can just keeping ticking up
+this counter here.
+So, you start off zero, one, two, three
+and as this ticks up here, instead of
+going up by a byte, you go up by four
+bytes at a time.
+And if you're, the data you're trying to
+load is four bytes long, you'll actually
+be able to just pick up the exact elements
+in the array you want versus having to do
+this multiplication someplace else.
+Usually, these scaled operations, or
+scaled memory addressing modes have very
+limited sort of, multiplication here.
+You can't multiply by, let's say, seven.
+Usually, it's sort of, multiplication by
+factors of two or a small set of factors
+of two because that's, that's easy.
+That's just a shift operation in base two.
+And then, you can think about data types
+and their sizes.
+So, what do I mean by data types?
+Well, you could have binary integer.
+You can think about having different types
+of integer data.
+You can think about having, unary encoded,
+binary encoded.
+You could think about having, things that
+are, sort of, roll in different ways.
+So, for instance, as you probably learned
+about in your computer organization class,
+there's ones complement versus twos
+complement arithmetic, and that's
+different data types, there.
+So, you have binary integer data, and
+saying whether it's ones complement versus
+two, twos complement is, is pretty
+important.
+You can have binary coded decimal.
+So, this is where each digit is encoded
+with four bits from each decimal digit, if
+you will, is encoded in sort of the
+pointer.
+It's going to be the period, if you will,
+is, is also encoded in there between your
+fraction and the integer portion or the,
+the, the, the natural number of portion.
+So, your binary coded decimal can have
+different, very exact calculations for
+things like spreadsheets and business
+calculations.
+You can have floating point types.
+And there's actually a lot of different
+floating point types here, you can have,
+there's a standardization now that's
+called IEEE 754, which is what's used in
+most modern computers.
+And, this was different than the Cray
+floating points on Cray supercomputers.
+They had a much wider floating point, and
+they also had difference number of bits
+given to the mantissa versus the exponent.
+And by doing this, their precision can be
+different in different ways.
+So, for instance, you can have a bigger
+range of numbers but the precision's
+smaller, or a smaller range of numbers
+with bigger precision.
+And, there's different trade-offs there.
+Also, Intel internally, at least in x87,
+had this thing they called Intel Extended
+Precision which is 80 bits long.
+Ieee 754 the biggest thing to find in
+that, is a 64 bit double.
+But, if you want even more precision to
+your floating point numbers, you might
+need 80 bits.
+You could have packed vector data.
+This is like MMX data where you're trying
+to pack the data all together and operate
+on it at the same time.
+So, typically, things like MMX, you need
+to bring the data into a packed data type,
+and then operate on a whole data type so
+which has different values in it.
+And, some architectures even have a
+special data type called addresses which
+is different than a binary integer.
+So, some older computers actually had
+address registers.
+And the address data type was different
+than the data, data type, or the binary
+integer type.
+And, that was different than the floating
+point data type, and there was different
+registers and different register names for
+that.
+And, what was nice about that is, they
+knew that if you loaded something into the
+address registers, it was definitely an
+address.
+So, it had type information, and that's
+separate from the width.
+So, let's say, you have binary integer.
+Well, people have built machines which
+have eight bits, sixteen bits, 32 bits, 64
+bits.
+All these different things that is sort of
+the default word size.
+And then, finally, one of the important
+things you need to do is come up with the
+encoding of the different instructions.
+And, there's been a lot of debate on this
+of should you have fixed width versus
+variable width instructions.
+So, let's look at a couple of different
+ISA's and see where they fall, what camp
+they fall into.
+So, most risk architectures are fixed
+width.
+So, you have, MIPS, Power PC, SPARC, ARM,
+falling into this category.
+And, as an example, MIPS which we're going
+to be talking a lot about in this course,
+is, every instruction is exactly four
+bytes long.
+And, what's nice about this is it's easy
+to code, but it may not be very compact.
+On the other side of the, of, of this
+question about ISA encoding, you can see
+variable length instructions where the
+width of the instruction can vary widely.
+So, what's nice about this is you can have
+things that take up, things that are very
+common to take up a very small amount of
+space.
+So, if you have an instruction which is,
+like, one byte long and it's always
+called, you could effectively do a manual
+Huffman encoding on your instruction set.
+So, you take the most common things, and
+you put them in the smallest amount of
+data.
+But, if you have something that's very
+uncommon, you can have it take a lot of,
+lot of bytes.
+So, example here, x86, you can have
+between one and seventeen bytes for an
+instruction.
+I think this has actually been updated
+now.
+If you look at x86-64, it can be between
+one and eighteen bytes.
+So, and a couple ideas here.
+It can be anything in between.
+One, two, three, four, all the way up to
+eighteen.
+And, some CISC architectures, you have,
+IBM360 is a good CISC, example of a
+complex instruction set architecture is
+x86, Motorola 68k, VAX, these were all
+variable length instruction encoding
+architectures.
+And now, we search again with some thing
+which a little fuzzier.
+There's things that sorta start to cross
+over.
+People started to look at, started to
+build mostly fixed or compressed
+instruction set architecture.
+So, an example of this, is something like,
+MIPS16, which is effectively a MIPS
+instruction set where there is both 32
+bits or four byte instructions, and
+sixteen bit or two, two instructions.
+And, a THUMB which is the compressed or
+the mostly fixed instruction set
+architecture of ARM.
+Yup, gotta love the naming there.
+Also did the similar sort of thing where
+they had two bytes and four bytes as the
+different instructions.
+This is a little bit different than
+compressed.
+So, this is like a, a mostly fixed
+architecture with sort of two different
+instruction sizes.
+If you look like something like Power PC
+and VLI, some VLIWs, they actually have a
+compressed file, compressed format where
+they will actually store the instructions
+compressed and decompress them when it
+ends up in main memory.
+Or, ends up in the caches, at least.
+So, you can think of some architectures
+where the, the code in main memory is
+small.
+But then when we get to the cache it,
+maybe it gets expanded or gets expanded
+when it comes out to the main processor.
+And then, there's long instruction words
+where you actually can explicitly name
+multiple instructions happening at the
+same time.
+Or, even very long instruction words, or
+what's called VLIWs, which we'll be
+studying a bunch in this course.
+Where you can put multiple fixed-width
+instructions in a, or multiple
+instructions in a fixed-width bundle.
+So, some good examples here are Multiflow,
+the LX architecture from, and also from
+STMicro, the LX [inaudible] architecture
+from HP and STMicro which is, shows up in
+printers today, mostly.
+Ti DSPs are actually VLIW architectures,
+and a couple of other good examples.
+So, just to show here something complex of
+how you can end up with one to eighteen
+bytes, here, we have x86's instruction
+set.
+And, fundamentally you need an opcode, a
+byte worth of opcode.
+But, you might, some instructions might
+have between one and three bytes here.
+And then, there's different addressing
+modes, special information about different
+addressing modes, displacements and
+mediates about the different addressing
+modes.
+And those all take up more space.
+And they can also have prefixes so that
+REP, REP in REP, REP MOVSB is actually a
+prefix, which says, repeat this operation
+multiple times.
+You can code all these things in a
+variable with instruction format like x86.
+And, to give you an example, something
+like MIPS, every instruction on MIPS is
+exactly four bytes long and they have to
+fit everything into it.
+So, a ISA architect or Instruction Set
+Architecture architect has to decide the
+layouts of the bits within the instruction
+set and that's usually something that is
+defined in the instruction set
+architecture.
+So, to sum up some real world instruction
+sets and where they fall with different
+numbers of operand, operation, number of
+memory operations, data sizes and
+registers, let's walk through a couple of
+different instruction set architectures.
+And, you probably heard these in past,
+heard these in passing but you may not
+have actually used any of these machines.
+But, that's because some of them are
+embedded or some of them don't aren't
+commonly used anymore.
+But, they're good to know about.
+So, let's start off with Alpha.
+Alpha was built by Digital Equipment
+Corporation, and it's a register-register
+architecture with three named operands.
+There's no explicit memory operands in the
+instruction set, it's got 64 bits as the
+default data type.
+And when, actually, Alpha originally came
+out, you could only do 64-bit operations
+with it.
+That will, sort of, later change as they
+figure out that might not have been the
+best idea.
+64-bit addressing, it was mostly designed
+for workstations.
+So, big addresses, fast computers, they
+can see something like ARM.
+Arm is used in my cell phone.
+It's a architecture that there's a lot of
+different implementations of, and they've
+licensed it to lots of different people,
+but it's also register, register,
+register, three operands.
+There's a, a 32 and then now is a 64-bit
+data size that has just come out.
+30, it's going to be sixteen registers,
+and the addressing, as I said, is a 64-bit
+version came out but it's mostly 32.
+And, it shows up in cell phones embedded
+applications.
+Mips which is, an outgrowth of the
+Stanford MIPS project and later was
+commercialized.
+Register, register, register, we're going
+to be focusing on this mostly in this
+class.
+Sort of similar workstation embedded.
+Sparc is another instruction set.
+This is what Sun originally used, or used
+to use.
+It was an outgrowth of their risk one, and
+risk two sort of, architectures.
+It has, well, this is, this one's
+interesting.
+Between 24 and 32 registers depending on
+how you, you look at it.
+They have this interesting idea where as
+you load more data in, sort of, or as you
+do function calls, data gets spilled out
+into main memory and gets pulled back in
+from main memory, kinda like a stack.
+So, it's sort of, a mixture between a
+stack and a, a register architecture.
+Most of these were workstations.
+You can see that TI C6000, more for DSPs.
+But then, we're going to start to see some
+more interesting stuff down here.
+Let's take a look at VAX.
+So, VAX is a memory, memory architecture
+where it has three named operands, or
+could have up to three named operands, and
+all three of those can come from main
+memory.
+It has relatively small number of
+registers, and we can see something like
+the Motorola 6800.
+This is not to be confused with the 68,000
+or the 68K, this is a 6800.
+That has accumulator-based register, or
+accumulator-based architecture where you
+can have one named operand that comes,
+comes from memory.
+It's an 8-bit data path, and this is
+mostly used in a micro controller.
+So, why, why all the diversity in these
+instruction set architectures?
+Well, instruction set architecture is
+actually influenced by technology, or
+influenced by transistor technology.
+So, we see that if storage is limited, we
+might want tight encoding.
+And, on the flip side is if you have very
+small number of transistors, you may want
+to fit the entire chip on there, and this
+was the, actually, the fundamental idea
+behind RISC.
+If you have lots and lots of transistors,
+you know, might not have to worry about
+having to shove everything onto a very
+small amount of area.
+You could think about adding multicore and
+many cores, or putting multiple processors
+on there and build a instruction set
+architecture specifically designed for
+multicores and many cores.
+And then, also, instruction sets are many
+times influenced by their applications.
+So, a good example of this is, if you're
+building a signal processing architecture
+or a, or a Digital Signal Processor, a
+DSP, you might want to add DSP
+instructions.
+And then, finally, I want to talk about
+how technology from software has
+influenced instruction set architecture
+over time.
+So, if we look at something like the SPARC
+architecture, it has what's called the
+register window.
+So, in the register window, what happens
+is whenever you do a function call, it'll
+actually take eight registers and put them
+into memory, and then you get eight new
+registers.
+When you do a return, it takes eight
+registers from main memory and puts it
+back into your registry file, and sort of
+swaps out the ones that were there before.
+And, what this was, was at the time that
+SPARC was made, compilers didn't know how
+to do register allocation.
+Then, you'd lose like an open problem.
+Since that time, register allocation,
+figuring out how to take a fixed number of
+registers and move data in from a stack in
+main memory and vice versa can be
+orchestrated very effectively and very
+efficiently by the compiler.
+But, at the time, compilers were very
+simple.
+So, people didn't know how to do that, so
+they needed hardware help to do that.
+So, the instruction set architecture has
+that build baked into it.
+But, now that we have effective register
+allocation, we've not seen any other
+register windowed architectures come along
+after that.
+If you talked to anyone who's actually
+went and implemented a SPARC instruction
+set architecture, micro architecture, they
+basically hate register windows.
+It's like the bane of this architecture.
+But, at the time compiler technology was
+not good enough.
+So, applications influence it, compiler
+technology influences your instruction set
+architecture.
+Technology influences your ISA, and ISAs
+have evolved over time.
+Even though, as we said originally, you
+know, a lot of times people want to build
+ISAs that don't change so you can keep
+running software that have binary
+compatibility.
+But, you know, at sometimes, at some
+point, it might make sense to actually
+break the compatibility and re-optimize
+your instruction set architecture.

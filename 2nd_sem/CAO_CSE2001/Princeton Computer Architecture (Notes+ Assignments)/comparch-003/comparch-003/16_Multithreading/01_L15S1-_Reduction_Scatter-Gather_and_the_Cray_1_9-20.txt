@@ -1,0 +1,245 @@
+Okay. 
+So, all here. 
+So, let's get started. 
+So, we're continuing our ELE 475 
+experience. 
+And we're going to continue on where we 
+left off last time talking about vectors 
+and vector machines. 
+And just to recap, because we went 
+through this really fast at the end of 
+lecture last time. 
+when you have a vector computer, one of 
+the things that you want to do or the 
+easy thing to do is to add vectors or 
+numbers. 
+But, what if you want to do work inside 
+of a vector? So, you want to take a 
+vector and you want to sum all of the 
+elements in the vector. 
+So, we call this a reduction, a vector 
+reduction. And if you're trying to do 
+this with a vector machine, unless you 
+have some special instruction which looks 
+at all the different elements, which is 
+probably a bad thing to do because if 
+you're trying to do that then you would 
+lose all the [SOUND] advantages of having 
+lane structures because you would build 
+or partition the elements. 
+because if you had to do a reduction you 
+would actually have to have, let's say, 
+one ALU use all of the elements from 
+these different lanes. 
+And that would be, that'd be sad. 
+So if you want to do a reduction, one of 
+the ways to go about doing this is 
+actually have use vectors but use them 
+sort of temporally. 
+And, you can use a, if you will a binary 
+tree algorithm here to start off with 
+[SOUND] a big long vector that you want 
+to do [SOUND] the sum of all the, the sub 
+parts of this. 
+And the first step is you just cut this 
+in half. [SOUND] And you take this half 
+of the vector and that half of the vector 
+and you add it, and you end up with 
+[SOUND] the partial sums here, which is 
+half the length. And again, [SOUND] add 
+this half with that half and you can use 
+vector instructions to do that [SOUND] 
+and for something half the length. 
+[COUGH] Continue, and at some point, you 
+end up with a scallar, [SOUND] which is 
+the sum. 
+[SOUND] So, this is pretty widely used to 
+do vector reductions. 
+at the end of yesterday last class's 
+lecture, we also briefly touched on more 
+interesting addressing modes. 
+So, the vector addressing modes and 
+electro low, loads and stores we've been 
+talking about. 
+Up to this point, you could bank very 
+well and you could assign, let's say, 
+different regions of memory to, sort of, 
+different lanes. 
+And you would always be able to do a load 
+and actually just read out from your bank 
+that was sort of a, attached to a 
+particular lane. 
+Well, that works well for very 
+well-structured memory accesses. But all 
+of a sudden, let's say, you want to do an 
+operation where you have C of D of i. 
+[COUGH] So, you have a vector, D, and you 
+want to index into that vector. 
+So, it's a vector of addresses. 
+And then, you want to take, 
+or, or, a vector of indexes. 
+And then, you want to take that index and 
+use that to index into C. 
+So, this is something you commonly want 
+to do, but you need special support for 
+it. 
+And a basic vector architecture may not 
+have this. 
+but you can add it. 
+And the, the MIPS architecture which is 
+developed in the Hennessy and Patterson 
+book as this instruction here called load 
+vector indirect. 
+Where you can actually have two vector 
+registers, and the one will index into 
+the other, and then you have a 
+destination vector register. 
+And, we call this gather. 
+But your memory system, because you don't 
+know the a priori, if you will, the 
+addressing, your memory system might get 
+big and complex. 
+And you need to be able to have all, all 
+the lanes in your vector processor be 
+able to talk to all the memory. 
+And that's probably a good thing to do 
+anyway to make your machine a little more 
+flexible and to allow sort of vectors 
+that don't have to align to a particular 
+address. 
+but, you have to make your memory system 
+much more complicated to be able to do 
+these sort of gather operations. 
+And the scatter operation is the, the 
+inverse of this. 
+It would be [COUGH], SVI, a Store Vector 
+Indirect [COUGH] which would do the store 
+where you have an indirect for the store. 
+So, if this would be a, on the left hand 
+side of an assignment operation. 
+Okay. 
+So now, we get to talk about a couple of 
+examples. 
+Well, let's do, we'll touch on one 
+example, actually, right now of a vector 
+machine. 
+And this is what I was trying to say, 
+when I was coming in that, if you're 
+going to build a really fast computer, 
+and it could cost millions of dollars, 
+you're going to look cool. 
+So, the picture on the right here is the 
+Cray-1. 
+And 
+I've had the pleasure of seeing a couple 
+of these and sitting on a couple of 
+these. 
+and it has a nice little seat built into 
+it. 
+You can actually sit down on it and it's 
+warm. 
+Because this is a water cooled machine 
+and it uses a lot of this is water 
+cooled. 
+They later went to something called floor 
+inert to cool these machines. 
+the Cray-1 was never floor inert cooled, 
+but the Cray-2 I think was, 
+and the Cray-3 definitely was. 
+But, the, the idea is that you use water 
+and you can have a nice place to sit so 
+the operator has a nice place to sit down 
+while he's, you know, he or she is 
+working on the machine. 
+And, it's heated because there's, these 
+machines are quite hot and that, and part 
+of the, the power supplies are actually 
+under the bench here. 
+the other fun thing about these is you'll 
+notice they're shaped like the letter C, 
+for Cray. 
+No one really knows if that's true. 
+I think you actually Seymour Cray claims 
+this to somehow make the, the distance of 
+the back plane shorter. But it, it, it is 
+shaped like a C. 
+And, and Seymour Cray, who's the, the, 
+the founder of Cray, 
+does have a C as the first letter of his 
+name. 
+But, for a little bit more from a influ, 
+or a perspective of what's actually 
+inside of here, the Cray-1 did not 
+actually have lots of different lanes. 
+Instead, what it was, it was a vector 
+computer that had very long pipelines or 
+long for the time pipelines, it had a 
+couple pipelines for different, different 
+functional units. And, it was a 
+registered, 
+register, vector register, register style 
+machine. 
+And, 
+some of the, the, the interesting things 
+about this is it didn't have any caches. 
+And, well, deleting virtual memory, any 
+of that other stuff because this is 
+really sort of a super computer, you're 
+using this to solve some big problem. 
+So, you didn't need all this fancy dancy 
+multi-tasking, virtualization. 
+You ran one really big problem on it, you 
+were trying to, I don't know, somehow, 
+model nuclear weapons, or use it to crack 
+codes, or something like that. 
+Here's the, the, micro-architecture of 
+the Cray-1. 
+And, what we see is they have 64 vectors 
+register, or excuse me, eight vector 
+registers with 64 elements each. 
+Their vector length is 64, 
+their maximum vector length is 64. 
+And, they also have a bunch of scallar 
+registers and they have a separate 
+addressing address register bank of 
+registers. 
+And you can only do loads in store based 
+on these address registers. 
+What I was trying to get at here, is you 
+can see that they basically had only one 
+pipe for each of the different 
+operations, but these pipes were 
+relatively long. So, they give you an 
+idea here something like the multiply 
+with six cycles, multiply to six cycles 
+which today sounds like, well, things are 
+pipelined pretty deep. 
+We have lots of transistors. 
+But, you know, it's 1976, there weren't 
+that many transistors. 
+This thing was physically large. So, 
+building a pipeline that long took, took 
+space. 
+[COUGH] Or, and another example here is I 
+think the reciporical took about fourteen 
+cycles, 
+and that was pipelined. 
+And this did not have interlocking 
+between the different pipe stages. 
+And didn't have to have bypassing because 
+the vector length was so long. 
+So, you didn't have to bypass from some 
+place in the pipe to some place else in 
+the pipe. 
+They did have chaining 
+but, and, and they did have 
+inter-pipeline bypassing, but 
+intra-pipeline bypassing wasn't, wasn't 
+really there. 
+Couple other things, this machine ran 
+really pretty fast for the days. 
+80 megahertz was I'm sure was the fastest 
+clock tick of, of the day. 
+today, that sounds pretty slow but that, 
+that was, that was pretty good for 1976. 
+

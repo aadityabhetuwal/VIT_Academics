@@ -1,0 +1,14 @@
+L12S2:
+
+In Lecture Quiz 1:
+Time: 1:48
+
+Question:
+
+If you are going to only use a piece of data once, should you pull the data into your cache? 
+
+Choices:
+
+A. Yes
+
+B. No

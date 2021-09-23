@@ -1,0 +1,14 @@
+﻿L6S4:
+
+In Lecture Quiz 1:
+Time: 15:23
+
+Question:
+Does preloading all of the instructions into the Issue Queue help with the performance compared to having instructions enter the Issue queue normally in the shown example?
+
+
+Choices:
+
+A. Yes
+
+B. No

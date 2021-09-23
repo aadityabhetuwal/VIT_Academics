@@ -1,0 +1,236 @@
+And I just wanted to say quick note about 
+interconnection networks. 
+if you guys are, get interested in 
+interconnection networks as we go along, 
+I highly recommend this book. 
+I have not assigned anything from this 
+book for this class. 
+But this is Bill Dalley and Brian Towles' 
+interconnections book. 
+It's quite good. 
+It's kind of the definitive guide on the 
+subject matter. 
+Okay. 
+So, 
+interconnection networks. 
+We, 
+we talked about buses and we talked about 
+memory protocol about buses. 
+That's only one way to share information. 
+Now, people may argue that's a intuitive 
+way to share information because we had 
+the ability to do load and storage from 
+our processor. 
+But there are other ways to share 
+information. 
+So, in today's lecture, we are going to 
+talk about two main pieces of two main 
+topics. One, how do you share information 
+in, in a different way which commingles 
+the movement of data with a 
+synchronization primitive. 
+We are going to call that messaging, 
+[COUGH] which is in contrast to memory or 
+communicating via memory addresses. 
+We're also going to talk about different 
+ways to connect together processors, 
+which can either have better performance 
+or better scalability, i.e., 
+have more nodes in the system. 
+And, okay, so let's, let's compare and 
+contrast buses to other forms of network 
+and see why we might want to change. 
+So, this, this is going back to what we 
+had just talked about. 
+Let's say, you have two cores on a bus. 
+And let's forget about how you want to 
+communicate. 
+It could either be via shared memory or 
+it could be via messaging or it could be 
+via some other protocol, 
+Ethernet, 
+whatever, whatever you want put here, 
+which is basically a form of messaging. 
+We have one core and it wants to 
+communicate with another core. 
+Note, I don't draw any caches here 
+because there may not be caches, there 
+may be caches. 
+It's doesn't, it's kind of immaterial 
+here. 
+If one person wants to talk to another 
+person, they can just yell at the other 
+person. 
+It's two people so there's, it's pretty 
+easy to do. 
+We, now, there is some challenges, 
+we can't both talk at the same time. 
+We might not be able to understand each 
+other. 
+So, there's some arbitration that needs 
+to happen. 
+But, in general, that arbitration is 
+pretty simple. 
+Only two, two cores or entities on this 
+bus. 
+Okay. 
+Now we, now we go to more cores. 
+So, we have four people in a room trying 
+to shout to each other. 
+Well, or four people on a bus trying to 
+shout to each other. 
+And as, as we just talked about, the 
+bandwidth can be a challenge here. 
+The arbitration for the bus can be a 
+challenge. 
+And because we're talking about 
+interconnection networks, 
+the wire delay and capacitance of the 
+network can be worse or it can be a 
+challenge here. 
+So, if we got one core, it needs to drive 
+the shared multidrop bus. 
+There's a lot of capacitance on this bus, 
+much more so than this case because all 
+of a sudden, we've, we've, doubled the 
+length of the bus, so the wires are 
+longer and we've also put more loads on 
+the bus. 
+So, there's actually more capacitance on 
+this bus. 
+Okay. Now, we start to think about trying 
+to build a bus that has a lot more cores. 
+In this case, twelve. 
+And through this core, if you go shot to 
+that core, there's no pipelines around on 
+this bus or anything. 
+You go to shout and has to propagate all 
+the way down here and, you know, we're, 
+we're talking about high rates of 
+communication. 
+You actually have to wait for the time of 
+flight of light from here to get down to 
+there. 
+And because we're, if we're using 
+something, let's say, like a snoopy 
+protocol or a broadcast protocol, because 
+that's all we have here, 
+we have to wait for and node here to 
+communicate with every other node. 
+So, we have to wait for the worst case 
+time for this node to communicate to that 
+node, every clock cycle. 
+Hm, okay. 
+and as I said there is capacitance, so 
+it's not quite a, just a transmission 
+line, so it's not just a transmission 
+line problem here. 
+We also have to worry about [COUGH] the 
+capacitance in trying to drive all of 
+these different receivers. 
+And it's a multidirectional bus so we 
+have to have effectively tri-states and 
+the ability to drive or just receive. 
+Well, all of a sudden, we have twelve 
+people and actually, we have twelve 
+people in this room. 
+So, let's all try to pick a number 
+between one and ten and shout it real 
+fast on the count of three. 
+One, two, three, 
+five. 
+Okay. 
+I could, I, I do, I shouted five, I don't 
+know what everyone else said. 
+So, [LAUGH] that's does anyone, could 
+everyone hear everyone else's? 
+Does everyone know exactly what all other 
+ten people said at the same time, 
+or twelve people said at the same time? 
+You heard your nearest neighbor. 
+Okay, but did you know, do you know what 
+Yankey said? 
+Yeah. Okay. 
+So, 
+this is, this is the challenge. 
+And if we need to guarantee that only one 
+person can yell on the bus at a time, we 
+need some arbitration. 
+But the arbitration logic is slower now 
+because we have lots of people 
+communicating so we have to run a wire 
+from this node down to this node and 
+then, we had to come back in the 
+arbitraration, logical, say, over here 
+that needs to make some decision. 
+And the decision is slower because as 
+more layers of logic, more combination of 
+logic, we will say, to make arbitration 
+decision. 
+Hm, okay. Now, if we go to a thousand 
+processors or a a thousand cores on a 
+bus, 
+you know, we, we could even have twelve 
+people in the room shout at the same 
+time. 
+You can have a thousand people in the 
+room shout at the same time, and 
+physically be distanced to the wiring 
+between this thousand different nodes is 
+going to decrease the speed of the bus 
+significantly. 
+So, it's some, something to think about. 
+So, this, this motivates us to take the 
+same twelve course and think about some 
+other ways to connect them. 
+Now, what I'm going to show here is a, 
+what's known as a switched interconnect 
+or sometimes known as a point-to-point 
+link solution. 
+Now, point-to-point does not mean that 
+this core can communicate directly with 
+every other core. 
+That has, that has a different name, 
+we'll talk about that later today. 
+Instead, point-to-point just means each 
+link, 
+only has one sender and one receiver. 
+And then. 
+you use switches along the way to make 
+decisions and to route. 
+So, if we look at this, we can actually 
+have multiple nearest neighbor 
+communication happening. 
+So, all of a sudden, by adding this 
+switching, we can both have connectivity 
+between all the different nodes, but we 
+can also have sort of subconversations 
+happening. 
+But this still allows for this processor 
+here to go communicate with the one 
+that's at the farthest extent. 
+And we need to decide how to do that. 
+Whether it communicates sort of this way 
+or this way or that way or some other 
+squiggly line. 
+[COUGH] We can also take the same 
+point-to-point switch interconnect 
+network. 
+And like a bus, which we can increase the 
+width of the bus, 
+which does not help us with the occupancy 
+on the bus, 
+we can add more networks or we can 
+affectively add multiple concurrent, 
+switching interconnection networks or we 
+can increase the bandwidth on these 
+buses. 
+So, it's similar sorts of ideas there and 
+similar sorts of bandwidth tricks you can 
+do to increase bandwidth on buses. 
+You can play on there, switch 
+interconnection always. 
+Okay. So, this is just a very broad 
+overview. And now, we're getting into 
+some, some more specific ideas. 
+

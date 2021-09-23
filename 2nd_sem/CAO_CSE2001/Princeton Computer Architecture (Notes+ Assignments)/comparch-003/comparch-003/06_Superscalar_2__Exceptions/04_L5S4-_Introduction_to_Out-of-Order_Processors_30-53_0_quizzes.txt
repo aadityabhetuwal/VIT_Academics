@@ -1,0 +1,44 @@
+L5S4:
+
+In Lecture Quiz 1:
+Time: 10:31
+
+Question:
+
+What causes independent instruction subgraphs in a sequential program?
+
+Choices:
+
+A. Instruction level parallelism (multiple instructions can be executed in the same cycle when there is no data dependency)
+
+B. Branch to different instructions
+
+C. Instructions can be executed in parallel whenever there is enough hardware
+
+D. A wider pipeline
+
+-------------------------------------------------------------
+
+In Lecture Quiz 2:
+Time: 14:06
+
+Question:
+
+Does it make any sense to bypass out of Y1, where Y1 is the first stage of a pipelined multipler?
+
+-------------------------------------------------------------
+
+In Lecture Quiz 3:
+Time: 30:48
+
+Question:
+
+How does the scoreboard handle a Write-after-Write hazard where two instructions write to the same register in a short window?
+
+A. Store the newest value location in the scoreboard
+
+B. Broadcast the value when the register value is ready
+
+C. Track both the location of functional unit in the pipeline and when the value is available
+
+D. Always stall the later instruction until the first has commited

@@ -1,0 +1,581 @@
+Okay.
+So now, we're going to change topics and
+start talking about our first technical
+subject of this course.
+And, as an introduction to computer
+architecture, we're going to be talking
+about what is architecture versus
+microarchitecture.
+And, I want to just briefly say that, as
+you take this class, the first three
+lectures or so should be review.
+So, if you're sitting in the class and
+you're saying, oh, I've seen all this
+before.
+Don't get up.
+Wait 'till the fourth or fifth lecture,
+and then the content will become new.
+And this is because I want to teach
+everything from first principles and get
+everyone up to speed.
+But, it's that, the first three lectures
+are going to go very fast.
+So, if you're lost in the first three
+lectures, which should be review, then
+that's probably a bad in, indicator.
+So, we'll start off by talking about
+architecture versus micro-architecture.
+And I wanted to say briefly what I mean by
+architecture.
+And I, I have, in this slide here, a very
+large A for what I'll sometimes call, big
+A architecture.
+So, your, Patterson Hennessy calls this,
+instruction set architecture, and when I
+contrast this with micro architecture, or
+Patterson Hennessy calls organization.
+So, big A architecture is an abstraction
+layer provided to software, or
+instructions set architectures or
+abstraction layer provided to software
+which is designed to not change very much.
+And, it doesn't say, it, it says how a
+theoretical fundamental, sort of, machine
+executes programs.
+It does not say exactly the size of
+different structures, how fast those
+things would run, the exact implementation
+issues, that falls into organization.
+And, one of the things I wanted to
+emphasize is that computer architecture is
+all about trade-offs.
+So, when I say it's all about tradeoffs,
+you can make different design decisions up
+here in the big A architecture or the
+instruction set architecture, and that'll
+influence the application or influence the
+microarchitecture, but also you can make
+different design decisions down here and
+make a lot of different tradeoffs on how
+to go about implementing a particular
+instruction set architecture.
+And, largely, when you go to look at
+computer architecture and computer
+architecture implementation, the design
+space is relatively flat.
+There's sort of an optimum point where
+you, you want to be, but the other points
+around it are many times not horribly,
+horribly bad.
+Though there are, you know, at the, at the
+extremes, probably horribly bad design
+decisions.
+But, you know, a lot of different design
+points are, are equally good or, or close
+to optimal.
+And, the job of a computer architect is to
+make the very subtle design decisions
+around how do you move around this point
+to make it both easier to program, lives
+on for many years, is low power, and this
+sort of other, a little bit of aesthetic
+characteristics mixed together with just
+making your computer processor go fast,
+we'll say.
+And these tradeoffs, I, I will re, will
+reiterate this over and over again in this
+class that, because there is multiple
+different metrics.
+So, for instance, speed, energy, cost, and
+they tradeoff against each other, many
+times, there is no necessary optimal
+point.
+It depends on, you know, are you more cost
+driven, or energy driven, or speed driven.
+And, within that point, there's sort of
+some times Pareto optical curves where all
+of the points are, are equally good if
+you're trying to trade off these different
+things for different cost models.
+Okay.
+So, let's, let's talk about what is a
+instruction set architecture, and what is
+a microarchitecture.
+So, a instruction set architecture, or big
+A architecture is trying to provide the
+programmer some abstract machine model.
+And many times what it, what it really
+boils to is it's all the programmer
+visible state.
+So, for instance, how, does the machine
+have memory?
+Does it have registers?
+So that's the, that's the programmer
+visible state.
+It also encompasses the fundamental
+operations that the computer can run, so
+these are called instructions.
+And, it defines the instructions and how
+they operate.
+So, for instance, add.
+Add might be a fundamental instruction or
+fundamental operation in your compu,
+instructional set architecture.
+And, it says, the exact semantics on how
+to take one word in a register and add it
+to another word in a register, and where
+it ends, ends up.
+Then, there's more complicated execution
+semantics.
+So, what do we mean by execution
+semantics?
+Well, if you just say adds take two
+numbers and add them together and put them
+in another register, that many times does
+not encompass all of the instruction set
+architecture.
+You'll have other things going on, for
+instance, IO interrupts, and you have to
+define in your instructions set
+architecture, or your big A computer
+architecture what is the exact semantics
+of an interrupter, a instruction, or a
+piece of data coming in on an IO.
+How does that interact with the rest of
+the processor?
+So, many times instruction execution
+semantics is only half of i, and we have
+to worry about is the, the rest of the
+machine execution semantics.
+Big A architecture has to define how the
+inputs and outputs work.
+And finally, it has to define the data
+types and the sizes of the fundamental,
+the, the fundamental data words that you
+operate on.
+So, for instance, if you operate on a byte
+at a time, four bytes at a time, two bytes
+at a time.
+How big is a byte if you actually have
+bytes?
+So, this just gets into sizes.
+And then, data types here might mean that
+you have other types of fundamental data.
+So, for instance, the most basic one is
+you have just some bits sitting on, on, in
+a, in a register in your processor.
+But, it could be much more complex so you
+can have, for instance, something like
+floating point numbers.
+Where it's not just a bunch of bits, it's
+bits formatted in a particular way, and
+has very specific meaning.
+That's a floating point number that can
+range over, let's say, most of the, the
+real numbers.
+Okay.
+So, in today's lecture, we're going to,
+step through all these different
+characteristics and requirements of
+building an instruction set architecture.
+I wanted to, I will talk about how it's
+different than microarchitecture or
+organization.
+So, let's take up some examples of
+microarchitecture and organization.
+So, what microarchitecture and
+organization is really thinking about here
+is the tradeoffs as you're going to
+implement a fixed instruction set
+architecture.
+So, for instance, something like Intel's
+x86 is an instruction set architecture.
+And there's many different
+microarchitecture implementations.
+There's the AMD versions of the chips, and
+then there's the Intel versions of the
+chips, and even inside of, let's say, the
+Intel versions of the chips.
+They have their high performance version
+for the laptop which looks one way, or, or
+high performance version for, let's say, a
+server or a high end laptop which looks
+one way.
+And then, there's another chip for
+tablets.
+Intel's trying to chips for tablets these
+days and they have their Atom processors.
+And, internally, they look very different
+cuz they have very different speed,
+energy, cost, tradeoffs.
+But, they'll execute the same code, and
+they all implement the same instruction
+set architecture.
+So, let's look at some examples of things
+that you might tradeoff in a
+microarchitecture.
+So, you might have different pipeline
+depth, numbers of pipelines.
+So, you might have one processor pipeline,
+or you might have six , like something
+like the Core i7's today, cache sizes, how
+big the chip is, the silicone area, how,
+what's your peak power.
+Execution ordering.
+Well, does the code run in order, or can
+you execute the code out of order?
+That's right.
+It is possible to take a sequential
+program, and actually execute later
+portions of the program before earlier
+portions of the program.
+That's kind of mind boggling, but it's a
+way to go about getting parallelism.
+And if you keep your ordering correct,
+things, things, work out.
+Bus widths, ALU widths, if you, if you
+have, let's say, 64-bit machine, you can
+actually go and implement that as a bunch
+of 1-bit adder, for instance, and people
+have done things like that in the micro
+architecture.
+And, this allows you to build more
+expensive or less expensive versions of
+the same processor.
+So, let's talk about the history of why we
+came up with these two differentiations
+between architecture and
+microarchitecture.
+And, it came about, because software is
+sort of, pushed it on us and ended up
+being a nice abstraction layer.
+So, back in the early '50s, late '40s, you
+had software that people mostly programmed
+either in assembly language, or machine
+code language.
+So, you had to write ones and zeros, or
+you had to write assembly code.
+And, sometime in the, the mid '50s we
+started to see library showoffs.
+So, these are sort of, floating point
+operations were made easier, we had
+transcendentals as the sine, cosine
+libraries, you had some matrix and
+equation solvers.
+And, you started to see some libraries
+that people could call, but people were
+not necessarily writing code by themselves
+or writing large bodies of code in
+assembly programming because it's, it was
+pretty painful.
+And then, at some point, there was the
+invention of higher-level languages.
+So, a good example of this was Fortran
+that came out in 1956, and a lot of things
+came along with this.
+We had assemblers, loaders, linkers,
+compilers, bunch of other software to
+track how your software's being used even.
+And, because we started to see these
+higher-level languages, this started to
+give some portability to programming.
+It wasn't that you had to write your
+program and have it only mapped to one
+prog, one processor ever.
+And, back in the, the, the '50s, even '60s
+time frame here, machines required
+experienced operators who could write the
+programs.
+And, you know, you, you got these machines
+and they had to be sold with a lot of
+software along with them so you had to,
+basically, run all the software that was
+given cuz it was, you had to be a, a
+master programmer or someone who worked
+for the company to even, that built the
+machines to even be able to program these
+machines back in, in the day.
+And, the idea of instruction set
+architectures, and these breaking the
+microarchitecture from the architecture
+didn't really exist back then.
+And, back in the early '60s, IBM had four
+different product lines.
+And, they're all incompatible.
+So, you couldn't run code that you ran on
+one on the other.
+So, to give you an example here, the, the
+IBM 701 was for scientific computing.
+The, the 1401 was mostly for business
+computation.
+I think they even had a second one that
+was sort of for business, but different
+types of business computation.
+And, people sort of, bought into a line.
+And then, as you, as the line matured and
+developed, they had to either rewrite
+their code, or they had to stick into one
+line.
+But, IBM had some, had some crazy insights
+here is that, they didn't want to have to,
+when they went to the next generation of
+processor, they wanted one to propagate
+these four lines.
+They wanted to try to unify the four
+lines.
+But, one of the problems was, these
+different lines had very different
+implementations and different cross
+points.
+So, the thing you were building for
+scientific computing wasn't necessarily
+the thing you want to build for business
+computing.
+And, the one that you built for business
+computing, let's say, didn't, you wanted
+to not have it have very good floating
+point performance.
+So, how do, how do they go about solving
+this?
+And their solution was they came up
+something called the IBM 360.
+And, the IBM 360 is probably the first
+true instruction set architecture that was
+implemented to be instruction set
+architecture.
+And, the idea here was they wanted to
+unify all these product lines into one
+platform, but then implement different
+versions that were specialized for the
+different market matrix.
+So, they can build, they could unify a lot
+of their software system, unify a lot of
+what they built, but still build different
+versions.
+So, let's, let's take a look at the IBM
+360 Instruction Set Architecture, and then
+talk about different microarchitectures
+that have been built of the IBM 360.
+So, the IBM 360 is a general purpose
+register machine, and we'll talk more
+about that later in this lecture.
+But, to give you an idea, this is what the
+programmer saw, or what the software
+system saw.
+This isn't what was actually built in the
+hardware, because that would be a
+microarchitecture constraint.
+But, the processor state had sixteen
+general purpose 32-bit registers.
+It had four floating point registers.
+It had control, flags if you will, had a,
+a condition codes and control flags.
+And, it was a 24-bit address machine, and
+at the time that was huge.
+So, two to the 24 was a very large number.
+Nowadays, it's not so large and they've
+since expanded that on the IBM 360
+successors.
+But , they thought it was good for many,
+many years, and it was good for many, many
+years.
+And they define a bunch of different data
+formats.
+So, there's 8-bit bytes, 16-bit half
+words, 32-bit words, 64-bit double words.
+And these were the fundamental data types
+that you can work on, and you can name
+these different fundamental data types.
+And, it was actually the IBM 360 that came
+up with this idea that bytes should be
+8-bits long, and that's lived on, on to,
+for today, Cuz before that, we had lots of
+different choices.
+There was binary code decimal systems
+where the, you actually would encode a
+number between zero and nine and then you
+have the, each digits and this is
+sometimes good for, sort of, spreadsheet
+calculations, or business calculations, or
+if you want to be very precise on your
+rounding to the penny.
+And sometimes, bit-based things don't
+actually round appropriately or the, do a,
+or you'll lose pennies off the end.
+And, so you have these binary code decimal
+systems and, well, in IBM 360, they, they
+unified it all and said, well, no, we're
+going to throw out certain things and make
+choices.
+Now, they, of course, because it's the IBM
+360 and they did have business
+applications, they still supported binary
+code and decimal in a, a certain way.
+And, let's look at the microarchitecture
+implementations of this first instruction
+set architecture.
+So, at, and this is in the same time
+frame, the same generation here.
+There was the model 30 and the model 70
+and this was very, very different
+performance characteristics.
+So, if we, we look at the machine, let's
+start off by looking at the storage.
+The, the low end model here had between
+eight and 64 kilobytes, and the high end
+model had between 256 and 512 kilobytes.
+So, very, very different sizes.
+And, this is what I'm trying to get across
+here is that microarchitecture can
+actually change quite a bit even though
+the architecture supports 64-bit adds in
+additions, you can actually implement
+different size data paths.
+So, in the low end machine, they had an
+8-bit data path, and for ones that use
+64-bit operation, it had to do eight,
+8-bit operations to make up a 64-bit
+operation.
+And then, probably, actually even do more
+than that to handle all the carries
+correctly, versus the high-end
+implementation had a full adder there.
+You can actually do a 64-bit add by itself
+without having to do lots of
+micro-sequenced operations.
+And, oh, yes, with minor modifications, it
+lives on today.
+So, this was designed in the '60s, and
+even today we still have System 360
+derivative machines.
+And the piece of code you ran, or you
+wrote back in 1965, will still run on
+these machines today, which is pretty,
+pretty amazing, natively.
+So, how does this survive on today?
+So, here's actually, the IBM 360 47 years
+later as in the Z11 microprocessor.
+So, the IBM 360 has since, it renamed to
+the IBM 370, and then it has been renamed
+to the IBM 370EX which was in the '80.
+There was never any IBM 380, strangely
+enough.
+And then, later on, they just changed the
+name to the Z series.
+So, have a, a cooler modeling, model
+numbers here so we had the IBM Z series
+processors, and this lives on today.
+So, going back to that 8-bit processor
+which had a one microsecond control store
+read, which is forever, we now have the
+Z11 which is running at 5.2 gigahertz.
+It has 1.4 billion transistors.
+They, they have updated the addressing so
+it's no longer 24-bit addressing, but it
+still supports the original 360
+addressing.
+It has four cores, out of order issue, out
+of order memory system, big caches on, on
+chip, 24 megabytes of your L3 cache.
+And, you can even put multiple of these
+together to build a multiprocessor system
+out of lots and lots of multicores.
+And, what I'm trying to get across here is
+that, if you go forward over time and you
+build your instruction set architecture
+correct, it can live on.
+And you have many different
+microarchitecture implementations and
+still leverage the same software.
+And, a few, few more examples just to, to
+reinforces a little bit more.
+Let's take a look at an example of
+something where you have the same
+architecture but different
+microarchitectures.
+So, here we have the AMD Phenom X4, and
+here we have the Atom, Intel Atom
+processor.
+The first Intel Atom processor.
+And, what you'll notice, actually, is that
+they have the exact same instruction set
+architecture.
+They both run x86 code.
+And, the Zion implementations, this is,
+just to point out here, these are the same
+time frames.
+So, this is a modern, modern, roughly,
+modern day processors.
+This one has four cores, 125 watts.
+Here, we have, single core two watts.
+So, there's design tradeoffs.
+So, you're going to want to build
+different processors in the same design
+technology, we'll say, but with very
+different cost, power, performance
+tradeoffs.
+This one can decode three instructions.
+This one can decode two instructions so
+it's a different micro architecture
+difference.
+This one has a 64 kilobyte cache.
+L1 is good as a 32 kilobyte L1i cache.
+Very different cache sizes, even though
+they're employing the same architecture,
+or big A architecture.
+Strangely enough, they have the same L2
+size, you know, things happen.
+This ones out of order versus in order,
+and clock speeds are very different.
+And, I want to contrast this with
+different architecture, or different big A
+architecture, and different micro
+architecture.
+So, if we think about some different
+examples of instruction set architectures,
+there's x86, there's PowerPC, there's IBM
+360, there's Alpha, there's ARM.
+You've probably heard all these different
+names, and these are different instruction
+set architectures.
+So, you can't run the same software on
+those two different instruction set
+architectures.
+So, here we have an example of two
+different instruction set architectures
+with two different microarchitectures.
+So, we have the Phenom X4 here, versus the
+IBM Power seven.
+And, we already talked about the, the X4
+here, but the Power seven has the power
+instruction set, which is different than
+the x86 instruction set.
+So, you can't run one piece of code that's
+compiled for this over here, and vice
+versa.
+And, the microarchitectures are different.
+So, here, we have eight core, 200 watts,
+can decode six instructions per cycle.
+Wow, this is a, a pretty beefy processor.
+It's also out of order and has the same
+clock frequency.
+Something that I, that can also happen is
+you can end up with architectures where
+you have different instruction set
+architecture, or different big A
+architecture, but almost the same
+microarchitecture.
+And, this, this does, this does happen.
+So , you end up with, let's say, two
+processors that are both three wide issue,
+same cache sizes, but, let's say, one of
+the implements PowerPC and the other one
+implements x86.
+And things, things like that do happen.
+That's more of a coincidence, but I'm
+trying to get across the idea that many
+times the, that the microarchitectures can
+be the same and those are more tradeoffs
+considerations versus the instruction set
+architecture which is more of a software
+programming design constraint.

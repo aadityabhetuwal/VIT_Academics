@@ -1,0 +1,88 @@
+So going back to our producer consumer 
+idea here. 
+We're going to have a producer producing 
+a value and a consumer consuming a value 
+but now we have two consumers. 
+And let's say we guarantee sequential 
+consistency in our model. 
+What breaks here? 
+Well, if we guarantee sequential 
+consistency, and we have a reader excuse, 
+me, a producer and a consumer. 
+That code sequence that I showed 
+originally actually works out pretty 
+well. 
+Because we are not having any of those 
+reordering of, let's say, this store and 
+like this read or something. 
+We're not actually getting those 
+reorderings to happen, because sequential 
+consistency has basically outlawed those. 
+But all of a sudden if we have two 
+consumers. 
+And we go and stare at this piece of code 
+carefully. 
+This is our original piece of code. 
+One of the things that happens is they 
+check the head, 
+pointer To see if it's equal to tall 
+which means something invaluable. 
+And if two, process two threads or two 
+processees try to do that simultaneously, 
+they are going to fall through at this 
+point. 
+And what could happen, is they could both 
+try to read the same value. 
+So let's say you actually have two 
+consumers, consumer one and consumer two 
+that are interleaved and we just 
+basically do every other cycle executing 
+every other instruction from the two 
+copies of this consumer code interleaved. 
+And, what's going to happen is they're 
+going to read the same value out of the 
+queue. 
+Well, we really don't want that. 
+We want to somehow guarantee that this 
+block here happens while no other threads 
+or processes are executing the same block 
+here of code. 
+So we're going to introduce this notion 
+of locks and semaphores, and we'll talk 
+more about it next time, but the basic 
+idea is that you have, 
+something. Now, it could be a piece of 
+hardware or it could be a memory location 
+which guards the execution of a critical 
+section or a piece of code. 
+And you can either have those be such 
+that only one process or one processor 
+can execute that piece of code at the 
+same time. 
+That's mutual exclusion and that's, a 
+mutex. 
+Or you can think of a more general notion 
+of a semaphore. 
+Where you can have some number N, where N 
+processes can enter a critical section 
+concurrently. 
+An example of that as I said before in 
+class, why we want to do that, is let's 
+say you have two sets of resources. 
+Like, two outbound queues on your network 
+card. 
+And you have P processors and you want 
+two people to try to go use it at the 
+same time. 
+But you don't care which two. 
+But it can't be three. 
+You need something that's more general 
+than just a mutex or a single-user lock. 
+Okay, so we're going to stop here and 
+we'll talk more about locks and 
+semaphores including hopefully some 
+people speak Dutch. 
+Because that's, because we need to know 
+that to get the names of some of these 
+semaphores. 
+

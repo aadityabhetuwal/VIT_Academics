@@ -1,0 +1,75 @@
+I'll just skip way prediction cuz I don't
+think it's that important.
+I did want to say one or two words about
+critical word first and early restart.
+So, critical word first, basic idea here
+is that you can express to the memory
+system which word is the most important
+word.
+And usually RAM arrays the buses are
+oriented in a way that they'll actually
+allow it takes multiple pumps or multiple
+cycles to transmit the data across the
+bus.
+And usually, these arrays don't care at
+least, like main memory, like, like, D-RAM
+arrays, big, big thing on your, on your
+chassis or on your system server
+motherboard.
+Cough They don't really care if they
+return the data in this order, zero, one,
+two, three, four, five, six, seven and
+eight, Probably seven, Sorry.
+Or, if you return it in a different order
+because they just wanna use the bus as
+much as possible.
+So, what you can do is you can say, COUGH
+address three is the most important one,
+please return that first.
+So, what can happen is it will return the
+data and right here, address three comes
+back, and it comes back first always,
+being cuz that's the address that we're
+trying to access for this loadness.
+And can start the CPU executing again
+while the rest of the cache line is
+filling into the cache.
+So you've basically done a little bit of
+overlapping but this doesn't help that
+much.
+Because usually, you know, there's not
+that many a cache line is not that long so
+it might help you a little bit.
+So, you know, if it takes eight cycles to
+fill the cache, you might save seven
+cycles if you were going to the last, if
+you were trying to load the last word in
+the cache line.
+But if you were trying to, let's say, load
+the second line in the cache line, it only
+saves you one cycle.
+And there is some complexity in actually
+building critical word first systems.
+Cough Early restart is another way to do
+this which little less hardware.
+Instead of having the memory system rotate
+the memory that returns back to you, it
+still returns the memory in the canonical
+order.
+But, we just wait until let's say, we want
+to dress three here, it comes back and we
+restart there.
+So you can see there's a little bit of
+time here which we could overlay it block
+the fill in with executing in the CPU
+again.
+In the canonical case, if we don't have
+early restart, what's going to happen is
+we have to wait for the entire cache line
+to come in and then we can restart, so we
+lose, we lose these, these cycles there.
+We don't get that overlap.
+Okay. Let's stop here for today and I'm
+going to remove the, the weight prediction
+stuff from the material we talked about
+cuz it's not that important.

@@ -1,0 +1,404 @@
+So, now we're going to start talking about
+the fundamental things inside of
+instruction set architecture, and the
+things you need to build inside of
+instruction set architecture.
+And, we're going to start off by talking
+about machine models.
+So, I have a question here.
+Where do operands come from?
+And, where do operands, where do results
+go to?
+So, when I say, operands, these are the
+data values you're going to operate on
+with a single instruction of the processor
+and the results are where they, and where
+the data that gets calculated, and where
+does it go.
+And, this is actually an instruction set
+architectural, big eight architecture
+concern.
+Fundamentally, you're going to have some
+form of arithmetic logic unit, or some
+sort of calculation unit.
+And you're going to have some type of
+memory storage.
+And, in a, in a process you're probably
+going to want to take stuff from the
+storage, move it to the ALU, compute on
+it, and then put it back in to storage
+somehow.
+And this is, the processor here that we
+wrap around the ALU, and the machine model
+is, what is the implementation, what is
+the semantics, or excuse me, not the
+implementation, what is the organization
+of the registers?
+How do you go to access memory?
+What sort of instructions and operations
+are allowed?
+And, we're going to talk a little about,
+where do the operands come from?
+Where do the results go?
+And, different machine models that people
+have built.
+So, this is different instruction set of
+architectures and, and even more than
+instruction set architectures cuz
+instruction set architectures talk about
+how you encode instructions even, this is
+even a little bit more fundamental of how
+do you go about, reasoning about how to
+move data from memory to the ALU and back.
+And, how do you go and store the data
+close to the ALU.
+So, let's start off with a very simplistic
+example here, a very simplistic processor
+that people have actually built.
+Believe it or not, you don't have to have
+registers in your processor, or you don't
+have to have name registers in your
+instruction set architecture.
+Instead, you can have a stack.
+A stack is just a storage, element where
+you put things onto the stack, and then
+they come off in the order that was the
+last one that was put on that was taken,
+that gets taken off first.
+Instead, in a very basic sense, we just
+take the top two things on the stack.
+We fetch both of them, operate on them,
+and put then on what would be the top of
+the stack.
+Building, building up from there, we can
+think about something like a accumulator
+architecture.
+So, typically in accumulator architecture,
+if you have one accumulator, so there's
+only one register, one of the operands for
+every operation you do is always implicit.
+It has to come from the accumulator.
+The other one, let's say, can come from,
+from memory.
+So, you have to name one of the operands
+in architecture like that.
+Building up from there, we can start
+thinking about maybe register to memory
+operations where you'll name, let's say,
+the oper, operand that is the source,
+let's say, coming from memory, and you'll
+name, let's say, an operand coming from
+your register file.
+And, optionally, you may even name the
+destination.
+So, these are all, these are all options,
+and we'll call this a register memory
+architecture.
+Finally, we have something like a
+register, register architecture.
+So, anyone want to wager a guess here, how
+many named operands do we have here?
+Three.
+Okay, yeah.
+And so, this picture here, we're going to
+take something from a register, something
+from another register, and we have to name
+where to go put it.
+So, that's, that's, I wanted to point out
+here, actually, the number of explicitly
+named operands.
+For some of these, it's, it's a little bit
+more questionable than others.
+So, as you see here, we have zero, we have
+a little more complicated something where
+we have one, two, or three.
+Now, how do I, why do I say two or three
+here?
+So, there, some of these architectures or
+architectural models don't necessarily
+name the resultant, or the result
+location.
+Some of them will implicitly name the
+result.
+So, something like x86 for instance, the
+first source operand is always the
+destination.
+So, it has to only name two things.
+Something like MIPS, or more, most risk
+architectures will actually name all
+three.
+And you can think about that happening for
+both memory and a register, register
+architecture.
+So, a good example of a three operand
+memory, memory which I don't have drawn
+here.
+This is just, I just have register memory
+drawn here.
+But memory, memory which basically says,
+all your operands come from memory and all
+your destinations are in memory is
+something like the VAX architecture which
+was popular in the '70s.
+You could actually have all your operands
+come from memory, do some operation on
+them, and store it back into memory.
+So, one interesting trade off here is that
+once you start to have more operands that
+explicitly named, you need more encoding
+space for that.
+And this is one of the important
+trade-offs.
+Okay.
+So, let's, let's go into a little bit of
+depth about stack-based architecture.
+So, some examples of this are actually
+Burrough's 5000.
+The Symbolics machines were stack-based,
+and these are sort of machines from the
+past.
+There's a few modern or more modern
+examples of this.
+For instance, the Java Virtual Machine is
+actually a stack architecture.
+And then, also, Intel's old Floating Point
+system, x87.
+They've since sort of, deprecated this,
+but it's still relatively modern as a
+stack-based instruction set architecture.
+Let's take a stack-based instruction set
+architecture and look at how you can go
+about evaluating an expression.
+So, here we have an expression, a plus b
+times c, all in parentheses, that whole
+quantity, divided by a plus d times c
+minus e.
+So, it's some complex math in, in,
+instruction, or math operation that we
+need to do.
+Here, we actually break down this into a
+parse tree of this.
+You can see, this is preserving ORS
+operations.
+We have a plus, this sub-quantity here, b
+times c.
+And, you take all of this and divide it by
+this subexpression here.
+And, little bit of a throwback here, this
+is a way that we're going to take the
+operations.
+And, if we do these operations on a stack
+machine model, we're going to get the
+right result.
+So, what this means is, put a on the
+stack, put b on the stack, put c on the
+stack, and then multiply.
+B times c, and then add the results times
+a.
+And, you can see that we're going to build
+this expression on a, on a stack.
+So, it's sort of a, different way to sort
+of, rethink about problems.
+And, we'll, we'll walk through an example
+here.
+So here, we have an evaluation stack.
+And, the top of the stack is going to be
+whatever is on the top here in this
+picture.
+So, first thing, we're going to do is
+we're going to say, push a.
+So, a shows up on the stack.
+Then, we're going to push b, we're going
+to push c, and then we're going to do a
+multiply.
+So, we're going to take the two entries
+that are on the top of the stack, multiply
+them and put them into this entry in the
+stack.
+Then, we're going to say, add, and it's
+going to add the two top things on a stack
+here, and put the result here.
+And, you can see that if you run something
+like this, you can actually do full
+computations on a very small stack.
+And, what's also nice here is you don't
+have to explicitly name any of the
+operands.
+So, this machine model allows you to, to
+run real programs.
+And, one of the things I want to get
+across here is that the stack is part of
+the processor state, and it's usually, so
+that's the big A instruction, or big A
+architecture, or the instruction set
+architecture.
+You have a stack, and many times it's
+unbounded in the big A architecture.
+But in real life, it needs to be bounded
+somehow because you can't have infinitely
+long, physical stacks in your machine.
+So, it's conceptually unbounded, but you
+probably want to have it overflow to main
+memory if you put too many things on the
+stack.
+And this is, this is an important
+characteristic cuz other times, otherwise,
+there are certain computations you can't
+do.
+If, for instance, the parse tree is too
+long here, or the, the depth of the tree
+is too long, your stack might, might grow
+too long.
+Okay.
+So, let's say, we have a
+micro-architecture implementation of a
+instruction set architecture, which is a
+stack-based architecture.
+And, the top two elements of the stack are
+kept at registers, and the rest is in main
+memory, and it spills and fills.
+Well, each push has a memory reference.
+So, when you put something on the stack,
+it has a memory reference.
+And, each pop, has a memory reference cuz
+you just need to put something back into
+main memory.
+But, more so than that, you might have
+extra memory references here as the stack
+spills over into main memory, and you
+might have to pull something back in from
+main memory.
+So, that's not, not very good cuz you
+might end up with a push having more than
+one number reference.
+So, one optimization from a
+micro-architecture perspective, you could
+think about having N elements of your
+stack in registers very close to the
+processor, and only have to go access main
+memory when the register stack overflows
+and underflows.
+So, instead of having to do a memory
+reference, basically, every single time
+you do an operation or every single time
+you do a push or a pop, you do it only
+when the stack depth gets too large, that
+you can't fit everything on your stack.
+So, let's, let's walk through a brief
+example here.
+We have the same expression, calculation
+that we are doing before.
+And, you can see, we can do, push, push,
+push, multiply, add, push, push, push,
+multiply, add, push e, subtract, and do
+all the divides at the end.
+But, if we have a stack size of two,
+what's going to happen here is, at the
+beginning, we're only going to, you know,
+when we do a push, we're going to do a
+load from a, push we're going to do a load
+from b.
+Now, we do a push of load of c, but our
+stack already has two things on it.
+So, if we try to push the third thing, we
+have to overflow the bottom of the stack
+somewhere.
+So, we're actually going to do a stack
+save of a out to main memory.
+Here, we do this multiply, and we actually
+do a stack fetch of a and get it back from
+the main memory.
+So, it's a lot of extra memory operations.
+So, you might want to think of a different
+micro-architecture.
+And if you sort of, walk through this
+whole example here, we're going to see
+that we have four stores and four fetches
+from main memory, which are all implicit,
+plus the explicit ones that we're trying
+to do with the pushes and the pops.
+Hm, well that's eight extra memory
+operations.
+When we think about how to build a
+micro-architecture which has less, but has
+the exact same instruction set
+architecture.
+Well, let's say, we have a machine which
+has a stack size of four.
+Well, if the stack size's a four, at the
+worse case here, we'll ever have to fit
+four things on our stack.
+So, we never have to, spill out to main
+memory our stack.
+Pushes and pops still have to access
+memory, but that's what they're trying to
+do.
+They're actually trying to access memory.
+So, to sum up here about stack-based
+machine models, they look, they look
+pretty cool.
+But, not, not all things are, are great at
+all times.
+So, one of the, the interesting things
+here to see is, we actually push a, and we
+push a again.
+So, we're doing redundant work.
+And we push c, and we push C again.
+C and a have the same value both times we
+push them.
+So, all of a sudden, we're doing extra
+work and maybe we could have done less
+work if we had an architecture or machine
+model, a big A architecture, which allows
+you to store multiple things and name
+different operands.
+So, what I want to get across here is,
+while a stack-based architecture is very
+simple, the instructions are very dense,
+the, it may not be good for performance
+because you might end up having to reload
+values multiple times.
+Versus, if you had instruction set
+architecture, something like MIPS, where
+you actually have 32 general purpose
+registers and you can name any register
+for any instruction, you could have loaded
+a, b, c, d, and e all into the register
+space, once, and then, done all your
+operations and never have had to reload.
+And, this is actually an instruction sett
+issue and not, or a fundamental machine
+model issue, and not a micro-architecture
+issue.
+Okay.
+So, to summarize different machine models,
+we have our stack, accumulator, register
+and memory, and register, register,
+sometimes called load store architecture.
+If we want to take some expression here,
+like, c equals a plus b, we can look at
+the instructions that would have to be
+generated on an abstract architecture.
+So, here, we're going to have push a, push
+b, add, pop c.
+As we add more naming, we actually can,
+potentially, have fewer registers, or
+fewer instructions, excuse me.
+So, we load a, add b.
+Note here, we don't have to name what
+we're adding with cuz we're adding with
+the accumulator.
+And then, store c.
+Start to get a little bit more compact.
+If we have register memory, we can load
+one of the values, add, store, it's pretty
+simple.
+If we want to load store architecture, we
+actually have to do a little bit more
+work.
+We have to load, load, add, store.
+But, which, which seems inefficient, but
+if you have to reuse any of these values
+a, b, you don't have to go reload them.
+Versus, in these two architectures you
+have to go reload the value.

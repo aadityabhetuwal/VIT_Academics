@@ -1,0 +1,13 @@
+﻿L4S3:
+
+In Lecture Quiz 1:
+Time: 4:00
+
+Question:
+Is there such a thing as a Read-after-Read (RAR) hazard?
+
+Choices:
+
+A. Yes
+
+B. No

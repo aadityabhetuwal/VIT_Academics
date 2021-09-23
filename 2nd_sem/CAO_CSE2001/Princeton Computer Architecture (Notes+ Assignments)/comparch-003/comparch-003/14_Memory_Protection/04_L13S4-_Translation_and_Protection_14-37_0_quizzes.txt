@@ -1,0 +1,17 @@
+L13S4:
+
+In Lecture Quiz 1:
+Time: 9:24
+
+Question:
+If you have a 64 entry TLB on a machine with 4KB pages and one page per entry, what is the TLB reach?
+
+Choices:
+
+A. 128KB
+
+B. 256KB
+
+C. 512KB
+
+D. 1MB

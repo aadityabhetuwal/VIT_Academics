@@ -1,0 +1,133 @@
+So this brings us to some techniques.
+So we're going to start it off by talking
+about prediction and how we can use branch
+prediction to determine two things.
+The outcome and the target address.
+So branch prediction.
+Everyone always thinks that it means this
+first, thing.
+That's not what it means.
+Encompasses both things, you are to
+predict the outcome, so that's whether the
+branch is taken or not taken and you also
+want to predict the target address.
+Now if you think about that, the first one
+sounds relatively trivial.
+I could sort of pull numbers out, or, I
+could, I could pull something out of a
+hat.
+Taken, not taken.
+You know, just sort of choose randomly.
+It's going to do okay, probably.
+I could probably try to correlate it
+somehow using heuristics.
+The second part here, I have to get the
+number exact.
+So if I choose at random for my branch
+prediction outcome, I'm going to get it 50
+percent right.
+Or if I just always choose, I don't know,
+we'll, we'll say, if I just always choose
+not taken, or something like that.
+We're probably going to do pretty good.
+But, getting the actual destination
+correct, you have to be exact.
+You have to choose a number out of let's
+say if you have a 32-bit instruction
+pointer, two, you have to choose some
+random number, out of two of the 32
+locations and get it right all the time
+with high accuracy.
+So we'll, we'll spend some time about
+this, talking about this and some
+strategies to, to getting the prediction
+target, and predicting our branch target
+and our jump target correct.
+But, you have to think about both of them,
+is all I really wanted to get, get across
+here.
+Okay, so this, this is something we, this
+is a little bit more review from something
+we talked about in lecture, I think, two.
+We talked a little bit about figuring out
+where we can resolve a branch.
+So here's a little bit longer pipe.
+One, two, three, four, five, six, six
+stages, not quite a five stage pipe.
+But put issue stage in here.
+And let's look to see where everything
+gets known.
+So we know that our target address, for
+branches, jumps, and jumping link, will
+likely be known here.
+But that's not really helpful, unless we
+know which way, the branch is.
+Or rather, which way the branch is going,
+or the branch outcome.
+Because even if we know at least for jumps
+and jumping links we know the outcome.
+It's taken.
+But for conditional branches, we may not
+know that, until somewhere over here.
+So we can't necessarily use that
+information, until later in the pipe, for
+branches, to, to do something useful, in
+the naive approach.
+In the execute stage, we know the branch
+outcome.
+We'd talked about a trick in Mips at least
+where you can try to pull that forward a
+stage into our decode stage by having some
+sort of special comparator on the output
+of a register file, comparing it with
+zero.
+But that doesn't work for all branch
+types.
+So if you have something like a branch
+equals where you're actually trying to
+compare two real registers, you have to
+wait for the full bypass doing a 32 bit
+compare is sort of the equivalent of doing
+a full 32 bit sort of tract.
+You're not really going to know that until
+the end of the execute stage.
+That trick doesn't, doesn't really hold
+water.
+It holds water for comparing with zero.
+You might even be able to do it if you
+have lots of extra time in your decode
+stage.
+But let's assume that, you don't.
+Also target addresses for jump registers
+and jump and link register.
+Jump registers, jump and link register.
+You need to read the actual address that
+you're going to out of register somewhere.
+So this, you can't even have a chance of
+trying to predict it out here, or the
+destination.
+It's pretty hard.
+Because, I don't know, it's somewhere in
+the bypass, you just compute some value,
+then you jump through it.
+Hm.
+So the, the, the, we don't, at least down
+here, by the time they're done here we
+have one of two address excuse me, we have
+the both of the addresses that the branch
+can potentially go to.
+Go to either the fall through address or
+the branch target.
+We know that sort of at the end of decode
+stage.
+For jumping link registers and jump
+registers, we don't even have that
+information.
+It's not encoded in the instruction
+anywhere.
+It's encoded in the register.
+So, we need to go fetch something from the
+register.
+Might have to go through the bypass
+network.
+So, we're going to have to wait.

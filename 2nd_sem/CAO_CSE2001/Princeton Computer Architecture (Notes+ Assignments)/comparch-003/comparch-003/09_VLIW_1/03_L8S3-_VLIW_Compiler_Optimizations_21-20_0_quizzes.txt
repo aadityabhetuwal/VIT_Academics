@@ -1,0 +1,23 @@
+﻿L8S3:
+
+In Lecture Quiz 1:
+Time: 3:31
+
+Question:
+How many Floating Point operations are occurring per cycle in this example?
+
+--------------------------------------------
+
+In Lecture Quiz 2:
+Time: 8:40
+
+Question:
+How many Floating Point operations are occurring per cycle in this loop unrolled example?
+
+--------------------------------------------
+
+In Lecture Quiz 3:
+Time: 12:10
+
+Question:
+How many Floating Point operations are occurring per cycle in this loop unrolled and software pipelined example?

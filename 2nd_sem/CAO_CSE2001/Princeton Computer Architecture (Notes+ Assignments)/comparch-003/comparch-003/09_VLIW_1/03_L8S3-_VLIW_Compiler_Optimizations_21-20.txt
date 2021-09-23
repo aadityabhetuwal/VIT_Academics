@@ -1,0 +1,490 @@
+Okay so, very long instruction words,
+processors.
+Still wanna have high performance and we
+took all this hardware that was in a, out
+of our superscalar reserve through it out.
+Well, something's got to make up for it.
+And what makes up for it, is a very, very,
+very smart compiler.
+So, we put a lot of emphasis on the
+compiler, in these sorts of architectures.
+And, the compiler really has to do the
+scheduling.
+It has to do all of the dependency
+checking.
+It probably to avoid all the different
+data hazards, and this is just we're just
+getting started.
+We're gonna talk mostly next lecture about
+all of the different optimizations a
+compiler can do to try to approximate what
+a on-board superscalar can do, but by
+doing it statically.
+So it's a pretty cool trick if you take
+all that hardware, you put in the
+compiler, you run it once.
+And then, every time you go to execute the
+code, you don't have to go and recalculate
+all the dependencies.
+Sounds good.
+Okay.
+So let's see how we execute some code here
+and what is the sort of performance
+aspects to executing loop code on a very
+long instruction word processor.
+So here we have a very basic array
+increments.
+We're gonna take every element of this
+array.
+We're gonna increment it by the value C.
+[clears throat] And our, we run through
+aour compiler and here's the sequential
+code sequence.
+This has not been scheduled yet for VLIWs
+or for our VLIW architecture over here.
+So, we load some, we, we load the value.
+We increment our counters.
+We actually do the floating points, add.
+We store the value back.
+We increments the array index, and then
+we, we loop.
+Seems simple enough.
+Let's see how this gets scheduled here.
+Well, because the architecture and because
+the compiler knows about latencies here
+Let's say tthis load here has a few cycles
+of latency..
+So it's gonna actually schedule this ad
+later.
+And the add, it's a floating-point add,
+this has a couple of cycles of latency
+also, so it schedules the consumer of that
+results here, this F2.
+Later.
+And, yeah, I don't know, you can sprinkle
+in the array additions and then the
+counter additions, kind of somewhere free,
+has lots of open slots.
+But let's say it schedules at the same
+time as the load in the store.
+So this is pretty cool.
+We are actually executing two wide
+parallels in here.
+And we didn't need all the extra overhead
+of in [inaudible] super scour.
+Oh, and we can just go to the branch
+somewhere.
+Okay.
+So, first question here how many floating
+point operations are we doing per cycle
+are we doing very well here?
+So, it looks, looks, looks pretty poor.
+We have one floating point operation here,
+just this ad.
+And we have one, two, three, four, five,
+six, seven, eight cycles?
+Yeah.
+So we're having 0.18 or 0.125 floating,
+like floating point operations per cycle.
+It's not that great.
+[inaudible[.
+You know we're actually having three
+instructions here.
+It's better than nothing but we're not
+really using the machine very well.
+Out of our superscalar, we'll probably try
+to take connstructions that are below here
+maybe intermix them, try to reorder a
+bunch of things and try to run faster.
+So what's a technique to go faster?
+Well, one of the big comply, as I said we
+have a lot of emphasis on compilers in
+this unit.
+One of the things the compiler can do, is
+it can actually unroll the loop.
+So here we have our loop, we unroll it,
+four times, and, now, we're going to sort
+of take the loop overhead, and we're gonna
+factor it out, so that it only happens
+once every four times.
+That sounds good.
+We're gonna do some more work here, per
+each [inaudible] loop.
+But things are a little more complicated.
+What happens here if N, big, upper case N
+here are terminating value is not a
+multiple of four.
+Well, we need to do something about that.
+We probably need to check sorta before we
+go to execute here whether we're, we're
+doing okay or whether we're actually are
+[inaudible] for convenient leaf and it's
+big enough and probably can run as
+multiple four for a long period of time
+and so is the last iteration you'll have
+to clean up.
+But we need to generate some clean up code
+and compiler is responsible to do this.
+So these compiler optimizations do take
+some effort.
+Okay, so let's look at the scheduling now
+of our loop unrolled code.
+We can do a bunch of loads upfront here.
+So we've inter, intermingled these loops.
+And what's kinda cool is because you pull
+out the loads and are thrown to the top
+and the stores been pushed into the
+bottom.
+And then put all the ads sort of in the
+middle.
+And maybe sprinkle the array update
+somewhere else.
+And we go to actually schedule that, we're
+going to do something similar.
+We're going to have the loads [inaudible]
+first, execute the floating point ads of
+the floating points stores and have the
+result.
+But what you could noticed here is we're
+actually starting to get some overlap,
+because we've unrolled, we can overlap
+this load and the first floating points
+addition 'cause we've effectively covered
+the latency of our functional units by
+putting other loop iterations during that
+time.
+So if you look at this schedule versus the
+schedule back here.
+We're just sort taking these dead cycles
+and we've put the other loop iterations in
+those dead cycles.
+In this loop unrolled case, we're
+incrementing this counters and the indexes
+not by four anymore.
+We're incrementing by however many times
+we've loop unrolled times the offset, so
+we're incrementing it by sixteen now.
+Does that make sense?
+'Cause in, in this code here we were
+incrementing R2 by four, because that's
+the size of a single value is four bytes.
+So we have to sort of move our array index
+over by four.
+But now, because we're batching up all
+this work together.
+[clears throat] We actually have to move
+the, the index by a, a bigger value.
+So we're moving it by four 'cause we've
+unrolled four times, times the size of the
+data value, which was four.
+So we're moving it by sixteen.
+And, and, one of the nice things here if
+we look is in both the loads in the
+stores, we're using our register indirect
+addressing mode here to add in some
+offsets.
+So, we're actually offsetting, let's say,
+twelve plus this base register of R1 to
+figure out where we're actually doing the
+load from.
+But it's just, a convenient way that we
+don't have to compute a bunch of addresses
+[clears throat].
+Okay, so going back here, we can see we're
+starting to overlap actual operations with
+other loop iterations.
+Well, that's really cool.
+So we're starting to get some performance
+here.
+So, let's, let's look at the performance.
+So, I ask the same question here.
+How many floating point operations per
+cycle?
+Hopefully, hopefully it's higher, one,
+two, three, four divided by one, two,
+three, four, five, six, seven, eight,
+nine, ten, eleven cycles Okay, so that's
+0.36 is a lot better than 0.125.
+This is good.
+Loop unrolling is helping us.
+But is this, is this everything?
+Or could we do more in our compiler?
+So these four compiler people came up even
+fancier idea, which is called software
+pipelining.
+So uses, uses a term we've seen before,
+pipelining, but does it in software.
+So the idea here is that instead of.
+Just having one loop, unrolling the loop,
+and then overlapping the iterations.
+We're actually going to take multiple of
+these schedules, and interleave them.
+And try to fill some of these empty spots.
+So let's, let's look at this.
+We're going to have the code unrolled four
+times.
+It's the same piece of code we had on the
+previous slide.
+And we're gonna draw our schedule that we
+had before.
+So here is the schedule we had before in
+purple.
+Okay, that doesn't look so bad.
+But now, we're going to schedule it with
+another iteration of the exact same four
+time unrolled loop shown here in green.
+So we've just overlapped this with, this
+other iterational loop.
+Well are we, are we done here?
+Well, not quite.
+We still have some open spots here.
+So let's try to overlap even another
+iteration, as shown here in red.
+Now the fix-up code that you need to have
+to do this correctly gets more complex
+'cause all of a sudden now you're
+overlapping multiple iterations, but as
+long as you don't modify some value, as
+long as you don't do a store,
+speculatively, or a store, you're probably
+okay, 'cause always just doing
+[inaudible].
+Doing extra loads, doing extra work.
+You're doing extra work and you're filling
+slots thinking that you're not gonna have
+anything go wrong or thinking that the
+index variable N if you will, is a
+multiple of four and large, and you're not
+at the end.
+So let's, let's put some names to these
+things.
+[clears throat]..
+So we call the, beginning here the run up,
+the prologue.
+Here, we actually have our sort of actual
+iteration.
+You can see that the, sorry this is in
+green, that doesn't show up very well
+there are instructions here.
+There's ads.
+It's pretty full.
+We're actually doing a lot of work on our
+machine here.
+And then the epilog here is the, is when
+we're done.
+This when we're falling out.
+We're sort of at the last loop iteration
+of the outer loop, if you will.
+So let's, let's do some math and look at
+the performance of this.
+Okay, so let's ask the same question here.
+How many, floating point operations, per
+cycle?
+Well, we go look over here.
+We have one, two, three, four.
+And we have four cycles in our, in our
+tight loop case.
+That looks pretty good.
+That's cool.
+We just got a bunch of performance.
+But we have to do a lot of compiler
+optimization to make this work before
+we're able to use the [inaudible] machine,
+and we're able to overlap three different
+iterations of this of this loop, that we
+also did a software transform to unroll it
+twice.
+So this is called a software pipeline,
+pipelining.
+And have the nice picture in here to sort
+of show what's going on visually.
+So we're gonna have time on the horizontal
+axis, and we'll have sort of activity of
+how many instructions are executing or
+something like that on the vertical axis
+or, or shown here as performance.
+When you run multiple loop unroll
+iterations, you have, starts from start
+up, you have the actual you are in the
+loop, and then you come down from that.
+And that's, that's better than having lots
+of start up and sort of come down with
+small loop iteration portion here in the
+middle.
+[clears throat] But when we go look at the
+software pipelined, we can overlap,
+basically one iterational loops execution
+with or one loop start up or, a, a with
+loop iteration of another loop Now we can
+actually execute sort of our prologue,
+execute multiple iterations, very tight,
+and then have our epilogue here.
+Yeah, so.
+Our software pipelining [inaudible] start
+up and wind down costs.
+Once for the execution of the loop and not
+every iteration of the loop.
+So that's, that's, that's fun.
+That's cool.
+We're getting performance.
+If only the world was dense loops, life
+would be easy.
+Alas, the world is not all loops.
+If we just had a processor, which just did
+enter array calculations and all of our
+problems in the world were just dense
+array computations life would be really
+easy.
+But they're not.
+A lot a time code has lots of branches.
+It has if than else clauses.
+And here so graphically show something
+like a if than else.
+So we have some piece a code that makes a
+decision and executes the code on the left
+or executes the code on the right, based
+on an if statement.
+So this is the if true statement and this
+is the ELF's clause.
+[clears throat] and data dependent
+branches are a problem typically for very
+long instruction word processors.
+Now, why is that?
+Hm.
+Well in a, out of word processor, you can
+try to execute, code sort of around the
+branches and move instructions above the
+branch and below the branch.
+But if you're doing static scheduling when
+you hit this branch, and let's say it's a
+hard to predict branch.
+You can't really do anything because you
+packed a bunch of instructions next to
+each other and they need to execute
+atomically.
+So, thinking measure of move code up and
+down across that branch.
+Superscalar can do that, 'cause it has its
+instruction window, it has a bunch of
+techniques a bunch of hardware to be able
+to do that.
+But in our VLIW processor, that's a
+problem.
+So I wanted to introduce a, a compiler, an
+important compiler nomenclature here,
+which is important for this class, it's
+called a basic block.
+So what is a basic block?
+A basic block is a piece of code which has
+a single entry and a single exit.
+So this is a basic block, it has one
+entry, and one exit.
+And why is single entry important?
+Well, if you can jump into the middle of
+this piece of code, the compiler cannot
+necessary reorder the instructions inside
+this block.
+If you have multiple exits, let's say you
+exit here, the compiler can't push
+instructions below that exit point.
+But if you have a basic block, the
+compiler basically knows that these, this
+instruction sequence is going to execute
+effectively, effectively atomic, but not
+actually atomic.
+I mean that you can have other things
+going on inside there.
+But from a compiler perspective it can
+reorder the instructions around in here to
+get better performance.
+Hm, okay.
+So loops, loops are easy.
+We can solve for pipeline.
+We can unroll.
+Squirrelly code if and else spaghetti code
+are hard.
+So compiler guys came up with some fancy
+tricks to make VLIWs work better and take
+advantage of some of the code motion that
+out of a force superscalar does but in the
+compiler and not in dynamically in
+hardware.
+And one of the more famous ways to do this
+is something called [inaudible]
+scheduling, which was John Ellis' who was
+one of Jon Fishers' student's thesis work.
+This was in the Bulldog compiler out of
+[inaudible] So, what you do is you profile
+the code and, you compare the
+probabilities that these branches go the
+one way or the other way.
+So, let's say profiling, this is not a
+something hardware is doing at run time,
+this is something that you do with the
+program while you are sort of still back
+in the compiler stage.
+You take the program, the compiler goes
+and runs it on some input given, given
+input set and comes up with the
+probabilities of which way things go.
+And then what you do is, you come up, you
+take this profile information and you come
+up with some guess at what is the most
+probable one.
+And we're going to circle that here.
+And say.
+These darkened edges are the most probable
+sort of path through the squirrelly piece
+of code given this is the entry point.
+Now, this doesn't mean that you can't have
+branches that sort of branch out of this,
+but if you do you need to have some fix-up
+code 'cause what we're about to do is
+we're gonna take this entire sort of, big
+[inaudible] of code here.
+We're gonna remove all of the branches and
+we're gonna schedule for our VLIW
+processor as one big monolithic piece of
+chunk code.
+And by doing this we can move
+instructions, let's say, that are down
+here, which this opens last to executing
+your early portion of this codes sequence,
+we can move them up.
+And likewise we can move things that use
+the resolve of long latency instructions
+up here and push it down across branches.
+So our out-of-order superscalar does this
+with branch speculation, but our compiler
+can do this on our VLIW processor using
+trace schedule.
+But when do this, which be careful because
+there's always a possibility that while
+unlikely you can still branch the other
+way.
+So typically, the way this is done is you
+have some form of fix-up code that you
+branch away, you have to sort of fix up
+anything that was after the branch that
+made a committed change if you will, to
+the, the processor state.
+And you sort of roll that back somehow.
+So, we're basically in software, doing the
+rollback case from number our out-of-order
+superscalar.
+So instead of taking the, architectural
+register file and copying it to the
+physical register file on branch
+mispredict, instead our compiler generates
+a code sequence which does that same
+operation if you were to branch away
+there.
+And we'll roll back, only the only the
+certain register that needs to be rolled
+back and only the memory state that needs
+to be rolled back.
+So, that's pretty cool, so we can
+basically take all the functionality that
+was dawn in our out-of-order superscalar
+and put it in the software using trace
+scheduling.

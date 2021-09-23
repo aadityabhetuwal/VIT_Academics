@@ -1,0 +1,265 @@
+Okay. So, we'll, we'll get started, looks
+like we have a quorum today.
+So we're going to be continuing wrapping
+up what we were talking about last time
+which was about address translation and
+virtual memory.
+So we have like about two or three slides
+leftover.
+And we mostly what we were trying to talk
+about was how address translation and
+virtual memory influences the design of
+caches.
+Let's, let's go back and briefly recapture
+what we were talking about last time just
+put it back in everyone's memory.
+So, we're talking about memory management
+and different ways to do memory
+management.
+And we had talked, and, and some of these
+orthogonal concepts and functions that
+memory management's trying to do.
+Mainly, we're trying to translate
+addresses so that we can move around data
+and remap data.
+We were talking about protection, which
+would allow us to run multiple different
+operating systems or multiple different
+applications at the same time on one chip.
+And we also started to talk about virtual
+memory, but this is kind of where we were
+left off last time.
+We were talking about we talked about
+paging and we briefly touched on demand
+paging.
+So, we want to continue on that today and
+then look at some implications of the
+design, issues of virtual memory and the
+ability to have lots of different address
+spaces intermixed at the same time with
+different mappings, and how they
+intermixes with having lots of memory, or
+very large amounts of memory even though
+your system may have a very small amount
+of memory.
+So, it's a very large amount of virtual
+memory as the name applies.
+So, if you go look at a modern day virtual
+memory system,
+So if you're going to run Linux on your
+desktop these days.
+Your desktop, let's say, has a few
+gigabytes of RAM.
+Has some small number,
+Probably, one, two, three, four, maybe
+even six if you have a, a really good
+desktop of gigabytes of RAM.
+And,
+One of the things you may want to do is
+run applications that use more RAM than
+that.
+And, we have this big storage device
+plugged into our computer which has lots
+and lots of storage, namely, our disk.
+Now, the disk is not the only place you
+can actually try to swap memory out over.
+You can actually use other things, some
+people have built virtual memory systems
+that swap memory across the network, for
+instance, to another computer.
+This is actually found to be fast in the
+original network of workstation days.
+So, this is a project at Berkeley, where
+they had lots of computers, lots of old
+Sun computers on a network and they would
+actually able, they're actually able to
+swap memory across the network to the
+neighboring computer and use the
+neighboring computer's RAM,
+Effectively to make the, the RAM size
+bigger of the machine that they were using
+or effectively swap out.
+Now,
+What are the key things to make it all
+this work is having this notion of demand
+paging.
+And, demand paging, basically, is around
+this idea that the operating system only
+maps a page when it absolutely has to.
+And the operating system can also decide
+to kick things out and put that memory,
+let's say, on disk.
+If the memory is clean,
+What I mean by clean is, it's not dirty
+relative to the process.
+So, the processor did not go write any
+data to that memory and there's the exact
+same blocks on disk.
+When it goes to kick it off, it doesn't
+have to go save that dirty data.
+It can just mark it as saying, oh, it's on
+the disk already over there so don't,
+don't worry about this.
+If you go take an operating systems class,
+you're actually going to implement a
+demand paging scheme.
+I know they do that here at the at
+Princeton's operating systems class.
+So, you can try out some different
+algorithms on how to pull data in and out
+cuz there's different management
+algorithms you can use to do, to do this
+demand paging.
+But if we went back and looked at sort of,
+how address translation works from the
+hardware level, because that's what we're
+focusing on in this course.
+You take an address, and you run it
+through a translation look-aside buffer.
+If you have a hit, this is the
+everything's going well case.
+You have a hit, so the address is in your
+translation look aside buffer cache of the
+page table.
+You also probably want to check some
+protection bits, so to see if you can do a
+read or write, or if the process that is
+reading and writing the data is in the
+correct address space.
+So, for instance you don't want to have an
+application trying to read or write the
+address space of the operating system, or
+something like that.
+If, if it's permitte, the translation come
+out of the TOB,
+Everything's good and you just go access
+the data.
+If not, you're going to end up here in
+this protection fault case.
+Now, this protection fault case is going
+to be in the operating system.
+And the operating system will probably try
+to kill the processor or, or has some sort
+of segmentation fault.
+Alternatively, if you're up here in the,
+the TOB look up and, and you take a miss
+in the TOB, there's lots of interesting
+things that start to happen now at this
+point.
+If you have a hardware pagewalker, so what
+that means is a little finite state
+machine which will walk through the page
+table, walk all they way till' the end of
+the page table, find the mapping and
+install it into the TOB.
+This and this is all done in hardware.
+Hence, it's speckled.
+If you are on an architecture or something
+like Mips or Alpha, or Telera, that's all
+done in software.
+So, this pagewalker and updating the TLB,
+is actually done in software.
+So we'll have some software going, and
+walking it, and doing a bunch of memory
+references in your little piece of
+software there.
+And then, there're some hybrid approaches.
+So for instance, in Mips there's some
+special hardware that helps the software
+walk the page table faster.
+If the memory that you try to go get at is
+not in the page table already, then, you
+sort of follow here in the operating
+system line.
+You take it into op, into the operating
+system.
+The operating system then has to go look
+through all its structures and see, oh, is
+that data on the disk somewhere? Is it,
+are you accessing some piece of memory
+that doesn't actually exist?
+If that's the case, then you're actually
+going to be sort of, going over this
+segmentation fault or, or bus error world
+also cuz you're basically going to try to
+do a memory reference to some piece of
+memory which isn't there.
+But, if, let's say, it's on disk or it's
+in the swap memory or the backing page
+cache on the, on the disk,
+You're basically going to have the OS fill
+in everything, fill in the TOB and just
+return.
+And life is, life is all good,
+And you continue on.
+So, now that we have decided that we want
+something like virtual memory and we've
+decided that we want to have translation
+look aside buffers, let's look at how this
+influences the design of our hardware
+pipelines.
+So, here we have addressed translation,
+shoehorned into a 5-stage pipeline here.
+As some of you may notice,
+Here and here, we just added to the delay
+of these stages.
+We just sort of shoehorned it in.
+We didn't add an extra stage, we just sort
+of put it in there.
+And it's serial.
+Is the naive approach to go do this?
+Hmm, well, that has some, has some serious
+latency considerations.
+So, if your instruction memory is on your
+critical path to your processor and, all
+of a sudden, you put something else in
+serial fit your processor gets slower.
+Or if your data cache is on your critical
+path to your processor and you add
+something in that, that's, that's going to
+also slow down your processor.
+So, we want to look at techniques where we
+can actually move those two structures off
+the critical path.
+Alternatively, we can start to think about
+having something where we could pipeline
+the TOB and the cache, and you have one
+stage for TOB look up and one stage for
+the cache.
+It gets a little hard in that, maybe over
+here in the data, data side of the world,
+it gets a little hard because that's going
+to increase your access time to your data
+memory. So, when you do a load, this is
+going to push out that load an extra cycle
+if you put another pipe stage in there.
+And in the instruction side, this could
+also hurt your branches.
+So, if you add an extra cycle out on the
+if you put a pipeline stage something like
+here, then your PC plus four loop gets a
+little bit harder.
+Not, from a time perspective, it probably
+doesn't get harder, but from a if you have
+a branch perspective, and you take a
+branch in there, you're going to add an
+extra cycle to your branch, mis-predict
+latency.
+And, also, it gets a little bit weird here
+that you can access instruction memory
+effectively in one cycle.
+Having said that, it's usually easier to
+take instruction, to be off the critical
+path because you don't really change the
+high order bits of your instruction that
+often.
+You really don't change that, you only
+crosspage boundaries when you do out of
+the jump or if you fall, happened to fall
+through of the end of the page and both
+those are relatively rare cases.
+So, people found that pretty easy sort of,
+to take that of the critical translation
+path.
+So, we're also going to focus on the data
+side of the world here.

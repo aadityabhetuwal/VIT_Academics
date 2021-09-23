@@ -1,0 +1,42 @@
+﻿L4S1:
+
+In Lecture Quiz 1:
+Time: 11:32
+
+Question:
+How many bits are in this index?
+
+--------------------------------------------
+
+In Lecture Quiz 2:
+Time: 12:25
+
+Question:
+We have 32-bit addresses, four set direct mapped cache, 64-byte block size.  How many bits are in the Offset?
+
+--------------------------------------------
+
+In Lecture Quiz 3:
+Time: 12:53
+
+Question:
+How many bits are the tag given a 32-bit address?
+
+--------------------------------------------
+
+In Lecture Quiz 4:
+Time: 20:48
+
+Question:
+If a computer executes a store, should it place the data into the cache or main memory?
+Choices:
+
+A. Cache only
+
+B. Main memory only
+
+C. Both cache and main memory
+
+D. Cache only OR Both cache and main memory
+
+--------------------------------------------

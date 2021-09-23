@@ -1,0 +1,25 @@
+L13S2:
+
+In Lecture Quiz 1:
+Time: 5:09
+
+Question:
+If you have an architecture which has base and bound registers where there is one base register and one bound register per program, is it possible to have two programs share data?
+
+In Lecture Quiz 2:
+Time: 5:09
+
+Question:
+What is the advantage to having seperate base and bound registers for instruction and data?
+
+Choices:
+
+A. Code and data should never be shared simultaneously.
+
+B. If the same instruction base and bound registers are used, there is no difference between two programs.
+
+C. It enables individual sharing of the code and not the data or the data and not the code.
+
+D. Not clear whether it is good.
+
+

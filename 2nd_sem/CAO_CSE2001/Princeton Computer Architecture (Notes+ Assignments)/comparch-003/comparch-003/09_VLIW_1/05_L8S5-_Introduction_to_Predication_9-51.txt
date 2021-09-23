@@ -1,0 +1,235 @@
+Okay, so now we're going to sort of go
+through different problems with VLIWs and
+different solutions to that problem, those
+problems.
+So the top one on this list is a problem
+of hard to predict branches, and how that
+can limit instruction level parallelism.
+So, you just remove the branch.
+And we're going to call that predication.
+So we're actually going to add
+instructions to the hardware.
+Which we're actually going to add two
+instructions here so this is, this is,
+this is limited predication, where we add
+two very simple instructions.
+And if you look at these instructions,
+they're very similar to the question mark,
+colon or select operator in C.
+So what does, what does that operator do?
+We have a equals I don't know.
+C?d: e; What does this do?
+Well, it loads a.
+If, if, if c is true, it loads a with d,
+if c is false, it loads a with e.
+Well, you can think about actually doing
+this with, some sort of If-then-else,
+piece a code.
+Which is pretty common.
+If a < b So you can sort of put, that
+here.
+X gets a versus x getting b.
+That's our select operator.
+Well we add two, two special instructions
+here for our limited predication.
+Move if zero and move if not zero.
+Well, what does this do?
+Well if this operand is equal to zero,
+then this rd gets rs, else that's all it
+does.
+That's all that instruction does.
+And the flip one here is, it checks if
+it's not equal to zero.
+Why is this cool?
+Well, this allows us to transform control
+flow into a data instruction.
+So, we've taken a branch out, so if we
+look at this piece of code, if we're doing
+it with branches set less than, we do a
+branch.
+So, this, this computes our condition
+co-flag here, branch equals and if it's,
+the one way a branch is here, if not, it
+jumps over it.
+So, we have a bunch of control flow here.
+We have two control flow operations, the
+branch and the jump.
+When we add these instructions, we can
+basically do that if then else in, in an
+instruction.
+And, basically every VILW processor you're
+going to look at is going to have
+predication, or at least limited
+predication.
+This is, this is not full predication,
+this is limited predication.
+We'll talk about full predication in a
+second.
+Okay so that, let's, let's think about
+that for a second.
+We just took control flow.
+We turned it into something which is never
+going to take a branch mispredict.
+That sounds pretty cool cuz branch
+mispredicts, you know, were pretty, pretty
+bad.
+If we had a branch which was harder to
+predict, we didn't know with high
+probability if a was greater than b or
+not.
+We can just sort of stick this code
+sequence in here and just be done with it.
+And why it's really important for very
+long instructional processors, is because
+whenever you take a branch and mis
+predict, you basically have a bunch of
+dead instructions.
+And you can't schedule something in, in
+that point.
+But the, a, an Out-of-Order Superscalar
+can attempt to sort of schedule things in
+there.
+We can try to schedule non-dependent
+operations.
+But our compiler has to come up with some
+code sequence, and has to make them
+parallel at compile time.
+Okay.
+So a few, few questions here.
+What happens, if then, if the if then else
+has many instructions?
+This was a very simple case here.
+We just sort of had one thing inside of
+each of these if-then-elses.
+It's not the end of the world.
+What you can, can do, and typically what
+people do with partial predication, which
+is what this gives us, is they'll actually
+execute both sides of the if statement.
+Inter leave them in your VILW somehow, and
+then choose the result at the end with a
+predication or a move z instruction.
+Or, these are typically called conditional
+moves.
+If you'll look in something like x86 I
+think these are actually called c moves.
+If you go look in mips, it's called move
+z, but people started naming these things
+slightly differently.
+So, it's not, not the end of the world,
+but when you go to do that, you're
+actually going to execute extra
+instructions that you may not have to have
+executed.
+That's, that's a bummer.
+Because you could very easily, if, if,
+there's a lot of code in here and a lot of
+code in here and you're executing both
+code sequences, you're basically doing
+twice as much work.
+And if, it grows large, you're doing lots
+of extra work and you may not have enough
+open slots to sort of fulfill that.
+At that point, you have the choice, you
+actually put a branch in.
+If it's unbalanced also not the end of the
+world, it's probably actually a little bit
+easier, you're probably going to have to
+execute twice as much code.
+At some point though you may want to
+actually super unbalance.
+Like a thousand instructions on the one
+side of the branch, and like two
+instructions on the other side of the
+branch.
+You may just want to put a branch, an
+actual branch there, and not try to
+predicate it.
+Because if you took the, side which only
+has two instruction, or the, the two
+instruction case, well all of a sudden,
+you've bloated that by an extra thousand
+instructions, kind of in the common case
+and that's not very good.
+So that's, that's partial predication.
+Let's talk about full predication, which
+is kinda the extension of that.
+Instead of just adding, I mean, a simple
+instruction which moves data values
+dependent on another value it being zero
+or not.
+Let's say every single instruction in our
+instruction sequence except for maybe
+let's say branches or something like that
+can be nullified based on a register.
+What does this look like?
+Well, here we have some, little bit more
+complicated piece of code.
+We have four basic blocks.
+It's roughly an if.
+Then, no see.
+If else then and then sort of some code at
+the end.
+And let's see how this works with
+predication.
+Well, what you can do is first of all, you
+have to somehow set the predicate
+registers.
+So typically, these architectures have
+extra registers, which we call predicate
+registers.
+The predicate registers get loaded with
+some values sort of early, and then, let's
+say, this instruction and this instruction
+execute in parallel.
+Different notation here, let's say there's
+a semicolon here and there's sort of
+brackets around that.
+And, this, in front of the instruction
+here, in parentheses, we have a predicate
+register, and which says whether this
+instruction was supposed to execute or not
+supposed to execute.
+Now we can do even more complex things,
+than our partial prodication.
+Instead, now you can basically execute
+everything and not have to do any moves at
+the end.
+You don't do any bookkeeping and you can
+only, you can execute just the side of the
+branch that you need to execute.
+Scott Melkey and Insco 95 showed that if
+you do this, and you sort of have a fan-,
+fancy enough compiler.
+He was working at UAUC on the impact
+compiler.
+You can remove, let's say, 50 percent of
+your branches.
+A lot of these branches are short little
+branches in your programs.
+In a full predication, you can do some
+pretty fancy stuff.
+This showed up in the Plato compiler,
+which is a HP or, Plato architecture by
+HP, and the, sort of, compiler for that.
+Which was the, [unknown] project at UAUC,
+the impact compiler.
+So you can sort of see that, you know, you
+can get a lot of benefit from this.
+So, we're going to, I'm going to stop here
+today but I just want to do a, briefly
+wrap up and say, we start talking about
+how to deal with dynamic events and how to
+get a lot of the advantages of speculative
+execution from out of order super-scalers
+but in a statically scheduled regime.
+And we're going to talk more about how to
+do some this code motion, how to move
+instructions across branches, how to move
+memory operations across other memory
+operations.
+And then we're going to talk about how to
+deal with some dynamic events, which are
+hard to deal with in a statically
+scheduled environment in the next lecture.
+Okay, we'll stop here for today.

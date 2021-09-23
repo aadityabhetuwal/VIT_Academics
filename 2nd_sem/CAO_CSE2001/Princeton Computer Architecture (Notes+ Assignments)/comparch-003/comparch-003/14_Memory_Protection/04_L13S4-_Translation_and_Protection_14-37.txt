@@ -1,0 +1,367 @@
+Okay, so,
+Now we have to look at the hardware we
+have to build to, in order to do this.
+Just to recap.
+We have a virtual address.
+The offset just goes straight through.
+The virtual page number goes through some
+sort of address translation through our
+page table.
+And we come up with a physical page
+number, and this is our physical address.
+Just like with the base and the bound
+register.
+We have a bound, we want to actually take
+the virtual address number, and stick it
+somewhere into something which does the
+protection check.
+So what do we want to check in our
+protection?
+Well, we want to check maybe whether it's
+a read or a write, cuz you might want to
+have some pages that are read only, or
+some pages that are write only?
+You may want to have some pages that maybe
+only the, the kernel can access.
+This is what I was saying about how you
+can map all the kernel into your address
+space.
+It's at the same location, but maybe you
+don't want the user to be able to access
+that, unless you're in kernel mode.
+So a lot of time, there's a bit that says,
+is this a kernel access, or is this a,
+Or an OS access or a user access.
+And,
+One of the challenge here is, is that you
+really want this address translation go
+fast, cuz you don't want to take every
+single load in store and turn something
+that was a one-cycle operation into a, you
+know, 10-cycle operation or however many
+levels.
+Unfortunately, you know, you could cache
+miss on your page cable access and have to
+go out to main memory, could even make it
+worse.
+So,
+We came up with a nice little structure to
+be able to solve this problem and this
+nice little structure here, is, a
+translation lookaside buffer or TLB.
+And what this is, is this is a cache of
+page table translations.
+So you, you shove into it a virtual
+address and out comes, er, excuse me.
+You shove into it a virtual page number
+and out comes a physical page number.
+So it is the direct map, but it's a small
+set of these, instead of having the
+entire, all, all of memory.
+So the most recently used, you might write
+some sort of most recently used algorithm
+and raise some other algorithm on this,
+that when you have a hit in your TLB all
+that happens is this, a single cycle.
+You stick your address in and an address
+comes out.
+If you have a miss, then you might have to
+go to some sort of slower case, which has
+to, let's say, go walk the page table or
+multi-level page table, for instance.
+Let's look at what's in this structure.
+You have a valid bit.
+You typically have a bit that says whether
+it's readable.
+You have a bit that says whether the page
+is writable.
+This allows you to have read-only memory.
+If you, for instance, only have the read
+bit turned on and the write bit turned
+off.
+It allows you to have write-only memory.
+Now, you might say write-only memory, is
+that possible?
+Well, yes,
+Actually this is a thing, if you have,
+let's say, two processes that are
+communicating and you want to have one
+process be able to communicate and only
+write to the other process.
+But not to have the other process
+communicate back the other way.
+So one directional channel.
+You can do this with write-only memory.
+Sometimes these, these are merged.
+Different architectures, some, some are,
+not all architectures have write,
+write-only memory.
+But,
+For, for completeness you want to have
+that.
+You have a, a D bit here, which is the
+dirty bit.
+Yes, this is, this is like the, the song
+by the Black Eyed Peas, Dirty Bits.
+Yes so it's a dirty bit here.
+The, the dirty bits allows you to know if
+the page has been accessed or not.
+So let's say you have a writable page and
+you want to know if that page has been
+accessed or written to.
+You can use this bits, this is similar to
+the dirty bits in caches, to know whether
+the data has to be written back to a
+higher level of cache or not.
+Well, if you think of memory,
+Or excuse me,
+What we have mapped into memory, as a
+cache of stuff that could possibly be on
+disk, we have to know whether to write it
+back out to disk.
+So we can use a, a dirty bit to do that
+and it's usually in the TLB structure.
+Now, there's different, different ways to
+build these caches.
+The most common way is to actually have
+them be fully associative.
+So, for fully associative, you have to do
+a tag check.'Cause there's a tag in here,
+which gets matched against the virtual
+page number.
+And it's associative, so it could be in
+any location in this TLB.
+And then, finally, this is the data
+payload, or the physical page number which
+comes out.
+So this is our, our base translation
+lookaside buffer and it's basically just a
+cache of the page table.
+And what we want to do is at some point
+when you take a, a miss in here, so the
+opposite of our hit,
+We're going to pull in a page table entry
+from our, walk the page table possibly do
+that multi-level resolution.
+We have to go and do multiple loads at a
+time and take that data and put it in
+here.
+And now the next time we go to access that
+same page it hits in here and doesn't take
+any more cycles.
+So is it usually fully associative?
+They're usually relatively small, sixteen
+to maybe a 128 entries.
+Sometimes you'll see multi-level version
+of these, where you have the fully
+associated one at the lowest level and
+then some short of level two, TOB the
+backs it, that's a lot bigger and possibly
+not fully associative.
+Couple different designs in here for how
+to go about replacing,
+Having something like true LRU can be hard
+if this gets large and it's possible that
+LRU is not even a good approach.
+Unlike caches, this is a very different
+access pattern.
+It's not necessarily spatially, there's
+not necessarily any spatial locality
+really going on here.
+You probably have temporal localities.
+So you, that might say that l or u might
+be good,
+But it's not like there is spacial
+locality of, because you access one page,
+there's any problem you can go access the
+page after it or the page before it.
+So lots of the techniques from caches,
+prefetching, etcetera doesn't really work
+here.
+But from a replacement perspective, people
+have tried lots of different things.
+Something that actually works surprisingly
+well, it's just random.
+You just randomly chose an entry,
+Kick something out and you replace it.
+Random is actually hard to do sometimes.
+Believe it or not.
+So a lot of times, what people will use
+is, what's called a clock algorithm,
+Where you basically have a free running
+counter which says where to go access in
+your TLB to go evict.
+And every cycle you go and you somehow
+change this counter, maybe increment it by
+one and there's a little hardware counter
+there that will actually do this. And
+that's not quite random,
+Because it's correlated somehow.
+And that's actually can be a good thing,
+cuz that can actually make it so that you
+can somehow test your processor.
+Having something that's true, than random,
+if you are trying to pick up like random
+noise from the atmosphere or true random
+number generator, that could be very hard
+to test.
+So instead, well, a lot of times what
+people will do is use a clock algorithm,
+such that on every instruction that
+executes, you increment the TLB
+replacement location by one and it rolls
+around when it gets to the, the full size
+of the TLB replacement size.
+And what's nice about this is if you reset
+that register to, let's say, be five, then
+you execute 100 instructions, you know
+what it's going to be 100 cycles in the
+future.
+So you have some predictability in that,
+but it looks like random because it
+doesn't, it doesn't increment, let's say,
+with every memory reference,
+Instead increments with every execution of
+an instruction.
+First in first out has some notion of
+locality that works okay, true or you,
+some people actually do here.
+So one of the good questions that comes up
+is,
+If we're trying to access a big array,
+Can we map enough memory with our TOB to
+access that big array without having to
+take a TOB miss?
+So we, we'll call this the reach of the
+TLB, of all the things you can map of the
+TLB.
+So let's say we have a relatively decent
+sized TLB here.
+We have 64 entry TLB four kilobyte pages.
+How much, can we, we go access?
+Well.
+We can go access 256 kilobytes.
+No, that's not small, but it's not huge.
+So it actually does bode for having more
+TOB entries, it also bodes for possibly
+having larger page sizes.
+Now, this is a traditional sort of trade
+off here for caches with block size that
+having larger page size.
+Makes you have larger reach.
+Makes you have fewer TLB entries.
+But it can increase your internal
+fragmentation and, you might have to pull
+more data off the disk if you go to sort
+of start up a new process, and has these
+large pages.
+And you don't have to use all of it,
+You don't want to use all of it.
+So something to think about is that the,
+the, the reach of the TLBs is important,
+If you don't want to get the OS involved.
+So a couple of extensions to the TOB,
+Something we haven't talked about up to
+this point is, what happens, when you have
+multiple processes running at the same
+time or time multiplex between them.
+What if you do the TLB?
+So we talked about changing the page table
+base pointer when you change to a new
+process.
+Well,
+The TLB is a cache of the page table.
+So when you go to change the page table
+base pointer, you're going to have to
+invalidate your entire TLB.
+And if you're doing this let's say, 100
+times a second, like you do in modern day
+Linux, this can be, be pretty painful or
+many thousand times a second on some
+faster systems, you're going to be
+trashing your TLB pretty quickly.
+So that could be, that could be quite
+painful.
+So solution to this is you actually add
+extra bits into your TLB, which say, which
+process a particular entry in your TLB
+belongs to and we're going to call this an
+address space identifier.
+So it will get a little bit more general
+than a process identifier here.
+Sometimes some operating systems will
+actually use the same, some num, some bits
+of the process identifier as the address
+space identifier,
+Some, some people don't.
+Well, you can, you can leave this as a
+something which will uniquely identify the
+address space.
+So now, what we can do is we can c-mingle
+different processes TLB entries and this
+address space identifier takes part in the
+associative lookup in the TLB.
+So, our, our match operation checks the
+tag and it checks to make sure our address
+space identifier is equal to a special
+register which is on the side,
+Which, which is added, which is the
+address space ID for the currently running
+process.
+So we're actually going to check this and
+that.
+Now sometimes, you do want to actually
+ignore the address space identifier.
+So a good example of this is, like,
+Operating Systems pages.
+So if you have the Operating System mapped
+into every single process out there, you
+don't necessarily want to be polluting
+your TLB with separate copies of the page
+table entry for all the different
+Operating System pages.
+So a lot of times if you add an address
+space identifier, you also add a global
+bit that comes that into the match.
+And the global bit basically says, ignore
+the address space identifier and turns it
+back into the case we had before.
+This is traditionally only used for
+Operating Systems pages.
+And then finally, something I wanted to
+say as a sort of a need extension here is
+to have variable size pages.
+So instead of our basic TLB which has,
+let's say, one page size, four kilobytes
+or one megabyte or something like that.
+You have some bits in the page table
+entry, which actually say, this is not
+part of the match, well, actually this is
+part of the match, I guess.
+You do have to go to look this up cuz this
+is going to change how many bits of the
+tag to look at.
+When you're going to use this and you're
+going to say, oh,
+The output is a different page size,
+So we can have one megabyte pages and four
+kilobyte pages at the same time in our
+page table.
+And you can use large pages for large
+pieces of memory that you know are going
+to all be there and small pages for
+something where you're worried about
+internal fragmentation.
+So you can think about having the, the
+page size and most architectures do have
+page size.
+A lot of architectures have something like
+an address space identifier these days.
+And some architectures will actually have
+an address space identifier that's hidden
+from the Operating System or hidden from
+the programmer and it tries to figure it
+out itself.
+So it's not architecturally visible but
+the micro architecture effectively has
+address space identifier.

@@ -1,0 +1,779 @@
+Okay.
+So now, now we get into the fun stuff.
+Out of order processors.
+Up to this point we've been doing simple
+in order stuff.
+We've been hinting at out of order, but
+now we're going to start looking at, truly
+out of order machines.
+And we're gonna introduce a bunch of new
+structures that you should not have
+learned about up to this point.
+You may have briefly talked about
+scoreboard, but we're not still talking
+about bunch of other structures.
+Okay, so, so let's talk about different
+portions of a pipeline that can be in
+order versus out of order.
+The front end.
+So what do I mean by the front end?
+The front end is instruction, fetch, and
+probably decode.
+This is pretty hard to do out of order
+[laugh] because you want to know, I mean,
+unless you've actually sort of, can
+predict the future, it's pretty hard to
+know so most of machines are going to be
+looking at have the front end being in
+order.
+So IO here means in order, OOO means out
+of order.
+Issue.
+So this is the stage in the pipe that
+actually says All the operands are ready,
+go start executing the instruction.
+Well, there are some, some things that can
+be in order.
+Well, you can probably even get more
+performance if you try and do that out of
+order.
+So probably not today but next lecture
+we're actually gonna talk about how to
+have the issue be out of order.
+Right back.
+So this is writing to something that looks
+like a register file.
+But not necessarily having hit the commit
+point of a processor, so this means things
+are no longer in flight in the bypass
+network, it's been committed to a register
+file, I won't call it the register file
+just yet.
+Well you could do that in order, out of
+order, or excuse me, you could do that in
+order, out of order, different choices
+there.
+And then finally commit.
+So this is saying, yes I actually want
+these instructions to actually commit and
+I'm basically, after that point, you're
+not able to roll back the machine state to
+a previous state.
+And we're gonna look at machines where
+that's both in order and out of order.
+This is sort of a, a gentle introduction
+to out of order execution.
+And we're gonna be building some different
+architectures.
+And this name here just is, sort of a
+naming of five architectures we're gonna
+look at as an introduction to out of
+order.
+The I4 is in, in, in.
+So, or in, in, in order, in order, in
+order, in order, in order.
+I2 O2 is.
+In order, in order, out of order, out of
+order.
+Into out of order in order is in order, in
+order, out of order.
+It's just, it's, the number just means how
+many stages in a row are the same as the,
+as the letter before it.
+Okay, so I wanna briefly touch on some
+nomenclature over here.
+And you shouldn't know what these things
+are yet, unless you went and read Shen
+Lipasti, which I highly recommend.
+Scoreboard, this a structure where we keep
+information about what instruction is
+ready execute.
+The order buffer sometimes gets merged
+into a lot of different meanings, but
+typically, when we execute instructions
+out of order, this is place where we can
+go and actually re-order'em, to commit
+them in order.
+And we resolved all the dependencies so we
+don't actually commit out of order.
+Store buffer.
+This is something where we'll actually
+hold off, storing the memory until the
+commit point, because we don't want to
+write to memory too early.
+Cuz that would be bad, cuz then that would
+effectively be committing.
+So you, this is one important thing to
+remember about commit points is if you
+commit too early, what is an important
+notion of a commit here?
+Well, it's any state that you can't roll
+back.
+So, if you do a store to main, main
+memory, that's a commit.
+That's really hard to roll back unless you
+can somehow keep all that state of what
+was in that memory location before that.
+But people don't typically do that.
+Instead, you'll actually sort of have a
+buffer which keeps track of all the
+storage you're trying to do.
+And every once in a while, when you
+actually do a commit of the instruction,
+at that point and only that point do you
+store to main memory.
+And finally, we'll be talking about the
+issue queue, which is a, if you are
+issuing out of order, this is a structure
+which allows you to determine when it's
+safe to go and issue instruction or not.
+And this is, what's important about this
+is that it keeps all the dependencies, the
+read after write, write after write.
+Write after read dependencies in check.
+That's what that structure is doing.
+So we're gonna look at some of these
+structures today.
+Okay, so motivational code sequence here.
+And what is a motivation for out of order
+execution?
+Here's a, here's a simple code sequence
+and let's, let's take a look at some of
+the read after write dependencies for this
+code sequence.
+Here we have a write to register one, and
+a read of register one.
+So that is a, a dependency there.
+So, instruction zero has instruction two
+as a dependence.
+So we'll draw a nice arc there.
+Let's see what else happens here.
+We're, register instruction two writes to
+register five.
+And that gets read in instruction three.
+So that's a dependency arc there.
+Okay, interesting enough here,
+construction one isn't dependent on
+instruction zero, and instruction two and
+instruction three are not dependent on
+that.
+So, that's, we can just put it in a
+separate little bucket here.
+Instruction four here, let's take a look.
+Register twelve, register eleven.
+It reads register eleven.
+So it's dependent on instruction one.
+Five is dependent on the output here
+twelve, So it gets put after four and
+likewise six reads register twelve, so it
+is dependent.
+So you have to start to think about if we
+have an out of order processor we can
+choose the order of this instruction
+sequence and that instruction sequence,
+and if we have a multi-issue or
+superscalar out of order processor we can
+even try to think about how to execute
+these completely independently at the same
+time and we can get performance from this,
+cuz we confined parallelism inside of a
+sequential execution stream.
+So one, one important thing here to
+realize is today we're going to be talking
+about how to dynamically, in hardware,
+schedule this and this at the same time,
+and we're going to be using, this as a
+motivating example in the VLIW, or very
+long instruction word lectures.
+We're going to be talking about some
+software techniques that can determine
+when to execute this and this at the same
+time and architectures which can take
+advantage of that or the software has
+determined that these two things are
+completely independent.
+Okay so an important thing to realize here
+is that why does even, why do these even
+happen?
+Why do we end up with sort of
+non-dependent instruction sequences in a
+program?
+This is like a philosophical question.
+Should this even, why, why is this
+possible?
+So what do, what do, in order instruction
+semantics or sequential instruction
+semantics force you to do to instructions.
+Of course, you need to come up with an
+order.
+You need to come up with some order.
+I need to write on a sheet of paper, in
+some linear order or store it my memory on
+my computer system in some order.
+An important point here is that in the
+instruction set architecture of a
+sequential computer, by definition, the
+instructions need to be serialized.
+This is a limiter, this is a problem in
+sequential machines.
+You need to come up with some order.
+So, there is no way to express that this
+and this can execute at the same time in a
+sequential, in order machine, or a
+sequential machine rather.
+Unless you do it something like this.
+You need to have some order, like, this,
+this is expressing the parallelism, but
+it's hard, the hardware has to go and
+figure out where the parallelism is now.
+You can think of an alternative
+instruction set, which is not sequential,
+but instead, is a graph, of different
+dependencies like this.
+And, people have built those sorts of
+machines, they are nothing common, they
+are typically called data flow machines.
+And we, if we have time for it, we'll have
+one lecture at the end of the term.
+So there are machines that allow you to
+express.
+This and this are not dependent on each
+other.
+And maybe sometime in the future they do
+become dependent based on some branch or
+something like that.
+So you can, you can think about that.
+But in a, in a sequential processor, you
+need to come up with some ordering.
+This is a limiter for these machines.
+So effectively, let's say the compiler,
+the compiler optimizations knows that this
+and this connects the queue at the same
+time, by definition if it can generate
+this code it knows those two things can
+execute at the same time.
+Unfortunately it has now way to express
+it.
+And that's a bummer.
+Very long instruction word machines, which
+we'll be talking about a little bit in the
+future, allow you some ability to say I
+want to execute, let's say this and this
+at the same time, but it's very limiting.
+Data flow machines allow you to do much
+more complex sort of graphs of
+instructions and say, this is dependent
+this instruction is dependent on this
+instruction, and that's all I really need
+to, to say.
+So effectively, sequential machines have
+over-constrained our designs.
+Okay, so let's start evaluating our first
+out of order, in order machine.
+So I4, this is actually an in order
+machine.
+But we're going to be analyzing it as a
+motivator and then sort of a slippery
+slope if you will, into true out of order
+machines.
+So here we have fetch, decode, execute,
+memory, writeback.
+Same five stage pipe.
+I renamed things a little bit ease, to
+make it easier here.
+This actually follows the nomenclature
+that's in your labs, where the execute
+stage has an X and the, decode stage, the
+duh, in, is not ID but instead D.
+But this should all look relatively
+similar.
+I, I took out all the sort of extraneous
+bypassing and other stuff in this
+pipeline.
+So it's a, sort of, caricature of, of a
+real pipeline.
+Okay so let's say, you know, we wanna do
+superscalars here.
+Let's say we want to start adding multiple
+pipelines to this processor, so we're
+going to take the same processor pipeline,
+but we're going to split off and have two
+pipelines here.
+We're going to have a memory pipe and an
+execution pipe.
+This looks similar to our AMD superscalar,
+but for today let's focus on a in order,
+in order machine, where these two pipes
+cannot have, Different instructions in the
+same stage at the same time.
+So, we're going to look at a single fetch,
+processor here or a non, a single issue
+processor, if you will.
+But as a motivator, you'll see why we're
+doing this as we build up to more complex
+out of order things.
+Most of these things hold actually for the
+multi issue variants.
+But your head will hurt a little bit less
+if you think about the, in order variant
+or the in order, single issue variants
+first.
+Okay.
+As I said, yeah.
+Things get a little more complicated.
+Allow, allow us to take that same pipe
+that we had from before, and add in, a
+4-stage multiplier.
+So now we have an execute stage, a single
+execute stage which actually has some work
+in it.
+This has an ALU inside of it.
+The memory let's say has two stages.
+This does the address computation.
+This is the actual memory access and here
+we have multiply which takes us a long
+time.
+It's pretty common and multiplies a big
+complicated beast.
+So there are four stages of multiply and
+then out over here we have the write back.
+Hm, okay, so that's, that gets us, that
+gets us thinking and we want to start to
+think what these things look like on the
+inside.
+So the first question is, do we want to
+bypass this pipeline?
+And how much pipeline, or how much
+bypassing do we need?
+In order pipe, three pipes, or three
+functional units, we'll call it one, two,
+three.
+But we probably still need to bypass.
+Can we bypass out of right here?
+Out of, Y1, does that make any sense?
+So the multiply is not done till here, so
+it makes no sense to bypass out of there.
+Do we need a bypass out of here?
+Out here.
+Here.
+Okay, a lot of bypass locations, so, this
+starts to, you can see the bypass
+exploding very quicly in this sort of
+pipeline.
+And, you know, that's, that's, pretty,
+pretty, pretty much to be expected, if you
+don't bypass.
+And you have to wait for everything.
+Let's say to get back to here, your, your
+clocks per instruction of your machine
+goes up.
+And we sort of go back to that simpler
+machine we had seen in earlier classes.
+Where sort of you have to wait for
+instructions to go all the way to the end
+of the pipe.
+And that, that's a bummer.
+Okay.
+Yeah, that's, that's what we just said.
+I do want to introduce this term
+functional unit.
+So, functional unit.
+Means one execution pipeline.
+So this is a functional, this is a
+multiply function unit, this is a memory
+function unit, this is the execute
+function unit.
+Okay.
+So now we're going to start to,
+introducing some extra structures, and
+start talking about some extra structures,
+which will make our lives easier when we
+start to have multiple pipelines, and
+complicated things are happening.
+The first thing I want to introduce here
+is the architectural register file.
+Or ARF for short.
+So the architectural register file is
+where we keep the canonical state of the
+machine that has been committed.
+Hence, it's called architectural register
+file.
+If you see me say register file, it may or
+may not be an architectural register file.
+It may have in-flight values, but the
+architectural register file is the
+committed state of the machine.
+So we draw that sort of end of the pipe
+here.
+Cuz that's where rights happen to this
+register the architectural register file.
+As shown here by this W or this nice time
+di, or the nice pipeline diagram W.
+And we try to read it at the issue stage
+of the pipe or the register effect stage
+of the pipe I did want to say that when we
+went to go do this we added an extra stage
+here.
+So we went to a six stage pipe because
+we're assuming that we bypass everything
+and we wanna have a little bit of extra
+time.
+And we'll see for some more of the complex
+pipes we'll start to put stuff in this
+decode stage.
+But for right now, decode does decode
+issue stage does some instruction steering
+to which functional unit and not a whole
+lot more.
+So that's what in our architectural
+register file.
+We read it here, we write it there.
+That makes sense.
+We may have to bypass some inflight values
+around.
+But those are not in our architectural
+file.
+Those have not been committed, those are
+just in-flight speculative values.
+Sb, so what's SB here?
+It's the scoreboard.
+So, what does the scoreboard do?
+So we're gonna show some pictures of score
+board but for right now, what our store,
+scoreboard is going to allow us to do is
+it's basically to be convenient side
+structure where we're going to keep track
+of where different values are in flight in
+these different pipelines.
+All of this data, if you go back to our
+earlier pipelines was there.
+We had sort of the instruction registers
+that went down the pipe here, which in the
+control, which kept track of what was in
+each stage.
+The scoreboard is just a convenient place
+to put all that information and centralize
+it all.
+So when you go to build a pipeline like
+this, you know you don't want to have to
+go sort of pick off of random locations on
+the pipe.
+It's easier just to sort of mentalize that
+data, in one location in the pipe, in the,
+in the, scoreboard.
+And, when we start to go out of order
+we're actually gonna store some
+information, in the scoreboard which gets,
+very hard to pick out of other locations.
+The scoreboard.
+Read and write and write, what happens
+here.
+Well, we read it to figure out what.
+Where, where we go with the bypass
+information problem from.
+So, in this, we're not going to use that
+calculation that we used before, but we're
+going to read it to figure out where the
+bypass information is coming from.
+And we're going to write it when we
+actually issue the instruction.
+We have to issue the instruction, we have
+to update some information in there.
+And then, as the instruction goes down to
+the end of the pipe, if the instruction
+actually commits, we also need to do
+something in our scoreboard.
+If the instruction doesn't commit or takes
+an exception, we will also have to do
+something at the end of the pipeline to
+clean up the scoreboard.
+So let's look at, let's look at the
+scoreboard.
+Here's our basic scoreboard.
+This is, this is for a long multiply pipe,
+the pipe we just saw.
+And we're going to keep track per real
+register, R0 in MIPS is a dead register,
+so we're not actually going to, or a
+register which has no dependencies going
+through so we're not even going to talk
+about that.
+So p, so we have one bit in here which
+says, if there's a write pending to that
+register.
+F for functional unit keeps track of which
+of the three functional units we should go
+in to pick off the value from.
+So it is important when we go into the
+bypass calculation what's going on and
+then we are going to have a shift register
+for each, register if you will.
+Where we're going to inject a bit.
+In every cycle we're going to clock it
+forward.
+And this is gonna tell us where to pick
+off the values.
+So this tells us where, which pipeline to
+look at, out of three and the data
+valuable tells us in the other dimension
+what stage in the pipe to go pick off
+from.
+So if you go look at what functional unit
+you are and you cross it with information
+you should figure out where to go do a
+bypass from.
+Okay, so every cycle logically can think
+of these bits shifting to the right.
+So it means the data, if there's a one
+here that means the data for register one
+is going to be valuable in four cycles.
+In the, somewhere.
+Probably the architectural register file,
+if you implement this simp-, relatively
+simply.
+Let's see, the other things I'd like to
+say about this.
+We would cover this all, yeah.
+So, you need to use the functional unit
+and the date available field to figure out
+when to bypass and where to bypass from.
+And then if, if the, the pending bit is
+zero, that means go look in the
+architectural register file, do not go
+pick it off the bypass network.
+Okay, now we get to, into a fun example.
+Buyer motivating example that we saw at
+the beginning of class.
+So here we have that same instruction
+sequence we saw at the beginning of class.
+As we know.
+You can try to execute some of those
+things either at the same time or out of
+order.
+But for right now we have a in order, in
+order, in order machine.
+So let's look at what the scoreboard has
+to say about this.
+So on, on the bottom of this graph er, we,
+er, this chart, we actually show the score
+board.
+And red denotes that the value is ready.
+So let's take a look at something here.
+So in cycle three, we start executing
+instruction zero.
+Instruction zero is a multiply.
+So, what happens, is, it was in, sorry.
+So I won't, I won't actually explain this.
+Here is cycles, D means what is in the
+decode stage of the pipe, what instruction
+number is in the decode stage of the pipe.
+I is what's in the issue stage of the
+pipe.
+So zero on cycles instruction zero of the
+multiply enters the decode stage then goes
+to the issue stage and then it moves to
+the execute units.
+So it actually gets put into our
+scoreboard.
+And what happens it gets put in for
+register one into its scoreboard, just for
+register one, and that just marches down
+the pipe every cycle.
+So every cycle, it's going to move to the
+right.
+And now if you look at the pipeline.
+If you look at the functional unit, and
+you know it's a multiply.
+And you look at where it is at in the pipe
+you can say oh, this is where a value
+actually becomes ready.
+So we now know exactly where in the pipe
+and when, or excuse me, which, which
+functional unit and when that value is
+ready.
+By looking at the functional unit and the
+bits in the scoreboard.
+If we look at something, let's say next
+instruction here is add.
+Instruction one, it moves here and then it
+just goes down the pipe, and it's ready
+basically the whole time.
+We don't have to wait for this value to
+become ready, cuz the execute instruction,
+you can basically bypass out of the
+execute unit.
+And it's almost always ready.
+That's why it's red the whole way down.
+And, you can sort of see here, that
+register one, this is, this is when that
+scoreboard entry is valid.
+And this when the register eleven
+scoreboard entry's valid in time.
+Okay, so let's look at, our first real
+read after write dependence.
+So here we have a multiply, which is
+dependent on R1.
+As we can see that instruction is going to
+sit in the issue stage, until.
+Y three happens and then it gets bypassed
+down here, excuse it me it gets bypassed
+down here into the issue stage, and then
+that instruction can be issued.
+If we go look at the scoreboard, that
+corresponds to this becoming red and then
+we can go and actually issue an
+instruction to, to here and we can
+basically bypass that value.
+And register five, which is a destination
+of instruction 2's multiply is valid.
+So this is a, this is a roughly simply
+pipeline design here, or a relatively
+simple a, a processor, but what' s nice
+here is you can use your scoreboard to
+keep track of when things become ready and
+without having to go, and which pipeline
+to go look in without having to sort of
+look at intermediate bits in the pipeline.
+And it's going to become much more
+important as we sort of go to out of order
+machines.
+Okay, before we move on; does everyone
+understand how to look at one of these
+diagrams?
+Because you are going to have to draw
+these later in the course.
+So this is a great question.
+So let's look at this picture here.
+So, we only have one entry, per location
+in the pipe here.
+So, you're, you're seeing we only have one
+of these entries.
+We have multiple bits going down here.
+We only have one entry here.
+So, what happens if you have, lets say,
+things have issued two different
+functional units, with different latencies
+to the same destination register?
+That's, that's, that's a very important
+question.
+What's gonna happen, it's going to be,
+you're going to fill in with this
+functional unit the newest instruction
+that gets issued's location.
+Because from a bypassing perspective,
+that's all you need to know.
+So that's, that's, like, I'd say it's very
+important.
+You don't need to know.
+From a bypassing perspective something
+that was older in program order.
+We only need to bypass the newest value.
+One thing we do need to do is make sure
+that we don't have a right after right
+hazard.
+So what that means is we're writing
+something later in the pipe then early in
+the pipe.
+That doesn't happen in this pipeline,
+because we pipe everything forward.
+We don't actually have write after write
+hazards in the right back stage.
+The next pipeline we're going to look at
+does have a write after write hazard, and
+that's going to require us to think a
+little bit harder about the scoreboard.
+Exactly, yep.
+So we're going to have, that's, that's
+sort of the next step, pipeline diagram,
+is, we have a much more interesting
+scoreboard.
+Actually two, two, not the next pipe, but
+the pipe after that.
+The, the is gonna have a more interesting,
+scoreboard.
+One interesting thing to note is strictly
+for what we've talked about today, you
+don't even need bits.
+You don't need to track two, different
+rights to that same register.
+Because you only need to know the most
+recent writes to the register.
+So, one way that I've seen people build
+scoreboards is, instead of having bits
+merging down here, you just have an
+encoding like log base two encoding or
+binary encoding of where to go look in the
+pipe, for the newest value.
+And then you just increment back, or
+decrement it every cycle or something like
+that.
+So you, you just have instead of having
+shift registers, you have that.
+And that's strictly enough for this.
+The more complex pipes we are going to
+look at as Pramod said, we're gonna have
+to track both the location.
+The functional unit in the pipe and what
+stage in the pipe it's in.
+So, you, you're saying how do I know that
+this is not ready until four or something
+like that.
+Okay, so that is a, a subtle point is that
+if you know what functional unit, if you
+know the functional unit latencies, you
+just look it up in the table.
+You don't need to actually track that
+information, there's just some piece of
+logic which says for a multiply if the
+functional unit is multiply then we can't
+by-pass till here.
+If it's an add we can by-pass from here or
+there or something like that.
+So we don't need to track that in a table,
+it can just be a part of your
+combinational logic in your decode unit,
+or your issue logic.
+Does that you don't, yeah, you don't, you,
+I'll say it one more time.
+To see.
+This.
+Like this is the example here.
+We have a, a mull that writes R1 and
+something which else is supposed to read
+R1.
+But we end up stalling here.
+In this table the way we know that is we
+know the functional unit, and because it
+says multiply we know we have to wait
+until it gets to here, or rather, probably
+here, instead of trying to pick it off
+earlier.
+If it was, if it said ALU then we could
+have it pick it off earlier.
+So we don't necessarily have to encode
+that, that's why in this picture here
+things turn red on some of these earlier
+than others, it's that functional unit
+information which encodes that.
+If you can even think about having that
+functional unit bits encoding some number
+like you said, some people design
+scoreboards and things like that.
+Okay, so I just want to briefly introduce
+this, then we are going into break.
+Next class, we are going to be talking
+about in-order, front-end and issue, out
+of order, write back and commit on these
+pipelines.
+It looks pretty similar, except, some
+pipeline stages are taken out here.
+And this makes you think harder about when
+to go read the score board.
+So we're actually going to use this decode
+stage to do some stuff at the score board,
+and then we're going to start talking
+about truly out of order machines where
+you have these other fancier structures
+like reorder buffers and store buffers.
+Okay, let's stop here for today and pick
+up next time.

@@ -1,0 +1,9 @@
+L9S2:
+
+In Lecture Quiz 1:
+Time: 16:56
+
+Question:
+
+For the code sequence: slt R1, R2, R3 movz R4, R2, R1 movn R4, R3, R1, does the code sequence take different time to execute dependant on the calues of R2 and R3?
+

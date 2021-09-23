@@ -1,0 +1,224 @@
+So that is our first optimization
+technique.
+Let us, if there are no questions, we will
+move on to our second optimization
+technique.
+Your book lists ten optimization
+techniques.
+We are only going to cover I think seven
+of them between today and the next lecture
+because I think some of them are not
+actually that important but we are also
+going to cover some other ones which I
+think are important. okay so next thing we
+are going to look at, the next
+optimization we are going to look at is
+how to deal with hits or excuse me, how to
+deal with read misses in the cache that
+have some data there that needs to get
+kicked out of the cache.
+So here we have our CPU, L1 data cache,
+our next level of cache here will say a
+little L, L2 cache or maybe main memory
+There is something in this cache, at a
+particular line and it is dirty in the
+cache.
+So the dirty bit is set.
+It has state we cannot throw out.
+We do a read and it aliases that same
+location and we need to evict that line.
+It will create a victim.
+In a naive implementation, we'd actually
+have to sit there and wait for all that
+data to go out to main memory while we get
+through the next while
+We go do the read and get the data and
+fill it in.
+Okay,
+That is, that is, that is not pretty good.
+We sort of have to wait for this evicted
+dirty line.
+We will talk about that in a second.
+So the processor could be just stalled,
+waiting on rights.
+One thing you do is actually have to read
+misses.
+Go beyond the rights, sort of pass the
+rights and pass the rights going out to
+the unified L2.
+But one of the problems here is you do not
+have that many ports onto this unified L2.
+You only have one port out here we will
+say.
+So if you have the load sort of pass it
+and if you do this little dance that when
+the read data comes back or load data
+comes back, you need to have a place to
+put it.
+So either at that point you might need to
+wait for it to go out.
+To main memory or go out to the next level
+of cache.
+So you cannot really get around this.
+So you can say oh I'll try to get my load
+out early and just sort of worry about it
+later.
+Yeah but that does not work if that load
+hits in your next level of cache.
+You need to access the next level of cache
+and you are waiting for this data to go
+out, because you need someplace to put it.
+So the solution to this is we put a little
+buffer between our L1 and our L2 or L1 and
+our main memory and this will hold writes
+or victims that go out from the L1 to the
+L2 And now, we have someplace to put the
+data.
+So, if we wanted to do this fast, we would
+actually do the load, we would miss our L1
+cache,
+We would send that request out to here.
+And then, instantaneously, we would start
+evicting the line into this buffer.
+And the reason we cannot evict it here is
+because the load is actually using that,
+that data right now or it is using the L2
+cache, we will say.
+But we have some place to put the victim
+data, and when the load comes back, we can
+put it into the L1 data, array.
+So this brings up a whole bunch of
+problems.
+Biggest one being, at some point, you
+actually can get transition, from the
+right buffer, into the L2 cache.
+Hmm.
+You could do that if you have extra time.
+So you could just have some circuits here
+with checks.
+But then comes the question of if you need
+to do this a second time what happens?
+Your second, let us say load that has to
+create a victim and this buffer is full.
+What do you do?
+Or you could just stall.
+And wait that's that is a, that is a
+pretty good option.
+So the, the, prob, this kind of what you
+are saying here is the probability that
+you have two victims generated in a very
+short period of time is low and this is
+actually a scheme that people do use.
+They do not do anything special and the
+first victim that gets generated goes into
+the right buffer, the second victim that
+gets generated just stalls, the pipe.
+That is okay.
+You have higher performance, if you can
+have the, subsequent read, basically.
+Go beyond the right buffer here and start
+actually doing something in the memory
+system.
+And if you want to do this, you need to,
+just like what we did in the previous
+example, you're gonna have to check this
+right buffer to see if the data is there.
+And that introduces complexity, because
+now your data can be here or here or you
+are further out.
+So there is just more places to check.
+Okay, so that is like the first half of
+the right buffers.
+The second half of the right buffer, why
+we want to put a right buffer is if we
+have a write-through cache.
+So we have been talking about write-back
+caches which introduce victims.
+But, if you recall, a write-through cache,
+every single store that happens,
+Discordance the data cash that the low
+level L1 data cache and it also gets bring
+in into the next level of cash, we will
+because it is writing through.
+So let us say you have a right through
+from the L1 to the L2.
+And one of the challenges with this is you
+might not have enough bandwidth, into the
+L2 cache to basically take in every single
+store that occurs.
+So the solution in this is you can
+actually put a right buffer here which
+will sort of buffer off some of this extra
+store bandwidth and we will introduce a
+notion of a coalescing right buffer.
+So this is a extra addition to a right
+buffer here that will actually merge
+multiple stores through the same line.
+So let us say you have a store to address
+five and a store to address six with a
+right through cache.
+You do not wanna actually have to write
+sort of, two full cash lines out to the
+L2.
+Instead what IP will do is they have
+coalescing right buffers.
+So there is one right buffer here might
+have multiple entries that holds the whole
+cache line.
+And that first store will push that whole
+cache line out into here.
+The second store will try to push the
+whole cache line out but you will notice
+that it is for the same address that it
+already has in it so actually merge the
+two caches line into one location.
+And what this does is decreases the
+bandwidth that you need at the L2 cause it
+is very common in codes to write
+sequential addresses.
+So it is if common to let us say you are,
+you are adding to raise the destination
+array you will actually just be writing
+address after address after address.
+And you do not want to actually have to go
+fire up the L2 for every single store you
+do in that array operation,
+If you have a write-through cache.
+So you can put a coalescing write buffer
+here, to, to save bandwidth, into your L2.
+This, this, this is our, for our second
+technique is having this right buffer.
+Okay, so what does the right buffer do?
+Does it decrease our miss rate?
+Cache is the same size.
+Associativity is the same.
+Probably not going to change our miss
+rate.
+Miss penalty.
+Okay,, raise your hand here Who thinks
+this affects the miss penalty?
+Some people raising their hands.
+I think we should probably be all be
+raising our hands, because that was really
+what we were trying to do with this whole
+right buffer is to reduce the missed
+penalty, and the reason this reduces the
+missed penalty is that reed misses in
+here.
+It, it does not need to wait for the right
+to occur of the background data, or the
+victim data.
+Instead, it can just have that happen in
+the background.
+This also does not affect our hit time.
+It may actually help our bandwidth.
+The reason it does not affect our hit time
+is our L1 cache just will still work the
+same it works before you are still, can do
+loads and stores against that and if you
+hit it is fine.
+So it only affects miss sorts of things.
+Bandwidth like I said if you are a write
+through cache this might actually
+effectively give you more bandwidth if you
+have a coalescing right buffer.

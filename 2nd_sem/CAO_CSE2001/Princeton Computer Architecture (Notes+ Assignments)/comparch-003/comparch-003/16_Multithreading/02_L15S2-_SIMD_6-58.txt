@@ -1,0 +1,165 @@
+. 
+Okay. 
+So now we're going to move off of vectors 
+and talk about sort of a near cousin of 
+vectors, 
+or how you can deal, or have vector 
+computing, in your desktop today. 
+So this is actually a lot of this was 
+done actually by Ruby Reith here at 
+Princeton she added a lot of multimedia 
+extensions to the HPPA risk architecture. 
+there's a couple of other people involved 
+in this, but the, she was actually pretty 
+influential in, in dealing, to do this. 
+The, the idea here is that if you have a 
+wide register, so if you're doing let's 
+say 64 bit additions, 
+and you don't want to have to do 64 bit 
+additions, or don't actually have 64 bit 
+data laying around, you could cut it in 
+half and do two 32 bit operations at the 
+same time, 
+or you can use that same ALU and try and 
+do four sixteen bits, 
+or eight 8-bit operations. 
+So, this is called SIMDy, or Single 
+Instruction, Multiple Data, so you have, 
+or short SIMDy instructions here, because 
+typically the, the vector length is 
+pretty short, 
+or multimedia extensions. 
+and you have an instruction which says, I 
+want to do two 32-bit ads, we'll say, at 
+the same time. 
+This is was popularized in x86 at least 
+by, MMX was the first, first 
+implementation of this. 
+And it's, it's sort of gone on from there 
+to SSE, SSE3, SSE4 SSE4, and now Intel 
+AVX. 
+And the differenances between mmx and all 
+the different SSE's largely has to do 
+with the length of the register and how 
+many instructions they had. 
+so in AVX we've gone to 256 bit 
+registers, wider registers, and it's 
+extensible to I think 1,000 bit or, or 
+1024 bits. 
+One thing I do want to point out about 
+this which is interesting is this 
+requires changes to your data path. 
+If you have an adder, and you have a 32 
+bit add, and now you wanted to do eight, 
+eight bit ads, you need to cut the carry 
+chain in seven places. 
+Now, that's if you have a basic adder. 
+I guess it gets a little more complicated 
+if you have something like a 
+propagate, or, a, carry look ahead adder, 
+or something like that, 
+because you may not have a simple place 
+to go sniff the, the carry chains. 
+There is still some place to cut it, 
+but you might, your original design, you 
+might have propagated across, 
+where now, you need to cut the boundary. 
+So, this is, this is definitely a, a 
+challenge. 
+Also, for things like multiplies, if you 
+want to do eight, eight bit multiplies. 
+the, the, the structure looks a little 
+bit different there. 
+But the, some of these, the big insight 
+here, is, you had that logic anyway. 
+You're just effectively adding muxes on 
+the carry chains to the, the the data 
+path. 
+And some operations you don't even need 
+to add. 
+Obviously if you're operating on 
+something like eight, eight bit values, 
+you want to do the logical or of them. 
+You don't need to add a special 
+instruction for that. 
+From a implementation perspective, this 
+is what I was trying to get at here. You 
+can, you've independent ad's going on, 
+and they all happen in parallel So why, 
+why do we like multimedia extensions, or 
+these vector instructions or short vector 
+instructions? 
+And let's compare them to our big vector 
+machines. 
+So, one of the major differences is that 
+you can't control the vector length. 
+The vector length is the way the length 
+of the, the native data word or the 
+length of the instruction set. 
+so, or the length, the length of the 
+native data type for your instruction 
+set. 
+And, 
+strided, scatter-gather, these other 
+operations are hard to do, 
+because typically you just have a single 
+load in store. 
+And you use the processor's load and 
+storing instructions. 
+Because the processor doesn't care. 
+It's just like the same way that unary 
+operations or logical operations don't 
+need special instructions to do short 
+vector, or single instruction multiple 
+data operations. 
+You don't need special instructions for 
+SIM D data to be able to do loads and 
+stores. 
+You just load the data. 
+And store the data. 
+this is actually starting to change a 
+little bit. 
+Some of the new versions of SSE actually 
+do have some, scatter-gather 
+modifications. 
+It's a, it's a little bit harder if you 
+think about it because you can't hold a 
+full address if you will, in a vector. 
+So it's not like you can actually do sort 
+of index of addressing, 
+index of addresses because you can't 
+necessarily hold the full address in 
+there. 
+But, in essence, they've sort of come up 
+with some way to do, scatter and gather 
+operations. 
+Couple things about having the vector 
+register length being limited, is that 
+you can't do as much work in one 
+operation. 
+So, you can't necessarily do a 64 
+operations in one instruction, like we 
+did with our vector length of 64. 
+So that's just, that just is a, is a 
+problem. 
+And, and unfortunately, what happens here 
+is you end up having to do more 
+operations and issue more instructions. 
+And you're effectively increasing the 
+bandwidth out of your fetch, unit. 
+So it's not, it's not, not as, not as 
+good. 
+and finally, I just wanted to say we're, 
+that processors are starting to move, 
+that these multimedia extensions are 
+starting to move a little bit towards 
+vector processors. as they add more rich 
+instruction sets. 
+So, as we get to SSC4 for instance, or 
+SSC4.2, there's more instructions in 
+there and X 86 that can do fancier 
+things. 
+And the vector length is even getting, 
+getting longer, up to 124 bits. 
+Or excuse me 1024 bits. 
+

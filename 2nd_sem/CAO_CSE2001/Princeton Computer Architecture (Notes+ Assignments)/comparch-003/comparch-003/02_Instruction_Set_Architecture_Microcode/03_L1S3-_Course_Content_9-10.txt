@@ -1,0 +1,236 @@
+So, course structure.
+There's going to be recommended readings.
+There is going to be in-video or
+in-lecture questions that will pop up.
+There is going to be several problem sets
+during the term, and these are going to be
+very useful for review for exam
+preparation.
+So, I'll give you guys a hint right now,
+that, if you do the problem sets, if you
+actually master the problem sets, the
+exams are going to be relatively easy
+after that.
+We'll probably use pure evaluation for
+grading the problem sets because lot of
+them are more open-ended problems.
+And we are going to have a mid-term and
+final exam.
+One, one other thing I wanted to point out
+is collaboration in this class is
+encouraged, but I want everyone to make
+their own problem sets in mid-terms and
+final exams.
+So, you know, you can discuss the overall
+generalities of the ideas and the concepts
+going on, but I don't want people
+discussing the actual exam questions in
+particular.
+So, for instance, you can discuss the
+concept if you have some caching question
+and you want to understand how caches
+really work, you know, discuss the
+concepts and collaborate on that but don't
+discuss and collaborate on the actual
+problem itself, on the respective problem
+sets, mid-terms and final exams.
+Okay, so, let's, let's talk about the
+content of this course.
+So, we, we have a very high level
+motivation and now we're going to talk
+about what's inside of this course.
+And I'm going to start of by contrasting
+it with what you should have already
+learned.
+So, in a computer organization class,
+something like ELE 475 at Princeton,
+you're going to have learned how to build
+a basic processor.
+So, something like we see here.
+This was the, this is actually the Risk
+one processor from Berkeley.
+Depending on who you ask, either the Risk
+one or the, the first Nips chip was sort
+of the first academic Risk.
+The IBM 801 probably used a lot of those
+ideas but didn't call it Risk before then.
+But, you know, you, you learned how to
+design stuff that had about 50,000
+transistors.
+So, this entire design here, this is a, a,
+a two-stage pipe line processor.
+But things that you should of learned is,
+basic cache ideas, pipe lining.
+So, how do you pipeline a processor, a
+little bit about memory systems.
+And, and, you suppose to know sort of how
+logic works or digital logic works.
+And then, in this class, to contrast,
+instead of learning how to build a very
+simplistic processor, we're going to learn
+how to build cutting edge modern day
+microprocessors.
+That's right, we're going to learn how to
+build things like this, or at least design
+things like this.
+So, this is a Core I7 from Intel.
+We, I guess, this is an original Core I7,
+we're now in the third generation of Core
+I7's standing in 2012 now.
+So, this is, this is pretty, pretty
+recent.
+And to give you an idea, to contract in
+that previous picture, which was 50,000
+transistors, this design is about 700
+million transistors.
+So, the complexity has gone up here a lot.
+That other processor, or the processors
+that you learned about in your computer
+organization class, there's a tiny little
+box up here.
+And have performance that's sort of
+equivalent to the size of the little tiny
+box relative to these, these, this big
+processor.
+So, we're gonna learn how to, instead of
+just building little tiny processors or
+toy processors, we're going to learn about
+how to build big processors and high
+performance processors.
+So, before I go down this list, I want to
+talk briefly about the course content of
+ELE 475 and the two main techniques to
+make processors go fast.
+So, how do we, how do we go about making
+processors go, go fast cuz people like
+their computing systems to run, run fast.
+Well, one is to exploit parallels,
+parallelism.
+So, we're going to figure out how to
+exploit lots of concurrent transistors, or
+concurrent parallelism in your program,
+and as you add more transitions or more
+parallelism.
+Hopefully, it will make your computing
+system go faster.
+So there, and there's different techniques
+on how to go after parallelism and they're
+not all explicit parallelism.
+So a lot of them are implicit parallelism.
+So, for instance, instructionable
+parallelism is a completely implicit
+concept.
+The programmer doesn't have to do
+anything.
+And then, the other main technique we can
+think about is just to do less work.
+So, if you're trying to do something and
+you look at let's say, an assembly line of
+someone building cars, well, you can
+either pipeline, and try to get pipeline
+parallels I mean, your assembly system or
+you can try to have multiple people
+building different cars at the same time.
+So, this all falls in the parallelism
+category.
+There's something else you can do if you
+want to make a car faster is you just take
+out steps or you take out components.
+So, you do less work.
+And one way to do less work, is, to have
+fancier software systems.
+So, we can have better compilers and
+runtime systems.
+And a lot of times, they can remove work.
+So, this is like the optimization pass in
+your compiler.
+If you turn on -03 or the optimization for
+GCC, it's going to try to remove
+instructions from your program, which are
+either redundant or not doing any useful
+work.
+Another great example of this, which
+people don't really think about as doing
+less work, but actually is, is something
+like a cache in your microprocessor.
+So, in your cache, it puts memory closer
+to the processor than main memory.
+Well, this is equivalent to, if you had an
+assembly system or, a, a, a production
+line of cars, and let's say, for every
+part you had to get, you had to walk down
+the street three blocks, get the part, and
+bring it close.
+Well, that's, that's pretty slow.
+It's doing a lot of work for each part
+that you need to go fetch.
+But, in a cache, you can actually put the
+data very close and by doing that, or put,
+put the parts very close, similar sorts of
+ideas here and car assembly is you can put
+a bin, if you will, of all of the parts
+you need to build the car and then just
+grab out of that bin.
+You're going to do less work, you'll do
+less walking.
+Similar sorts of things with caches.
+So, these are the two primary techniques
+that we're going to apply.
+So now, let's dive into the actual
+technical content of, of what we're going
+to learn in Computer Architecture, in this
+Computer Architecture class.
+And we'll categorize them as either doing
+less work or parallelism.
+So, the first, the, this, this, the first
+thing we're going to start off in this
+class talking about is we're going to talk
+about instruction level parallelism.
+So, we're going to look at superscalar
+processors, which can execute multiple
+instructions at the same time.
+And it's done implicitly from sequential
+code.
+And we're also going to study very long
+instruction word processors or what's
+called VLIW processors.
+We're going to hint a little bit about
+pipeline parallelism and look at how to
+build long, longish pipeline processors.
+We'll talk about advanced memory and cache
+systems.
+So, this has no parallelism in the word
+here, in the title here.
+So, what this is going to be, is this is
+going to be looking at doing less work.
+And we're going to look how you build
+memory systems that either bring the data
+closer or have higher bandwidth, and, and
+a lot of the implementation issues in
+building these advanced memory systems.
+Then, as the term goes on, we're going to
+be talking about data level parallelism.
+So, this is more explicit levels of
+parallelism.
+So, being, these are things like vector
+computers and graphics processor units, or
+general purpose graphics processor units,
+GPGPUs.
+And at the end of the course, we're going
+to talk about explicit threaded
+parallelism.
+And we'll be talking about multithreading,
+how do you build multiprocessor system so
+this is multiple chip, multiprocessor
+systems, multicore and many core systems
+and how do you interconnect all these
+different processors.
+Roughly, the first third of the course is
+going to be talking about
+construction-level parallelism.
+There's going to be sort of a middle
+third, which is going to talk about caches
+and little about data level parallelism,
+and then the last third is going to talk
+about more threaded levels of parallelism.
+But that's a very coarse cut of this

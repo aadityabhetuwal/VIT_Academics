@@ -1,0 +1,367 @@
+Okay, so Multiple Logical Communication 
+Channels. 
+What we just talked about with all these 
+different message types here, thus like, 
+the ten not drawn. 
+Can't all go on the same network at the 
+same time. 
+If you have one interconnection network 
+or one logical, excuse me, logical 
+network here. 
+You can end up with cases where you have 
+responses that get qued behind requests 
+that will create more traffic. 
+So, in these protocols we have multiple 
+phases of, of communication. 
+We send messages from point A to point B, 
+then from B to C, then from C back to B, 
+and then B back to A, or something like 
+that. 
+So, if you try to over lay this onto an 
+inner connection network, and you do head 
+of line processing. So you process the 
+message which is at the head of the que 
+first It's very common to have something 
+where you have a new response that sneaks 
+in. 
+Which is dependent on some other 
+transaction that's happening somewhere 
+else in the system. 
+And you're waiting for excuse me a new 
+request comes in that gets qued behind a 
+response. 
+Or excuse me, you have a new request that 
+comes in that is in front of a response 
+and all of a sudden you're going to have 
+a deadlock. 
+So, one way people go about solving this 
+is you look at all the different types of 
+messages that you have, message types 
+that you have, and you figure out which 
+types can coexist on the network at the 
+same time. 
+so good example here is a I think if you 
+look at a relatively basic cache 
+coherence protocol there's maybe twelve 
+different message types. 
+You can try to shrink that down to maybe 
+four, three or four different classes of 
+traffic. 
+That those classes of traffic when 
+intermixed will never introduce a 
+deadlock. 
+If you would be really safe you'd just 
+have twelve separate networks or twelve 
+different networks, 
+or twelve logical different networks. 
+But that's expensive to build, so people 
+try to come up with equivalence classes 
+of different traffic and then only have 
+that number of networks. 
+But you're going to have to segregate 
+these flows in different, logical or 
+physical channels to make sure you don't 
+have deadlock happening. 
+[COUGH] Another thing that I wanted to 
+point out here is we just distributed our 
+memory. 
+So we need to start worrying about the 
+memory ordering point or for given memory 
+address, where do you go and what order 
+do memory operations happen in? 
+So just like in a bus space protocol you 
+have some sort of arbitor which 
+determines the transaction or who wins 
+the bus. 
+In a directory based system, typically 
+the forth given address is the ultimate 
+other. 
+So two messages are coming in from 
+different course you go for right access 
+to a particular address. 
+One of them is going to get to the 
+directory first and what if we gets the 
+directory first, could win or estimately 
+will win. 
+You could think of, sometimes this could 
+be unfair. 
+So some of these systems you try to have 
+something which prevents the core, which 
+is close to the directory, always winning 
+access to that contended line we'll say. 
+So may have some sort of back off 
+protocol playing into effect there. 
+But this is what effectively guarantees 
+our atomicity is the directory allows, 
+guarantees that a particular line can 
+only be transitioning from one state to 
+another state at a given time. 
+So we have the directory as the ordering 
+point. 
+And whichever message gets there, gets to 
+the home directory first let's say wins. 
+Subsequent request for that line are 
+going to lose so what do you do on a 
+lose. 
+Well you probably, the directory's 
+probably going to want to send a negative 
+acknowledgement, or NACK. 
+It's going to say, or send a retry. 
+It's the same thing here. 
+It's going to say, I can't handle this 
+right now. 
+This line is currently being transitioned 
+already. 
+Someone else won the transitioning of 
+this line. 
+Go retry that transaction, the memory 
+transaction again in the future. 
+Now, this gets pretty complicated back at 
+the cache controller. 
+because it's going to get a retry, or a 
+NACK back. 
+It could potentially have a message 
+coming in for that exact same cache line. 
+It needs to give the directories message 
+priority in this case over the pipeline 
+the main processor. 
+So it's going to have to order that 
+after, it because the directory one the 
+directory is the ultimate ordering point 
+for the memory location. 
+Finally, you have to worry about forward 
+progress guarantees. 
+What I mean by this is, it's pretty easy 
+to build a memory system that you pull 
+the data into your cache. 
+Your cache control pull means your cache. 
+But before you're able to do load or 
+storage at that actual address, it gets 
+bumped out f your cache. 
+At all sign you have a cash line just 
+sort of bouncing between two cashes and 
+its a live lock scenario. 
+So you believes directory based coherence 
+systems and this also happens with bus 
+space protocols plus usually it'll be 
+less likely. 
+you have to have some sort of forward 
+progress guarantee. 
+And the reason is less likely is because 
+in a directory based system the 
+communication time is usually longer. 
+So the window of, of vulnerability is 
+longer. 
+We afford progress guarantee means that 
+once you get into your cache you need to 
+at least do one memory operation to it, 
+to guarantee you have won bef, before you 
+relinquish the memory back to the 
+directory control. 
+So, if you do, if you doing a load you're 
+actually reading your cache shared to the 
+actual one load. 
+And then you're allowed to cough it up, 
+so you don't respond back with a reply. 
+To, let's say, an invalidation request 
+from the directory control until you've 
+done your one memory transaction. 
+Or likewise, if you bring in a modify. 
+Do that one store before you, you cough 
+the data back up or release the data back 
+into the memory controller. 
+That's really important, to make sure you 
+have some forward progress in the system, 
+and don't end up with a live lock. 
+Okay so we're going to get into the, the 
+more futurey for future looking stuff 
+here. 
+We've been talking about what's called, a 
+full map directory, where there's a bit 
+processor core. 
+If you have 1,000 cores in the system, 
+that's a very large bit map. 
+And, it's pretty uncommon that a thousand 
+core in the system will all be reading 
+all of the data, or all of one particular 
+cache line. 
+So there might be wasteful and your 
+directory in a format directory grows at 
+order N. 
+So that's, that's not particularly good. 
+Hmm, so, people have looked into 
+different protocols here. 
+I just want to touch on this, this is 
+largely the area sort of research and 
+future directions of this. 
+One, one idea here is to have a limited 
+pointer based directory. 
+So instead of having a bit mask of the 
+share of list. 
+So its right this is the share of list. 
+So its sort of a bit mask of the share of 
+list you have base two encoding numbers 
+up to some, some point. 
+This is why its called limited directory 
+or limited point of directory, because 
+you can't have all the nodes in the 
+system on the list. 
+There is none of entries here. 
+But you can name them because you have 
+base two encoding of the actual number. 
+And if you get bigger this in this entire 
+list, so lets say you'll have one, two, 
+three, four, five entries an over sense 
+six sharers, six mead owing copies of the 
+list want to be taken. 
+Usually this is an overflow bit here 
+which says its more than six and when its 
+more than six and it will share and also 
+in a transition to modified. 
+You're going to just send a broadcast 
+message or send a invalidate every single 
+of cache in the system. 
+But usually this could be a good trade 
+off, because it's pretty uncommon to have 
+extremely widely shared lines. 
+So it's an interesting trade-off. 
+There are storage space, versus sending 
+more messages in the system. 
+Like wise there's interesting protocol 
+here called limitless. 
+Where same idea, it's a limited directory 
+and overflow bit, but if it overflows you 
+start to keep the directory, or you start 
+to keep the sharer list in software in a 
+structure in main memory. 
+And this requires you to basically have 
+very fast traps such that when this 
+happens because your, your servicing 
+cache line here you interrupt the main 
+processor and the main processor provides 
+the rest of the sharer list for instance, 
+if the sharer list gets overflowed. 
+So, there's, and there's a bunch of stuff 
+in between in some future, future 
+research that's still being done actively 
+in this space. 
+Beyond simple directory coherence, we 
+have some pretty cool on-chip coherence. 
+This is why this is actually being 
+studied a lot right now, is people built 
+this massively parallel directory based 
+machines in the past. 
+They got some use, they were very good 
+for some applications. 
+But now we are starting to put more and 
+more cores on to a given chip, so we 
+start to see on-chip coherence. 
+And figuring out how to leverage, 
+the fast on-chip communication alongst 
+directories to make more interesting 
+coherence protocols. 
+There is something called COMA systems or 
+Cache Only Memory Architectures, where 
+instead of having a data in main memory, 
+you don't have main memory ever and the 
+directories move around. 
+before beyond scope of the scores worry 
+about the KSR one if you want to go about 
+that kind a score research one and then 
+also this real had a scale of the sharer 
+list is active. 
+Briefly wanted to talk about the most 
+up-to-date versions of these things. 
+We have the SGI UV 1000 which is a 
+descendant of the Origin and the Origin 
+2000 machines from SGI, lots of cores 
+here, 
+2560 cores that are all kept cache 
+coherent. 
+They use a directory based coherence 
+protocol here. 
+It's very non uniform, and it's all 
+connected together by a multi-chassis 
+treaty tour. 
+So, this is one chassis, there's actually 
+up to eight of these. 
+Princeton has one of these in the HPCRC 
+centre, that I think is four chassis, 
+which is sort of half the size of the 
+maximum. 
+[COUGH] An on-chip example here is the 
+TILE64Pro had 64 cores. 
+And each of the cores, itself is a 
+directory home and it runs a directory 
+based protocol. 
+And I was talking about dividing 
+communication traffic into different 
+flows. 
+Well there were three different memory 
+networks here. 
+So we had to do, come up with three 
+different classes of traffic, that 
+themselves would not deadlock themselves, 
+if you will. 
+And also there's four memory controllers, 
+which is connected into our interconnect 
+system. 
+And because of this, the communication 
+lane sees different. 
+A core here talking to the American 
+controller is very fast, whereas a core 
+there takes longer. 
+But maybe this core is close to that 
+memory controller. 
+So non, non-uniformity here. 
+Okay, 
+so this is our last slide of the term 
+here, 
+Beyond ELE 475. 
+If you want to go on and do more. 
+[COUGH] Well start reading some papers 
+from different computer architecture 
+conferences. 
+The proceedings of International 
+Symposium on Computer Architecture, ISCA 
+is a good place to start. 
+That's probably the top, major 
+architecture conference in the field. 
+The International Symposium on 
+Microarchitecture is the top 
+Microarchitecture conference. 
+So if you're trying to look inside of a 
+processor, and some of the smaller 
+microtechtectural details. 
+ASPLOS, Architectural Support for 
+Programming Languages and Operating 
+Systems has lot of different processor 
+between software and hardware's radio 
+conference. 
+And HPCA looks at or used to look up at a 
+higher performing high, big computers, 
+high performance computer systems. 
+but now lot of normal computer operation 
+ends up in a compensawsive. 
+I would have CD audio. 
+Well go to research. 
+Built in chips, built some test 
+[INAUDIBLE] FPGA learn more about 
+parallel computer architecture and, in 
+deed you can come back in the Fall. 
+and take ELE 580A which is going to be a 
+graduate level primary sources paper 
+reading course. 
+More traditional graduate course where 
+you'll learn about all the different 
+parallel computing systems. 
+So this is called parallel computation 
+because it's both parallel computer 
+architecture and some programming models 
+that hook together without in parallel 
+programming together with the 
+architectures cause they go, they go very 
+hand in hand. 
+So let's stop here for today. 
+And stop here for the course. 
+

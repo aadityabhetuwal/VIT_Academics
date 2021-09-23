@@ -1,0 +1,294 @@
+Let's, think about the next optimization.
+And the next optimization is, trying to
+get data in the cache early.
+So this kind of the one technique where
+we're going to think about trying to
+combat compulsory misses, or first time
+misses.
+And what we do is we actually go and fetch
+data before we need, need it.
+And we can do this in a couple different
+ways.
+We can do this with just hardware doing
+it.
+We can do it with software doing it.
+We do it with mixed cues, or a hardware,
+and software does it.
+And this really affects our compulsory
+misses.
+The, the new care actually wanted to say
+something about instruction fetches, are
+easier to predict than, data cache apps,
+It seems. And you'll actually see this
+sometimes show up in processors, where
+processors will have.
+A instruction prefetcher but will not have
+data protection, and it's because
+instructions a lot of times doesn't
+execute instructions in a row; there sort
+of marking valid instruction and they just
+keep falling through.
+So it's very easy to predict with high
+probability if you're executing let's say
+code at one block the actual right next
+block will be access.
+So it's just sort of the extreme of
+spatial caliber.
+So you fetch, let's say block one, you
+will go fetch to block two of your
+instructions.
+So you both read effective prefetcher for
+instructions.
+So, nothing is free in life.
+Prefetching can hurt you.
+So star of garbage is here.
+If you really want your prefetching, of
+data let's say from your L2, your L1, to
+increase your probability that you are
+going to find data.
+But, if you go and you pull in data, it
+just wasn't useful.
+You're actually going to pollute the cache
+or effectively decrease the capacity of
+the cache with just extra data in there
+that wasn't needed.
+So, you have to be very careful with
+prefetching, because it actually has the
+ability to get rid of compulsory misses,
+but it also has the ability to hurt your
+performance in particular. Timeliness is,
+is sort of an important issue here is
+that,
+If you go and prefetch too late, the data,
+that's not really useful.
+What do we mean by too late?
+Well, if you were to do a prefetch and the
+exact, next instruction is the load that
+was going to use the data that you just
+prefetched, it's not going to save you
+almost any time.
+It might save you one cycle, so that's not
+really useful.
+But if you prefetch too early and then it
+gets kicked out by some other piece of
+data, it didn't do you any good either.
+It just wasted bandwidth up to your next
+level of capture,
+To the, the nice little cache RP. So, it's
+a really tricky thing to get right here,
+it's prefetching, especially within this
+time. And, of course, this, this, yeah,
+this, this, this the loose, both the cache
+data and it just increases the bandwidth
+out to, out to here.
+So, you need to make sure that you're not
+using extra bandwidth that you could be
+using for something else.
+So, if you have a demand list from 01 or
+02, you want to make sure that, that
+always takes precedence over in
+prefetches. If we go look instruction
+prefetching in particular.
+As I said this is, this is actually
+usually a benefit.
+Because there's a high correlation as you
+go request block i.
+You're going to go request block I plus
+one if it's not already in your cache.
+When you go to do this though, though you
+just don't want to go blindly request I
+plus one for the next level cache.
+You probably want to check the instruction
+cache to make sure you already don't.
+You have five plus one, because otherwise
+you're just sort of wasting extra
+bandwidth you shouldn't be using against
+altitude.
+Okay, so this is interesting point here,
+this is interesting optimization, on the
+optimization of prefetching.
+Instead of just always filling it, let's
+say a subsequent block into the L1 you
+could do a little buffer here. This is
+kind of like a.
+It's not kind of victim cache, but it's
+kind of an extra little cache on the side
+or a film buffer or stream buffer.
+And, what's nice about this is, you could
+basically fetch, let's say, I, I plus one,
+put both of them in here.
+They are trying to maybe even fetch plus
+two, you are wasting extra bandwidth
+potentially here, or use some extra
+bandwidth.
+What if you, let's say you do a cache
+induce for the next is already here.
+Just try to execute right after that, or.
+Right out of the stream buffer or the
+prefetch buffer.
+And this is actually a common theme which
+is both using the instruction side and
+sometimes the DS side, where people will
+actually prefetch into a prefetch buffer,
+and that will be the cache, and they're
+just trying to do this to prevent
+pollution in the cache of daily dope
+action liberty.
+But the data that's in this prefetch
+buffer, stream buffer, has a high
+probability of being used.
+So, it's probably,
+A good, good idea if you have one of
+those.
+Okay.
+So what are good heuristics on the data
+side?
+A couple, couple different heuristics
+here, The most basic one is
+predeterminance. So if you miss for block
+b, go fetch block e1.
+Plus one. This is not same on access.
+So if you go touch block e, somewhere in
+the cache.
+This is not saying, go get the next block.
+Instead, this is saying, if you miss block
+b, go get the next line.
+And that actually people built a lot of
+those.
+And that actually it's, D is interesting.
+another.
+A little bit, what we wanted to be a
+little more careful with is the one when
+you're saying, "If I access block B, in
+the cache, it'll take hits in our O1
+cache.
+Should we go and preemptively try to get B
+plus one?" You gotta be careful with this
+one.
+Cuz you, you effectively can very easily
+be pulling in lots of data that you don't
+really need into your cache at this point
+because you, you basically, at every
+single load we'll say, it sits in your L1
+cache, you're very easily be pulling in
+lots of extra data, so you have to be a
+little bit, a little bit apprehensive
+about doing this one if you want to be
+more aggressive, and you have big caches
+though, you can be more aggressive.
+Cuz just as we sort of, pursuing asset to
+look for with more data.
+So, if you go look at something like the
+paid for and beyond, so that's in your
+desktop, possibly stay the Core i7, they
+actually have strive protect, strident
+prefetch. So they will detect a program
+that is, let's say, accessing sort of,
+data will give you offsets. Right,
+Forward. So, let's say, you access
+location one, location of 128 plus one.
+Location 256 plus one.
+And you're basically just sort of moving
+through data.
+But not just looking for the next line,
+after the next line, after the next line.
+But instead you're sort of looking with a
+given stride.
+This is actually pretty common when you
+think about structures laid out in memory.
+If you think of a C style structure in an
+array.
+And then you're all going to be packed.
+And they're going to be packed by the size
+of the structure.
+As you go touch, let's say, the first
+field of the structure.
+So you have the structure, inside of
+there, there's, an int, a pointer a
+floating point number.
+And you have a loop, which says, increment
+the first int, we'll say, in the
+structure.
+You're going to be striding through that
+memory.
+You're going to be touching the same
+location in memory, as you sort of execute
+that loop.
+So what you do is you have something
+that's called a stride detector.
+And it looks at the memory references you
+do and tries to see if they are correlated
+somehow.
+And given the correlation it will predict,
+oh, if you just go and access let's say,
+address zero, address eight.
+Hold on a second, exactly.
+You just, you, you access address zero,
+you access address 128, access address
+256.
+It'll predict and say I bet you they are
+going to go back to they are going to
+access 128 plus 256.
+And just go pull that interim.
+Pull that address.
+So they set the Pentium IV, and the Intel
+clusters having stride detectors.
+The goal is actually the power of five.
+It has eight independent stride pre-fetch
+detectors.
+So this they seem to get pretty
+sophisticated.
+So you can actually, go pull in lots of
+extra data.
+And this is important in sort of, the care
+and feeding of the processor, so you don't
+have to wait for the cache miss.
+You can also do this in software, just as
+well as in hardware.
+So if you go and look at a software
+pre-fetch, you can add extra instructions
+to your I save, which say, go get the data
+early.
+And this is kind of the, akin, you know,
+we have looked at doing these and Arbor,
+Arbor and super Scalars.
+And VRW's did a lot of that stuff in
+software.
+Well, you could do prefetching in
+software.
+But I should point out, to effectively do
+this pre-fetching in software, we changed
+the ISA.
+We added some sort of pre-fetch
+instruction.
+The other little trick that we had to do
+here.
+Oh so doing this loop, I just wanted to
+say what's going on here is, we're adding
+A of I. First we multiply A of I times B
+of I.
+Well we're actually prefetching the
+subsequent nuclear agents regular
+pretecthing the subsequent nuclear agents
+data probe.
+So you can do the speed dutch after the
+subsequent loop iteration. But, you need
+to do, have a few little twittles here.
+You probably need to have a non-blocking
+memory system.
+Because otherwise, you need to basically
+some way that this prefetch can go out to
+the memory system and not just stall.
+Because otherwise, it didn't help you at
+all.
+So what we talked about non-blocking and
+out of the ordinary systems in this next
+lecture.
+But this Sauper prefetch, you probably
+need something like that.
+We're out of time today so I'll pick this
+up, next time with software pre-fetching.
+And then some other software optimization
+techniques,
+And we'll start talking about out of order
+limit systems.

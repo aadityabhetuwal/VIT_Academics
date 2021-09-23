@@ -1,0 +1,418 @@
+Okay.
+Welcome to today's ELE 475.
+So today, we are going to be moving to a
+little bit different topic. We're going
+back to one of the topics that we talked
+about at the beginning of class in Lecture
+three.
+We're going to talk about caches, and
+we're spending two lectures in caches
+because they are really important to
+performance.
+In the, we'll say, in the 90s,' 80s' and
+90s,' a lot of, lot of computer
+architectural papers and a lot of effort
+were spent trying to use more and more
+transistors, which Moors Law was giving
+the computer architect and applying them
+to either build bigger caches,
+Fancier caches, more set associative
+caches, harder will say, ways to think
+about caches all for higher performance.
+Cough And we'll be continuing to videotape
+these lectures and put them online for
+everybody.
+And so let's, let's start of looking what
+we're doing today.
+So, we're going to start off with a litlle
+bit of review from Lecture three.
+We're going to talk about the three Cs of
+caches.
+So, capacity,
+Conflict, and compulsory misses, we'll be
+talking about the basic cache optimization
+we had talked about in Lecture three,
+which are mostly kind of, make your cache
+bigger, make your cache more highly
+associative somehow to reduce these three
+C and then we're going to start talking
+about much more advanced cache
+organizations and optimizations we can
+make. So, let's briefly talk about it.
+It's sort of a hodgepodge.
+And this is kind of just the nature of the
+beast.
+There's lots of little things that sort of
+add up to make either the cache more
+effective or integrate the cache into your
+pipeline more, more efficient.
+And this is only the beginning.
+We will have about five or six more topics
+the next time.
+But let's start off by looking at what
+we're going to be talking about today.
+So, we're going to look at how to build,
+how to pipeline a cache right.
+So, one of the things we haven't really
+thought about when we were working on our
+labs is we do it right to the cache and it
+just sort of magically gets stored there.
+Or, or, but if you're actually trying to
+build the real cache, you have to look at
+the tag data and then you have to write
+the data because you don't want to be
+writing something into the cache if it's,
+let's say, a different piece of data is in
+that same location.
+So, you need to check the tag first.
+And we'll talk about some ways to optimize
+that.
+We'll talk about a write buffer.
+A write buffer is a extra data structure
+we can put after our first level of cache,
+which can hold victims.
+So, victim is a line or a cache block,
+that is being evicted from the cache.
+And if you're going to, let's say,
+Replace something in the cache, you need
+some place to put the old data and, or the
+data that was, let's say, dirty in the
+cache from before.
+And the slow way to do this with things,
+we start with that up to this point is you
+take that line and you wait for it to get
+into either memory or the next level of
+cache.
+But if you want to go faster, you can
+think about trying to store in some place
+inside the structure and we'll say, write
+to the next level of cache or write to the
+main memory in the background.
+We'll talk about multi-level caches.
+So, multi-level caches, meaning you have a
+level one, a level two, a level three,
+maybe a level four cache, then main
+memory, and why this can improve
+performance.
+We'll talk about victim caches.
+Victim caches this is the idea that can
+basically increase the associativity of a
+cache by putting a low associative cache
+or maybe a direct mapped cache next to a
+cache with very high associativity.
+So, maybe like a fully associative cache
+and they use them together to basically
+implement a, a pseudo higher associativity
+cache.
+Cough We're going to talk today about
+prefetching, both hardware and software.
+So, prefetching is the act of either a
+piece of hardware or software trying to
+get data that you need early into your
+cache.
+We'll talk about how to increase the
+bandwidth to your cache.
+So, up to this point, we've looked at
+doing one memory operation per cycle.
+Well, we built machines that can execute
+two operations per cycle, and on your
+exam, you had a machine which could
+execute three operations per cycle.
+Wouldn't it be great to be able to do
+three memory operations per cycle versus
+just three ALU operations?
+So, how do we, how do we go about doing
+that?
+Well, we can put multiple ports on this
+structure, but that's not particularly
+great for performance from, from a clock
+perspective, because it makes the
+structure very large.
+So, you can start to think about banking
+which we'll talk about today as a, as a
+mechanism to increase the bandwidth.
+And then, we'll talk a bunch, about a
+bunch of different compiler optimizations
+or software optimizations that a compiler
+can do to restructure code to have better
+cache performance.
+So, this is just what we're talking about
+today.
+Next lecture, we're going to continue on
+this.
+And the main topic of next lecture as far
+as events, cache optimizations are
+concerned,
+Is we're gonna be talking about how to
+build caches which can deal with out of
+order memory or can deal with the ability
+to have loads and stores which hit in the
+cache, or loads and stores which miss in
+the cache, and then you can continue on
+past that point.
+So, in our sequential machine up to this
+point, we've all, even in our out of order
+machines we were talking about, when you
+took a cache miss, you basically had to
+stop the machine.
+Cuz you have to wait for the data to come
+back cuz you didn't know if the next
+instruction was going to need this data or
+the next, maybe the next load will need
+that data or something like that.
+So, if you want to try to go out of order,
+you can start thinking about that and
+that's what the, the bulk of next of next
+lecture will be about, is how you go out
+of order in your memory system or this
+what, this is largely sometimes called is
+a nonblocking cache.
+Cough And I should point out that a
+nonblocking cache is actually not just for
+out of order processors.
+This is sometimes good for in order
+processors.
+So, if you have a in order processor, the
+instruction sequence is going in order but
+you don't want to, let's say, wait when
+you take a cache miss.
+You could actually have the memory system
+be out of order with the pipeline be in
+order.
+That's actually a pretty common thing for
+people to do.
+Okay, so here, here let's go look at our
+review.
+We have processor.
+And in our basic machine, we go out to
+main memory when we want to get data.
+Main memory is big.
+It holds everything, but it can be slow.
+So, we put a cache in front of that, which
+keeps a subset of all the data in the main
+memory.
+And it has a faster time and can take
+something, for instance, like this example
+here,
+Where you go to access memory, and you
+have to wait for the memory to come back.
+And it can shrink this time.
+If we look at that as sort of, you know,
+average memory access,
+It's your hit time plus your miss time
+times your or assume your miss rate times
+your miss penalty.
+We, this is just review.
+Okay.
+So, going back to the three Cs, here we
+have a four-block cache. So, say, to a
+side of associated cache and let's look at
+one of the major types of misses you can
+have, or the, the only types of misses you
+can have, you can have a compulsory miss.
+So, this just means that's the first time
+any, any portion of your program has gone
+to go access the data.
+There's no real way around this.
+Maybe you can prefetch, but, you know,
+you're not really going to magically be
+able to get the data in there early,
+unless you have some sort of aggressive
+prefetching mechanism.
+Capacity.
+So, in this cache here, we have four
+blocks.
+If you're looping over, let's say, five
+cache box worth of data,
+You're basically not going to ever be able
+to fit all the data in this cache or in
+more common cases, let's say, you have a
+cache that's eight kilobytes cache, that's
+your 01 cache and you're trying to add two
+arrays where each array is sixteen
+kilobytes.
+Well, that means 32 kilobytes of data,
+maybe even another eight kilobytes of data
+if you're not doing it in place for the
+result matrix and it's just not going to
+fit in your cache.
+You have capacity problems and things are
+just basically going to be continually
+kicked out of your cache.
+Conflict means that you don't actually
+have you, you have enough space in your
+cache, but roo many different loads or
+stores you're trying to access alias to
+the same location in your cache.
+So, let's say, you're trying to loop over
+three different cache blocks or trying to
+access three different cache blocks which
+all alias to one set in the cache.
+And effectively you can only fit two
+things and you're trying to fit three
+things in two spots.
+And this is kind of a pigeon hole
+principle here comes, comes up and says,
+no you just can't fit three things in two
+boxes.
+So, we get conflicts.
+Okay, so still, still review here.
+Let's, let's take a look at one way to
+reduce our hit time.
+Hit time is just, the, the fast case.
+That's actually you find the data in your
+cache.
+This is the good case.
+But for hit time,
+One way to make it lower, this is actually
+in nanoseconds, is just to have a smaller
+cache or a simpler cache.
+So, small, simple caches are in this
+darwing here.
+We have time on the vertical axis.
+On the x-axis we have different cache
+sizes.
+And the 16-kilobyte cache is faster than,
+let's say, the 256-kilobyte cache.
+So, if you make a smaller cache, you can
+go faster.
+And we've seen examples of this, actually,
+in the Pentium four when we were talking
+about super pipelining.
+In the Pentium four, they had a very small
+cache and the real reason they did that is
+because they had such a high clock
+frequency that they couldn't put anything
+bigger and still fit it in one clock
+cycle.
+You know, in a perfect world, if your
+clock cycle was, was slower, you could try
+to fit some bigger cache in there.
+So, you can try to reduce the miss rate.
+there's a couple different techniques on
+how to reduce the miss rate and this is,
+this is the advance technique which we
+will talk about later.
+But one of the basic ones is to change the
+block size.
+As you make the box size larger, you'll be
+pulling in more data so you'll get spatial
+locality and hopefully, you'll be pulling
+in data that you actually need.
+So, the, you know, the, the positives of
+this is you're really going to have less
+tag overhead if you have a larger block
+size or cache line size.
+Because for the same amount of data, let's
+say, you got a 64-byte line versus a
+128-byte line, you're going to have half
+as much tag sort of cost or, or area
+dedicated to the tags.
+Cough And, and usually, as you go to
+larger block sizes,
+This is good for the farther out layers of
+your cache, because you can basically
+burst more data in.
+So if you look at something like a DDR2
+memory or DDR3 memories.
+This is the traditional DRAM technologies
+that we are using today.
+They want to actually, their block size,
+their line size is very, very long, sort
+of thousands of bits. And if you have a
+longer block size, you can use all those
+bits and pull them all into your cache in
+one big chunk, and you can use wider
+buses.
+Cough Downside?
+You can waste bandwidths.
+If you have a very large block, and you
+don't actually use all the data in the
+block,
+Let's say, you use one byte out of your,
+out of 256-byte cache,
+You're just pulling all the data and
+you're wasting lots of off chip bandwidths
+for no real good reason.
+And if you have fewer blocks,
+You're going to have less locations to put
+data for the fixed sized cache, so you
+might actually increase your conflict
+rate.
+So, this, this chart here,
+What we're trying to show this is from
+your book,
+We're plotting the block size versus the
+miss rate.
+And you want the lowest miss rate
+possible.
+So, if you start here with a 16-byte block
+or 16-byte cache size or cache line.
+As you increase it, the miss rate actually
+goes down.
+But at some point, you end up wasting a
+lot of bandwidth cuz you don't have enough
+of, of the, the program will ,, it does
+not have enough spatial locality.
+So, you actually just end up pulling in
+more data than you need.
+Cough You also could potentially have more
+conflicts.
+So it starts to go up.
+So, there's sort of a minimum here.
+Traditionally, people have thought about
+this as actually, increasing block size,
+usually increases your performance for
+most applications.
+But that's up to a limit.
+And the reason why people traditionally
+thought this is, cache size is used to be
+sort of smaller or I mean, cache block
+sizes or line sizes used to be smaller and
+they sort of got, starting getting bigger,
+and then people really weren't looking way
+out here.
+But now that we've looked at our way out
+here, it does, it does get worse for some
+applications as you get farther out.
+Okay.
+So, another way we,
+Just the basic ways we can reduce miss
+rate,
+You could just have a bigger cache.
+This one is great.
+Bigger cache, lower miss rate.
+You got to pay area for this.
+And potentially it takes longer to access
+this larger cache, as we'd seen in the
+first graph that we showed today.
+I'm not going to really talk about this,
+but empirical rule of thumb.
+If the cache size is doubled, your miss
+rate usually goes down by a square root of
+two.
+It's just empirical, people have found,
+but good rule of thumb to know.
+Same, same graph, tells a different story.
+If you go to a higher associativity, your
+miss rate goes down.
+So, if you have a direct mapped cache, and
+you go to a two-way set of cache,
+And this rate goes down.
+And the traditional sort of rule of thumb
+about this is if you have a direct mapped
+cache of size n.
+It has roughly the same miss rate as a
+two-way set of associative cache that is
+half the size.
+You might say, wow that's, that's pretty
+amazing so if I just continually apply
+that over and over again, it doesn't quite
+work.
+Laugh it also gets very hard to actually
+build very highly associative caches cuz
+your, your, your tag check becomes pretty
+hard.
+Because if you have to check against all
+different places in the cache, it could be
+imparallel, and that becomes hard.

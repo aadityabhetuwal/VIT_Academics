@@ -1,0 +1,472 @@
+So we started last time, this is where we 
+left off was talking about topologies. 
+Now we went through this really fast, but 
+I wanted to go into a little more detail 
+here. 
+So far, we've, in this class, we've been 
+talking about buses. 
+And actually buses are a type of 
+interconnection network. 
+So a multi-drop bus, where everyone just 
+sort of screams, is a broadcast network. 
+And it is, it is a type of 
+interconnection network. 
+But it may not have the best properties. 
+It may not have the best bandwidth, 
+and it might impact your clock frequency, 
+so it might even impact your latency, 
+depending on how you go about 
+implementing one of these things. 
+So sort of the next step away from 
+something like a, a bus is actually 
+something like a pipeline bus, 
+where you start to put registers in along 
+the way. 
+And now you can have nearest neighbor 
+communication. 
+Let's say one is talking to two, and 
+three is talking to four at the same 
+time. 
+But you couldn't do that when everyone 
+was shouting to each other, as only one, 
+one, entities allowed to talk on this 
+network at a time. 
+We'll say. 
+So we start thinking about that. 
+And we can actually make some more 
+advanced versions of these. 
+We can start to think about things like 
+toruses, where we'll take the end here 
+and connect it around. 
+And this is a one-dimensional torus, or 
+many times is known as a ring. 
+one thing I wanted to point out about 
+this is if you look at the naive ring 
+implementation, and if you think of these 
+are, as wires, you would say, 'Well, this 
+is interesting. 
+If I have a thousand nodes in my ring.' 
+All of let's think about that. 
+One, two, three, four. 
+Yep, okay. 
+If you have 1000 nodes per ring. 
+999 of'em are going to have very short 
+links, and then one of the links is 
+going to be super, super long, it's 
+going to go from this end all the way to 
+that end like this is drawn. 
+Hm. 
+Well that's, that's not super great. 
+communally, people have actually thought 
+of fancy ways to fold tauruses into the, 
+let's say if this is a 1-D torus into a 
+1-D space, 
+and minimize the wire lay, lengths. 
+So actually I drew a picture here to show 
+this. 
+If you remember and stagger the you 
+connec-, the nodes here. 
+This is the exact same 1-D torus as we 
+drew here. 
+Except now all the lengths are equally 
+equidistant or equal length. 
+Except they're twice the length as they 
+were before. 
+So, you can actually fold a torus into 
+the same oh, oh, for instance, an 
+n-dimensional torus into n-dimensional 
+space, by doubling each the lengths, by 
+doing this cool inner leaving trick. 
+And this also applies for 2D, 3D, 4D 
+Tauruses. 
+Etc. 
+You can, you can come up with some 
+ordering and numbering which will 
+actually, interleave like that. 
+Now having said that, it may be 
+challenging to build a four dimensional 
+Taurus in three space. 
+And fortunately, I live in three 
+dimensional space, and I'm hoping you 
+guys do too. 
+and if you, if you're like me, and you 
+live in three dimensional space. 
+It can be hard to go build five 
+dimensional things in three dimensional 
+space. 
+We'll talk about that in a minute. 
+But I just want to show this cool trick 
+that you can actually. 
+Full day. 
+1-dimensional Taurus into 1-dimensional 
+space and not have a super long link. 
+Okay so now we can start to think about. 
+Actually before, before we go on to that 
+lets, lets think about the, the limits of 
+this. 
+If we start to go to a 1,000. 
+Long torus. 
+Or a thousand 1d ringed or 1d torus. 
+Unfortunately this does not, the amount 
+of sort of bandwidth that you cut through 
+here, let's say these two links here does 
+not go up as we add nodes. 
+And a good property of a network or inter 
+connection network, is that as you add 
+more people communicating on the network, 
+or more entities communicating on the 
+network, you probably want to be able to 
+add more bandwidth. 
+And you can say, well I can make the, the 
+links wider, 
+but that only helps so much. 
+I can make the link faster, but it only 
+helps so much. 
+So this makes us think about having 
+different topologies. 
+So we can start to go to higher 
+dimensioned topologies. 
+So we can start to use 2D topologies, 
+or 3D. 
+and you can see here, here as we have 
+lets say 16 nodes arranged in a 
+2-dimensional mesh, 
+versus, here we have a 2D torus. 
+And the difference between the 2D mesh 
+and the 2D torus is that there's what's 
+called end around in our, in the torus. 
+And that makes the routing from here to 
+there much, much faster, 
+and effectively, we'll cut the, average 
+routing time, or average routing, excuse 
+me, 
+average, hop count by a half. 
+Because you can go either way now, and go 
+around the ends. 
+Sometimes, these 2D toruses are called, a 
+2D mesh with end around. 
+That means it's a torus. 
+just, I just wanted to throw that 
+nomenclature out there, because sometimes 
+you'll see, you'll see both. 
+A good example of a simple routing 
+protocol is if you're at this node here. 
+And you want to communicate some data you 
+can send the data in all directions. 
+And then everyone else sends it in all 
+directions. 
+And everyone else sends it in all 
+directions. 
+And it'll just flood the network, and 
+it'll get everywhere. 
+And you're guaranteed that it's going to 
+at least get to the receiver, 
+and you have some guarantee that when it 
+gets to the receiver, the receiver sees 
+the, the packet and takes it off. 
+Now that may not be what you want to do. 
+[LAUGH]. 
+That's, that's probably not low power, 
+and it's probably going to cost a lot of 
+congestion on your network, 
+but you may want to think about a 
+flooding protocol. 
+Okay, so wherever there is 2D we can 
+start to go to 3D. 
+So here we have a 3-dimensional cube. 
+Sort of. 
+It's the best I could draw. 
+It's, it's hard to draw 3-dimensional 
+things on 2-dimensional space. 
+And if, if we had 3D space I could have 
+drawn this much cooler. 
+so this is a hypercube. 
+Hope these are actually hypercubes. 
+So, all the hypercube is, is it's saying 
+that the number of the mentions you have 
+[COUGH]. 
+is equal to the number, or the degree or 
+the outbound links of a, of a, of a node 
+in the, in here. 
+So, if you look at this node, we have a 
+three dimensional hypercube. 
+So it can go this direction, that 
+direction, or that direction. 
+Every node has a out degree of three, or 
+a connectivity of three. 
+Here, we have a four dimens, a four 
+dimensional cube, but this is, by 
+definition, a hyper cube. 
+So, because, if you look at any given 
+point here. 
+So, we're going to define a hyper cube as 
+the out degree, of the nodes is equal to 
+the dimension of, of the, the links. 
+And, you can't go build here a, if you 
+were to add one more node to the system, 
+[COUGH] or some other. 
+Let's say you were to scale this out in 
+some direction, 
+you would actually be increasing, the 
+degree of a node by adding more, more 
+nodes. 
+But not to everybody, equally, 
+so not be a, a hypercube. 
+So if you were to build on a, something 
+like this network here, this is, this is 
+not strictly a hypercube because the 
+degree of I'll say this note here is not 
+equal to the degree of, well actually you 
+could just stick with that. 
+The degree is equal to the degree of the 
+other places, but we've effectively 
+increased the diameter of one of the 
+dimensions such that there's not the 
+routing distance is longer now for this 
+number of nodes. 
+If you were to go to a higher dimensional 
+design, you could actually reduce the, 
+the latency for each one of these nodes 
+in something that's got three 
+dimensional, three area three q, which 
+we'll talk about in a minute. 
+But here we have a four dimensional cube, 
+and what's nice about this is the number 
+of hops to get from here to anywhere else 
+is quite low. 
+So let's, let's, let's think where the 
+farthest point in, in this. 
+Cube is going to be. 
+So it's going to be, let's think, is it 
+here? 
+Or is it here? 
+One, two, three. 
+No, it's the other one. 
+Okay, so it's going to be one, two, 
+three, four to get to there. 
+Is going to be the farthest number of 
+hops. 
+So we can think about having these higher 
+dimensional systems. 
+Now, as may be readily apparent but I'll 
+say it anyway, if you try to build a five 
+dimensional hyper cube in three 
+dimensional space some of the wires are 
+going to get long. 
+Because you can't fold five dimensional 
+space into three dimensional space. 
+You might be able to span a 4-dimensional 
+space into a 3-dimensional space with 
+not, not too bad. 
+But there's kind of this good rule of 
+thumb when you're building networks that 
+you probably don't want to be building a 
+N, 
+you probably want to a map let's say an 
+N-dimensional network into N-dimensional 
+space. 
+Trying to map higher is painful, 
+trying to map much, much higher is very 
+painful. 
+The benefits though is that, you have to 
+have fewer routing, hops to get to be 
+able to get wherever you're going, in the 
+higher dimension cube. 
+Now, I want to just throw this one up 
+here because this is an interesting 
+topology. 
+Just connect everything to everything. 
+This seems great, we should all build 
+these networks, [COUGH], unfortunately 
+let's think about trying to put this 
+network in three space if we have 1000 
+nodes. 
+Well, what that means is, if you have 
+1000 nodes. 
+You're going to, each node is need, 
+you're going to need to have 999 outbound 
+connections. 
+And 999 inbound connections. 
+So when you go to build this, you might 
+be able to build this, sort of, in a, 
+outside of a sphere. 
+Or, sort of, a big wiring mess on the 
+inside. 
+that's pretty hard to do at, for, for 
+large numbers of nodes. 
+For smalls numbers of nodes, something 
+like a fully connected crossbar, or 
+what's also known as a star topology, 
+will probably work fine. 
+But 
+And in fact if you cut it sort of across 
+the middle of the network here, which 
+we'll talk about in a second. 
+It has very good bandwidth. 
+Okay, a few other things you guys should 
+know about from a terminology 
+perspective. 
+[COUGH]. 
+The networks that I've drawn to this 
+point. 
+On what are called direct networks. 
+Which means that the nodes have some type 
+of router built into 'em. 
+You could also, and people, plenty of 
+people build this, is they build networks 
+where the nodes do not have routers built 
+into them, but there's a multistage 
+network or some sort of network in 
+between the nodes. 
+So a good example of this actually is 
+something like your Internet if you will. 
+There you have computer nodes, and 
+computers are not doing the routing 
+themselves. 
+Instead they send it out to a what we'll 
+call an Ethernet switch, and the Ethernet 
+switch is lets say one of these boxes 
+here in the middle. 
+And that makes a decision and sends it on 
+further. 
+It could be a, a internet router, could 
+be in the middle here also. 
+And the analog in computer architecture, 
+of what we're building is, you can think 
+of these, building these massively 
+parallel machines. 
+Something like a, massively parallel Cray 
+machine, or something like that. 
+They actually have multi stage networks 
+in the middle here, and all the nodes 
+kind of sit on the outside. 
+Note the way I numbered this, this is the 
+same thing as that, but I just didn't 
+want to draw all the wires going around. 
+So, here, we're sort of drawing as if 
+data's flowing strictly from left to 
+right. 
+[COUGH] And what we did here is we have 
+eight nodes. 
+And, what you see here is there's, log 
+two, number of stages here. 
+If you have. 
+Two to one switches along the route here. 
+And something like an omega network 
+actually has only one path between each 
+point, so if you want to get form here, 
+let's say form eight to three. 
+You're going to have to go here, here. 
+there, there. 
+You can't, there's no other paths you can 
+take. 
+So let's say you routed straight at this 
+first decision point, and went here. 
+You went up, you never really got up to 
+three. 
+This is in contrast to some other 
+multistage networks, where people 
+actually put in extra stages in the 
+middle here. 
+And this gives you some path diversity so 
+it'll allow you to route around in 
+congestions or route around problem 
+links. 
+If you were to add, if we were to add one 
+more stage it would look exactly the same 
+as the rest of these stages. 
+because if you look here all these stages 
+have the same wiring in the middle, if 
+you'll note. 
+[COUGH] If we add an extra stage, we'd 
+actually be able to have multiple links 
+or multiple paths between the end points. 
+And sometimes that's good. 
+Another type of network here that you can 
+build is a tree. 
+I would say interesting topology. 
+What, you probably want a tree though is 
+and. 
+If you, if you want to be able to 
+communicate, let's say, from this half to 
+that half of your machine, you're 
+going to want to somehow make the links 
+wider as they go higher up in the tree 
+and that's what we call a fat tree. 
+So a fat tree doubles the links each 
+level up in the hierarchy and then you 
+have, let's say, this node wanted to 
+communicate with that node. 
+There is enough bandwidth across this 
+back plane here, to support lots of nodes 
+over here, communicate with lots of nodes 
+over there. 
+One other interesting about a factory is 
+if you go and try to implement this 
+across a 2D space, we'll say. 
+And you try to map this into 2D space, it 
+actually starts to look pretty similar to 
+a mesh at some level, except it looks 
+like a mesh that you removed links from. 
+So, think about that if you ever go to 
+sit down to build a, tree, or a fact 
+tree. 
+It actually looks just like a mesh, 
+except when you go to do the mapping of 
+this you'll basically see that there's 
+this node and this node are very close in 
+the 2-dimensional layout. 
+So you could just run on local wire, a 
+sneak path between these two. 
+And then you'll also realize that this 
+one and this one will be really close, so 
+you just run a sneak path between them. 
+So to some extent some of these 
+topologies make not make as much sense in 
+a certain packaging or a certain layout 
+in physical space. 
+But if you, let's say, have multiple 
+chips, some manufacturing may make sense. 
+[COUGH] So I wanted to introduce a piece 
+of nomenclature here that you'll see for 
+mesh networks. 
+That you'll hear sometimes people talk 
+about things as K-Ary N cubes. 
+And this using two numbers looking to 
+completely describe a type of mesh 
+network. 
+And we're going to use two numbers here. 
+The first one is K. 
+So if you say phi vary, what that means 
+is, this is the number of. 
+Nodes in any one dimension. 
+And, the n here in our n cube is the, 
+number of dimensions. 
+So we can, this'll give us a way to 
+describe things that are not strictly 
+hypercubes. 
+So we can describe, sort of, other 
+shapes, but that are still some sort of, 
+cube. 
+So, for an example here, we'll look at a 
+three by three by three cube. 
+So this is kind of like a Rubik's Cube, 
+or something like that. 
+And each one of the, the blocks in the 
+Rubik's Cube corresponds to a node that 
+wants to communicate. 
+And this is actually a three ary, three 
+cube mesh with no end around. 
+And 
+we can see that the worse case path-link 
+in here is going to be from here to here. 
+So it's going to be 1, 
+2, 
+4, 
+4, 
+5, 6, is that right? 
+2, 3, 4, 5, 6. 
+That's how many links we need to traverse 
+to get from here to the farthest way 
+other point in the system. 
+

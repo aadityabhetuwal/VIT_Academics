@@ -1,0 +1,450 @@
+so one of the, the first optimization we
+are going to look at is what we call
+vector chaining.
+So vector chaining introduced in the Cray
+one, The idea is that you don't have to
+wait for the first.
+Operation to complete or the whole vector
+to complete before you start the second
+vector.
+Because if we went back and looked at this
+picture here,
+This load creates the element of the
+vector zero, we'll say.
+This operation here looks at the third
+element in the vector so it cannot execute
+after this load is done. It has to wait
+for this one.
+But this multiply here can execute right
+after this load happens.
+So, chaining in vector architecture is, is
+to some extent the moral equivalent of
+register bypassing.
+And what this looks like is, is first of
+all, you don't actually have to add
+intra-functional unit bypassing.
+The most basic notion of chaining is you
+bypass just between functional units.
+So what will happen here, is we're going
+to actually do a load, and we can take the
+value of the load as it's heading for the
+vector register file and also sort of feed
+it into our bypass network into a
+different pipeline, so for instance, the
+multiply pipeline in our example we've
+been looking at.
+And you can take the result and multiply
+it when it's done and feed that into the
+like store pipeline or something like
+that, if you have a, a sub broken apart
+stall, store pipeline or in this example
+here we're actually feeding a multiply
+into an add.
+So the, the, advantage here, is as I said,
+instead of having to wait for load,
+multiply, and the next instruction, wait
+for a complete, complete, we can actually
+overlap, portions, some portions of the
+dependent instruction when they become
+available.
+So let's look at how this works out here
+where we're doing chaining.
+But through the register file.
+So chaining through the register file,
+what I mean by that is, we're not going to
+have a bypass directly from the output
+here to the read stage. We're actually
+going to have to wait for it to write and
+then read it, but at least we can overlap.
+In our previous example, we were not even
+able to do this overlap.
+We had to wait for the entire register to,
+vector register to be written in.
+So we've effectively pulled this forward
+from here to there.
+But, what you might notice here is, well,
+this value is already here, so we could
+even try to pull it a little bit farther
+forward by actually adding bypassing.
+Or more traditional bypassing, but this is
+just chaining through the register file.
+Okay, so now let's now add taining through
+the bypass network.
+And,.
+It didn't change.
+Well, what happened?
+That's a, that's a bummer.
+Nothing happened.
+I was expecting this to go faster.
+You know, I want to make my architecture
+go faster, here.
+Well, what happens is.
+These hours?
+You start to get structural hazards on the
+report, on the register, on the vector
+register file.
+So to make this go faster we're actually
+going to have to add more reports and more
+write ports to the register file and if
+you were smart, into the vector register
+file, if you were smart what we really
+want to do is we want to add.
+One per pipeline, or basically, as many as
+we need ports per pipeline.
+So if you have two input operands and one
+output operand per pipeline, you're
+probably going to add one output operand
+and two input operands, or two reports
+deregs files and one right port deregs
+file per pipeline.
+And this, actually lets things go extra
+beat faster.
+So now we have, bypassing and we have
+more.
+Register file bandwidth.
+So more ports to our vector register file.
+So what you'll note here, is now we have
+multiple things in R at the same time,
+multiple things in W at the same time.
+And we can do that because we have
+multiple ports to our multiple read ports
+and multiple write ports to our vector
+register file.
+And, the other thing you should note here
+is, this, multiply here, which is on
+element zero,
+Needs the result here of the load.
+And then it gets created here, it gets
+bypassed down to here, and then it just
+goes and executes.
+And then, they just step in, in lock
+sequence here.
+And similarly, the store here means the
+output of the multiply in Y3 of the first
+element, so it can bypass it there and
+then start doing the store.
+So we are able to get some parallelism
+here, even without having multiple copies
+of the same execution unit, but we are
+able to get parallelism in our vector
+architecture.
+And what's really cool is we only had to
+issue three instructions to do this.
+So, very low instruction bandwidth.
+And I wanted to make the point here that
+this is a kind of a contrived case, 'cause
+our vector length is very short.
+It almost makes no, it almost doesn't make
+sense to actually use vector instructions
+to do this.
+But here is a picture of the same sort of
+thing happening and the overlap you can
+get when you increase your vector length.
+So here we're going to set our vector
+length registered to eight.
+And we're going to get much more overlap
+of the executions of this, and you can
+basically have this instruction here,
+starting 3's, the, the element zero
+operation here, starting three cycles
+after that first load.
+And this would be as if you had, let's
+say, eight independent Scalar processors
+sort of running in parallel.
+But we could do with almost no encoding
+space.
+So, questions about that?
+So far, a little technical with the
+pictures.
+Lots, lots of bypassing happening here
+through the bypass network but the
+bypassing is relatively restricted.
+We only need to bypass one value at a time
+from one location to another location, we
+don't.
+And if you do it through a register file
+it sort of pushes this out one cycle so
+it's not so bad,
+Or, or pushes each bypass out one cycle.
+Okay.
+So this brings up the question, what
+happens if your vector length or the size
+of your ray does not equal a nice power of
+two multiple of the vector length
+register,
+Or let's say the vector that you're trying
+to multiply is much, much larger than the
+maximum vector length register can be.
+So, we just use this notion of strip
+mining.
+And the idea is that you do big chunks and
+then you do the remainder by resetting the
+vector length register.
+Now, you could do this one of two ways.
+You could either do the remainder first,
+and then do the big chunks, or you could
+do the big chunks and then do the
+remainder.
+And both are, designs have actually been
+used.
+To some extent, this is a software,
+technique here, because the architecture
+is, just allows you set the vector length,
+but doesn't have any special hardware
+support this.
+So, if you look at a piece of code here.
+This added a lot of stuff to our loop.
+Now all of a sudden, we still have load,
+look, load, load, multiply, store.
+This is our old instructions that we had
+before.
+We have also other stuff here that sort of
+bumping pointers, comes back into the, it,
+and we also have to write the vector
+length register every single time through
+this loop.
+And the reason we're in the vector length
+register here is we're going to write it
+with, The, this is actually coded right
+now that we do the remainder first and
+then do the big chunks.
+So we're going to write the vector length
+register with the remainder first.
+So, N mod 64.
+Do that chunk first, and then we're gonna
+do the rest of them with 64.
+What I really what everyone to get, go
+take away from this is.
+When you actually have to do strip mining
+and your, you know that the away sides is
+not a nice even multiple of the vector
+length,
+You actually have to do more work here.
+You have to do more work in your loop.
+The other thing I want, I want to take
+away here is the vector length register
+allows you to do this,
+But you actually have to, have to change
+it.
+You can't just say it's one value.
+So let's look at a code example here.
+Oh, oh yeah, I wanted to say.
+All of this stuff here is overhead, sort
+of extra overhead.
+And for short vector lengths, this, this
+can be a problem.
+For longer vector lengths, this starts to,
+to go away.
+So here we have vector stripmining And we
+have a, same piece of code that we saw
+before, but now we saw that load, load
+mall, store and then we have some junk
+down here.
+And this junk is that extra code you need
+to basically handle the loop around and
+the checking and bumping of pointers, and
+feel the handle that n may not be a fixed
+number.
+One, one other thing I wanted to point out
+about vector strip mining is this allows
+you to handle variable length arraus that
+you don't know a compile time also.
+Because you can just use any theorem and
+this, this code snippet will do the right
+thing.
+One, one other thing I wanted to, yeah,
+point out here is that I didn't draw this,
+cause this is actually very hard to draw
+and it wouldn't fit in the slide,
+Is this overhead is substantial when
+looking at a small vector length like
+four.
+If we make our vector length 64, there's a
+lot more work up here.
+And this sort of starts to, to be small
+and, and unimportant to some extent.
+So this is the overhead of this loop.
+Checking and then the maintenance of the
+loop, starts to get small when you have
+very long, vectors.
+Okay, so now we're going to start to look
+at parellelism a little bit more deeper.
+So here we have an instruction.
+We have a deep pipeline process ALU.
+And, we're going to have multiple things
+flowing down the pipe at a time, multiple
+results, and we're going to take, you
+know, A of three and B of three, and it's
+going to take six cycles to do this
+multiply.
+This is assuming that we have one Python
+function unit.
+What if all of a sudden, we start to have
+multiple copies of the same function unit?
+Well, we can actually start to think about
+executing these things in parallel, and
+interleaving the respective operations.
+So we have result C of zero here, C of one
+here, C of two here, C of three.
+Then module around it, it wraps around..
+So this is effectively going to decrease
+our, our time because we're going to add
+more functional units, more parallel
+functional units, more copies of the same
+functional unit and that will allow us to
+speed up our execution.
+So here is an example of that same
+repetition we were looking at,
+But now instead of having one copy of
+everything, we have two copies.
+And typically, these, these things are
+called lanes.
+So we're going to call this Lane one and
+this Lane two.
+And take a look at the same piece of code,
+at this vector stripmining loop with a
+vector length of four, with two lanes.
+And we can see, is this basically pulls
+forward and we can overlap multiple loads
+at the same time.
+So while two things are in L0.
+And, also in this multiply here, we can
+have basically two multiplies going down
+the pipe at the same time like that.
+Now, one thing to note here is, different
+architectures can do the interweaving in
+different ways.
+This is one possible way to do the
+interweaving..
+You can also think about these two pulled
+forward and these two delayed, or
+something like that.
+The, both, both those architectures work
+and.
+But it, I will say that typically you'll
+try to interleave your lanes in a Low
+order interleave matter.
+So what that would mean is not this
+picture.
+This is a, sort of, higher or interleave
+matter.
+But a little order interleave matter would
+be element zero, element one, element two,
+and then you, or, or, zero, one, two,
+three, and then you wrap around.
+This is a, a picture here showing an
+architecture which has four lanes, and one
+of the things I wanted to point out here
+is you can actually partition your
+register file.
+From architectural perspective, from a
+hardware perspective, you don't need to
+have one monolithic register file because
+you know that you'll only ever access,
+Let's say element zero, four, eight, dot,
+dot, dot of your vector registers or, or
+excuse me.
+This is elements of the vector register.
+So if you have 64 elements in your vector
+register,
+Element zero and zero four eight of those
+can go here. So you're basically doing
+interleaving of the respective sub
+portions of a vector register across these
+different lanes.
+So you can partition the register file, is
+the, the key take away point.
+I drew this, sort of show two different
+things going on.
+Let's say like in our examples we've been
+looking at, one of these is the multiply
+pipe, one of these is add pipe.
+And here we have our load store pipe or
+something like that.
+You can have multiple things in a lane.
+And then, you know, functional unit sort
+of runs the other way.
+So this is, all of the, adder units, we'll
+say.
+And in fact, this is, basically exactly
+the architecture of the t0 vector
+processor form Berkeley.
+And, as you guess, you see their layout
+here.
+They striped over the lanes,
+The respective elements of their, well of
+one register in the vector register file.
+And then they actually mirrored the data
+path here.
+They actually have two copies of the same
+thing on either side of the lane,
+And then, up here is their Scalar
+processor, their control processor if you
+will.
+And this is where they execute the Scalar
+operations like the shifts and the
+branches and, and things like that.
+Okay so, so recap here.
+Vector instructions sets have quite a few
+advantages.
+Main one is they're very compact.
+One instruction can generate lots and lots
+of work to do.
+And, they're relatively expressive.
+When they're expressive is that they very
+concisely say, exactly all the constraints
+between all the different operations they
+generate.
+So for instance, each of the different
+operations are independent.
+This allows us to stripe the registers.
+It allows us to know that we don't need to
+bypass.
+Allows us to sort of access all these
+registers, in a straight mannered, in a
+disjointed way.
+Our memory pattern, at least for, Unit
+stride operations is very well understood,
+and very easy to plan for.
+We know that it's going to, bank very
+well.
+So if we have a, a cache, for instance, we
+can actually bank our cache, cuz we know,
+if we're doing unit stride operations, and
+we have multiple lanes, for instance here.
+We know that we're only going to be
+accessing the zero-width element of a
+vector here.
+The first element there, the second
+element there,
+Etc.
+And this is, this works out very well from
+a banking perspective,
+But sometimes, it may not always work out.
+And finally,
+These sorts of architectures can be
+scalable.
+What I mean by scalable is you could add
+more lanes.
+And as long as you don't add more lanes,
+than your maximum vector length,
+You're probably doing okay.
+Or, you might want to be off my a little
+bit, you know, your, your depth of your
+pipeline, but you can add more and more
+work, and, and, in fact, people have
+actualy built families of these processors
+where they have different number of lanes
+in the same architecture.
+And this is actually common in our GPU's
+today where they will have multiple copies
+of the same units and they will actually
+build different variants of the same
+processor pipe.
+Or same pipe a processor pipeline where
+you'll have, ones that have, let's say,
+one lane versus, I don't know, fifteen
+lanes or something like that.
+And you can sell a high end part, which is
+fifteen lanes of a low end part that has
+one lane.

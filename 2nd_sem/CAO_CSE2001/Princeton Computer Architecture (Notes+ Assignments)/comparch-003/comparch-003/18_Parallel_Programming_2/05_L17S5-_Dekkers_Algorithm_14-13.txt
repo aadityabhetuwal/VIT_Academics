@@ -1,0 +1,340 @@
+Okay. So now, we're going to talk about 
+how to implement mutual exclusion without 
+atomic operations. 
+So, I shall ask here, how many people 
+here have seen mutual exclusion without 
+atomic operations before? 
+Okay, few. 
+People probably taken an operating 
+systems class might have seen this 
+before. 
+but it's all tricky and good to refresh 
+anyway. 
+so we're going to throw out test in site, 
+we're going to throw out other things. 
+We're going to look how you have locks 
+and mutual exclusion without any ordering 
+or without having special instructions 
+added to our instruction set. 
+So, let's, let's take a look at a basic 
+piece of code here that is wrapping 
+around a critical section, trying to 
+implement a p and a v. 
+And we're going to, we're going to look 
+at the case where we only have two 
+threads. 
+The n, the n threaded case gets a lot 
+more complicated. 
+So, in this simple case here, 
+an easy way to go about doing this is, 
+or, or one way to think about doing this 
+is [COUGH] process one sets its variable 
+here to one. 
+Then, it checks to see if the other 
+process, process has written it's lock 
+variable. 
+And these are two different variables, c1 
+and c2. 
+And we're assuming sequential consen, 
+consistency for this. 
+If it sees that the other process wrote 
+that value to two, or to one, c2 to one, 
+it says, oh, process two already won 
+here. 
+It's going to go execute its critical 
+section. So, it will sit here and loop 
+until c2 is set to zero at the end of the 
+critical section. 
+Okay, any one see any problems here? 
+Yeah. So, if they both set their 
+variables to one, so if we interleave 
+this instruction and this instruction, 
+and then both do the checks, 
+c1 and c2 are both going to be equal to 
+one. 
+They're both going to check if, and 
+they're going to say, okay. 
+Yeah, 
+c2 is equal to one, 
+c1 is equal to one. 
+It's been forever. 
+None of them will ever get to the release 
+of the sum before, and all of the sudden 
+you have deadlock. 
+that's not great. 
+So, this is why this stuff is really hard 
+to do. 
+So, let's look at our second attempt 
+here. 
+let's try to, to make that better by 
+adding a little more checking in here. 
+So, same thing. 
+c1 is equal to one, c2 is equal to one. 
+[COUGH] It does the same checks to see if 
+the other person, the other thread set 
+the, the variable. 
+And if it doesn't win, it clears its own. 
+So, it sets c1 back to zero for, if it 
+fails, and moves back up here. 
+This looks, looks a lot better. 
+[SOUND] Yeah. 
+We're not getting any deadlocks here, I 
+don't think. 
+because, let's say we're trying to 
+interleave these things, c1 sets to one, 
+c2 sets to one, they both do the check at 
+the same time. 
+They both say, oh, the other person 
+grabbed it, I'll release my variable, set 
+it to zero, and loop back around. 
+So, we don't deadlock here. 
+[SOUND] And if you perturb the system a 
+little bit, 
+at some point, one of them's going to 
+fall through we'll say. 
+But what happens if the system's not 
+perturbed? 
+Well, you can actually hit livelock here. 
+Because they can just sit there and in 
+lock step if you interleave these three 
+instructions with these three 
+instructions here they're going to just 
+keep going through the loops, 
+clearing the variables, 
+setting the variables, 
+clearing the variables, 
+setting the variables, 
+testing. And none of them, neither of 
+these two processes are ever going to 
+fall into the critical section. 
+So, livelock here is just as bad as 
+deadlock, in this case. 
+And, 
+another bad thing here is, we have no 
+guarantees of fairness. 
+So, you could actually have a case where 
+one process grabs this lock, we'll say. 
+The other one sits here's in, in loops 
+and it's able to execute its critical 
+section, clear c1, get back around set c1 
+before process two is actually able to go 
+around this loop. 
+then you're going to say processors 
+probably not running at different speeds. 
+Well, that's true but maybe this one has 
+to take more cache processes than this 
+one or who knows, you know, you don't 
+have a strong guarantee. 
+You can't prove that one thread is not 
+going to starve. 
+So, this is a fail. We can't, we can't 
+have mutual exclusion this way. 
+So instead, we go and we say well, let's 
+make it more complicated and this came 
+up, was made by Decker, and is largely 
+called Decker's Algorithm. 
+And this is actually a protocol from 
+mutual exclusion which works. We're just 
+using those in stores. And we're 
+introducing another variable here, and 
+this is a shared variable between process 
+one and process two and we call this the 
+turn variable. 
+So, this looks pretty similar to what we 
+had in the previous slide. 
+But now, 
+the turn variable is shared between the 
+two. 
+And what this is really going to act as 
+is this is going to act as a tiebreaker 
+in the case where they both set c1 
+effectively at the same time. 
+And the tiebreaker is interesting here 
+because, 
+actually it's those two things, it's 
+tiebreaker and we'll see how it, it's 
+able to solve some problems around 
+starvation. 
+But the turn variable, one of the two 
+threads here, because its a shared 
+variable, and were sequentially 
+consistent, is going to execute last, 
+we'll say. Either through the left side 
+or the right side. so, 
+when you come down to here and do this 
+check, 
+whoever raced and actually set that turn 
+variable last, 
+the other thread is going to execute. 
+So, let's say, process two, if we 
+interleave these and these, 
+process two now sets process two turns 
+equal two happen last. 
+And when this goes to execute here, 
+[COUGH] we'll see that c1 is set and turn 
+is equal to two. 
+So, we're just going to sit here and 
+spin. 
+The other thread is going to see turn 
+equal to two, and c2 is set. But we have 
+a logical end here, so both of these are 
+not going to be true. 
+So, it's going to fall through and 
+execute its critical section at this 
+point. 
+At the end, c1 is going to get cleared. 
+And what happens here is, that's going to 
+allow this other process to enter into 
+its critical section. 
+So, why is this nice from a starvation 
+perspective is, at least for two 
+processes, it's going to allow you to 
+alternate here. 
+Because one of them is going to enter in, 
+and when the other one goes to clear this 
+variable, you're guaranteed that the 
+other one can go execute that point. 
+So, you're not going to have starvation. 
+Now, the reason you don't get starvation 
+is actually kind of subtle. 
+Okay. 
+So, let's look at the starvation case. 
+So, let's say possible it's really fast. 
+They just loop around and they came, get 
+around this loop and come to this point 
+before process two can basically loop 
+around here once. 
+That's, is that the case you want to look 
+at? Yeah. 
+So, what's going to happen at that point 
+is. 
+Well, two, two things are going to 
+happen. 
+When c1 gets up to zero, what's going to 
+happen here is, process two will actually 
+see c1 zero is, is what we're saying 
+here. 
+This is going to set to zero, and then 
+it's going to set to one, before this 
+track can happen. 
+But, what is interesting here is that at 
+some point, but c2 is still set to one. 
+because this, this one sitting here 
+waiting. 
+Okay. 
+So, tc2 set to one, and turn gets set to 
+one. 
+That's going to block process two from 
+entering, at this point. 
+Or rather this being one and that being 
+one is going to block it from executing. 
+And when turn gets set to one, 
+or, or rather, let's, let's hold off and 
+look at this. 
+That's going to allow this process one, 
+and its going to force this process one 
+to sit here and spin forever. 
+And its not going to be able to race 
+around this second time. 
+Process two on the other hand, c's going 
+to be set to one. 
+Now, in the mean time, c was one and then 
+it was zeroc and then it was one again. 
+But, turn is no longer equal to two, 
+at this point. 
+Which is going to allow process two to 
+fall through, and act as it's critical 
+section. 
+So, it's the shared turn variable here, 
+which actually allows us to garauntee if 
+you have a contended case such that, 
+you're basically going to have a round 
+robin between the two. 
+Okay. So, I think we went through that. 
+[LAUGH] I wanted to finish all today, 
+talking about one, one last idea here 
+[SOUND] in the last two minutes. [SOUND] 
+you can, 
+to do Decker's actually with end 
+processes more than two gets pretty 
+tricky. 
+Dijkstra shows a proof of that there's 
+something that's simpler to reason about 
+called the Leslie Lamport's Bakery 
+Algorithm. 
+And the bakery, I thought is kind of 
+interesting because the idea is, have you 
+ever gone into a bakery or gone into a 
+deli, there's the little tickets. 
+And you go in, you take a ticket, and 
+then you wait for them to either call 
+your number or the little number on the 
+screen to tick up one. 
+And then, once it ticks up, you go and 
+you like get your bread or get your 
+sliced cheese, or something. 
+[COUGH] Well, it could use, which is 
+loads and stores. 
+You don't need locks to go implement 
+something like that. 
+and I don't want to go into complete 
+detail here, but the, the, basically the 
+idea here is you set a 
+you set that you want to, you want to 
+take the lock. 
+And then, what you do is you check if all 
+of the people below you are waiting in 
+the lock, also, in, in order. 
+So, its kind of like you're, you're 
+checking to see if the number has 
+incremented up to you at this point. 
+And if everyone below you is, if there is 
+no one below you is waiting for a lock, 
+then your number came up and you can go 
+execute. 
+When someone is, you, you can't, you 
+can't go execute this and you, you wait 
+for the, everyone else to release their, 
+their receptive variables to one 
+effectively, until the point that it's 
+yours and then you can go and buy your 
+bread or order your, you cheese. 
+Now, 
+that's not enough to actually work. 
+[LAUGH] there are things called ticket 
+taking locks which is actually a more 
+general class of this sort of idea here. 
+But, you also need a sort of second 
+matrix here to prevent sort of AVA 
+problems or things running around. 
+But, I don't want to go into full detail 
+about that. 
+I just wanted to give you an idea that 
+one way to go implement sort of fast 
+locks is, or ticket taking locks. 
+You walk in and take a ticket. 
+This prevents multiple people from 
+hoarding up to the front of the bakery 
+and all trying to order at exactly the 
+same time. 
+and in the bakery, it's a little bit 
+easier because on the wall, there's like 
+a number and someone tick the number each 
+up time. 
+If you don't have a central arbiter to go 
+tick the number up, you need to somehow 
+make the last person who had to lock 
+increase the number. 
+And that's what this algorithm's actually 
+doing. 
+Okay. 
+Let's stop here for today. next time we 
+are going to talk about symmetric 
+multiprocessor. 
+We're running a little bit behind where 
+we were supposed to be from the syllabus 
+perceptive. 
+We're about a half a class behind. But, I 
+think we'll be able to pick up most of 
+that. 
+

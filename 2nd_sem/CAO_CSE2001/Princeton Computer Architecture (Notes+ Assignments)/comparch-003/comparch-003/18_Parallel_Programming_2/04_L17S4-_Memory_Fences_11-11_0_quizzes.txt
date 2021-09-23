@@ -1,0 +1,21 @@
+﻿L17S4:
+
+In Lecture Quiz 1:
+Time: 11:05
+
+Question:
+When does Total Store Ordering require memory fences to implement a Sequentially Consistent memory model?
+
+Choices:
+
+A. Store followed by Load
+
+B. Load followed by load
+
+C. Store followed by store
+
+D. All of the above
+
+
+
+

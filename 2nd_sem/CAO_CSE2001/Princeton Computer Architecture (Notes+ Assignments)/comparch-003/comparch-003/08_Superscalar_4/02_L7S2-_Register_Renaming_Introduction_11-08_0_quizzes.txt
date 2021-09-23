@@ -1,0 +1,18 @@
+L7S2:
+
+In Lecture Quiz 1:
+Time: 7:59
+
+Question:
+
+What problems exist with adding infinite numbers of registers to a computer instruction set architecture?
+
+Choices:
+
+A. It takes huge area in the circuit to store these register values
+
+B. Takes up encoding space and encoding space is limited
+
+C. It is difficult to manage infinite registers
+
+D. There is no problem at all

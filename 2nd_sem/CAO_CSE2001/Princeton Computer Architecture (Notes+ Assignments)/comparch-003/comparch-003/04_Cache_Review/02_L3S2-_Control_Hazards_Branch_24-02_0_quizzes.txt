@@ -1,0 +1,19 @@
+L3S2:
+
+In Lecture Quiz 1:
+Time: 8:45
+
+Question:
+
+Why do we not stall instructions at the fetch and decode stages if a branch in the execute stage is taken?
+
+Choices:
+
+A. A branch instruction should never be stalled.
+
+B. It does not matter whether stall or redirect caused by the branch has the priority.
+
+C. The instruction at the decode stage is invalid and the redirect caused by the branch in the execute stage should take priority.
+
+D. It is unnecessary to invalidate stall at the decode stage, a branch can invalidate the following instructions as well.
+

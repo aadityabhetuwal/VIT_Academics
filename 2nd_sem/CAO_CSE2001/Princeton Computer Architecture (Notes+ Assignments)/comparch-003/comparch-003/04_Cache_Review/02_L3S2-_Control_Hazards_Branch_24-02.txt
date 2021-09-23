@@ -1,0 +1,552 @@
+Let's look at a little more complicated
+case.
+We talked about control hazards due to
+jumps.
+Let's put the control hazard one cycle
+later.
+And a, a good example of that is something
+like a conditional branch.
+So here we have a piece of code.
+Add branch.
+And it's branching to 200 bytes into the
+future.
+If you take a hundred branches on nips are
+relative to the subsequent instruction, so
+PC plus four plus the offset, so we'll end
+up at three or four.
+And let's walk through this case here.
+We have I one is our first ad.
+You get the branch sitting at the decode
+stage.
+And we have some decode logic which is
+saying, is this a branch?
+Okay.
+The next question though, is how do we
+compute whether this is a, a branch is
+being taken or not.
+Can we do this in the decode stage?
+Unfortunately we need to do a comparison
+here, and this comparison, the hardware we
+want to use to do a comparison is in the
+ALU.
+It's a, you know, subtract operation, or
+a, a comparison operation.
+So this, this fits well within our
+arithmetic logic unit.
+And we have the zero wire coming out.
+So, what this is gonna do is, instead of
+having one cycle of latency, or one cycle
+of kills being inserted, we might have to
+insert two cycles.
+Because now, we have to wait for the
+branch to get to here.
+And if we're predicting PC plus four,
+we're speculating PC plus four, we'll
+actually have fetched more data.
+So let's walk through this.
+So the branch moves forward, one cycle
+forward here.
+And, what you will see here is we're
+actually fetching 108.
+So we're fetching, the next, next,
+instruction.
+But these two are both potentially dead
+or, in, we wanna kill both of these.
+But we don't know whether to kill them
+until we get this, this zero wire here.
+Hm, okay so at that point we can redirect
+the front of the pipe and we can insert a
+no op.
+So that's going to change the logic that
+connects to here.
+We are also going to have to insert a no
+op here because we fetched 104 at that
+time into this point of the pipe.
+So, if a branch is taken, we need to kill
+the next two instructions and the
+instructions decode stage is effectively
+invalid so we need to swing this muck
+here.
+So we're gonna have to add an extra
+control line on to this multiplexer.
+And now, Stalling, and killing makes a lot
+bigger, a lot more difference, so the
+stall signal has to effectively be killed
+or nullified at this point.
+And why is this important?
+Well, let's say we're stalling the front
+of the pipe and stall were to take
+priority.
+That would stop this register from moving
+and stop this register from moving as this
+red lines come in.
+So if the stall were to take priority, you
+could have an instruction here which is
+let's say dependent on some stall
+condition on dependent on some data hazard
+or dependent on some random hazard.
+And you've a branch which is branching to
+someplace else.
+So let's take this instruction here, 104,
+which is add, is depending on something as
+stalling in front of the pipe.
+At the same time, you want to kill because
+you took the branch.
+You want to kill that instruction.
+If you were to put the stall at the higher
+priority, you'd actually end up in a
+deadlock.
+Because you'd be stalling, but you would
+have no way of killing the previous
+instructions to clear the stall.
+So this is why it's really important that
+the instruction at the decode stade, stage
+is now invalid.
+So unlike the, the jump case where, well,
+you might be able to do it either way,
+with the priority of the stall, and the
+kill, wires, here, the kill, has to take
+precedence.
+Or the redirect has to take precedence.
+And that's going to redirect the front of
+the pipe, and basically clear out
+everything here.
+And if you were to stall it, you would not
+be clearing it out.
+So instead, you need to kill, kill, sort
+of turn these on to no ops, and redirect
+the front of the pipe to go fetch the
+actual target.
+Of your branch, of your conditional
+branch.
+Yeah, sorry, this is just a drawing now,
+that, this branch.
+Information has to go into this
+multiplexer and go into this multiplexer.
+The other thing that's important to your,
+for, for branches, is we need to figure
+out the address that we're actually
+branching to.
+And we'll talk about this more when we get
+to branch prediction later in the course,
+but.
+What you're gonna have to do, is you're
+gonna have to take the PC+4 and add it to
+the branch offset, cuz on something like
+MIPS, there's PC relative branching.
+And the other thing is we can't reuse this
+ALU necessarily to do that.
+You could potentially reuse this ALU if
+you were, micro coding your design, But
+unfortunately, we need this ALU to do the
+branch comparison.
+So we need to add another adder here to
+come up with the target of our branch.
+Now, some people get smart on the way they
+build this, and you can actually see some
+things where people will try to reuse the
+main processor pipeline ALU through the
+branch offset calculation and maybe try to
+do this comparison, because if you have
+simple enough branches you can do the
+comparison with less hardware than a full
+adder.
+That's another option.
+Let's hold off talking about that until a
+little bit later.
+Okay, so now we get to talk about, the
+stall signal, in, in detail.
+So we have, we start off in.
+Blue here at the top, the stall signal we
+had from before.
+So you need to check the data pendencies
+of, and check for data hazards between the
+registers, of the source operands, these
+are the RS and RT, against, in the decode
+stage, against the other stages in the
+pipe.
+The execute stage, and the memory stage,
+and the, and the write back stage, and
+make sure that you're both reading the
+registers and you're, check the write
+enables to make sure that the respective
+instructions in the different pipeline
+stages are actually, writing to the
+different locations.
+But now we add another term.
+We add a, branch term.
+So, we need to know whether there's a
+branch going on here, because we need to
+unistall the processor, if the branch is
+taken.
+So we're gonna add not, and this is
+effectively, it is a branch zero and zero.
+Likewise this is, it's a branch not zero.
+And, the value is, not zero.
+So these, these two terms are basically
+saying, a branch is happening, it's in the
+execute stage, and we'll say that the
+branch is being taken.
+So if it's a zero branch and the result is
+zero taken or if it's a not, not equal
+zero branch, it's not taken.
+And why, don't, we stall if the branch is
+taken.
+So, this is the same question we had on
+the previous slide.
+You have a branch, it's happening, if we
+stall the front of a pipe.
+The instruction at the decode stage has to
+be unstalled to get that out and to clear
+it out.
+So, the instruction at the decode stage is
+now invalid, so we don't want to pay
+attention to any of the stall information.
+It's just like a, a red herring, or it's
+a, it's a piece of information you
+shouldn't be paying attention to.
+So you want to have the instruction at the
+decode stage be turned into, an unvalid,
+or an invalid instruction.
+Okay, so now we get to talk about the
+control equations for the program counter
+and the instruction register multiplexers.
+So let's start off by talking about PC
+source, and so I want to remember what
+that is.
+That's way up here.
+That's the input to this multiplexer.
+And that's going to select where we're
+branching to, or where we, excuse me.
+Not necessarily where we're branching to,
+but the prudent counter of the next
+instruction we're gonna fetch, on the next
+cycle.
+And it's on the next cycle, because this
+is a, a flip flop.
+It's a little bit of control equations
+here just to, I wanted to point, sort of,
+two, two basic things out in this, these,
+these equations is that the older
+instruction or the thing that's farther
+down the pipe is going to get precedence
+over younger instructions, and for the
+control signals going down the pipe.
+So if we look at this PC muck select.
+It actually has things coming out of
+different stages of the pipe.
+We have something which is redirecting for
+a jump out a the decode stage.
+And then we have these signals here which
+are coming out of the execute stage, which
+is strictly farther down the pipe.
+And this needs to take precedents over
+that.
+So if you have a branch which is directly
+followed by a jump, the jumps can be seen
+there trying to swing the control on the
+pc select marks.
+So the next programmer counter mucks.
+And you can't let that happen, you have to
+let the branch that's actually executing
+take precedence over that.
+And that's what I really want to get
+across from this.
+And you'll see that similarly here the
+branch takes precedents over the jump that
+links from the other control signals.
+Let's look at this from a branch pipeline
+perspective.
+So we'll draw the pipeline diagram for a
+branch executing for our example.
+And what you notice real fast here is, if
+you take a branch and you actually execute
+the branch and take the branch, you're
+going to be adding, two extra instructions
+here, in this case 104 and 108, and they
+get killed as they go down the pipe.
+And this is going to impact our CPI in a
+negative way.
+And what's happening is this execute the,
+the branch which is in the execute stage,
+is gonna reach back and kill these
+instructions concerning the NOOPs.
+And we can plot this in the, in the other,
+other dimension also, but you'll see.
+So now we need to think hard.
+Is this a good thing?
+Well we speculated that the instruction
+was or the next instruction was gonna be
+PC+4 or the address of the next
+instruction's gonna be PC+4.
+So we took something where the CPI was,
+let's say, two.
+Machine CPI is two, and we cut it down a
+little bit, in the common case.
+But jumps, the CPI still goes back up to
+two, And here, the CPI is three.
+Now, in our speculation case, or our no
+speculation case, if we had a branch we
+would probably have to stall for three
+cycles anyway to know the destination of
+that branch, so this didn't really hurt us
+in that case.
+The CPI in that case was also three, four,
+a branch instruction.
+Hm.
+Okay, well, but this still isn't good.
+I don't want every single branch I take to
+have a CPI of, of three.
+So let's talk about some ways to mitigate
+this cost.
+And how do we reduce the branch penalty?
+Well, one way to do it is, we can actually
+add a comparator one stage earlier and
+have it resolve in the same timeline as
+something like the jump.
+So how do we do that?
+Well, here we have a register file.
+This is in the decode stage of the pipe.
+This is the fetch stage.
+What do we really need to do for a branch?
+Well, we need to know that it's a branch.
+So we do some decode.
+And we need to know whether it's a, a
+branch zero or a branch not zero, for
+instance, if those are the only two
+branches in our architecture.
+And we need to know that, let's say,
+register one is zero or not zero.
+So some people came up with this smart
+idea that we can add a zero detector onto
+the registry file output.
+And by adding the zero detector into the
+register file output we'll know which way
+the branch goes.
+So, this, this, the zero detector.
+One of the interesting things is that this
+is actually a little bit easier than doing
+a full comparison with zero.
+Because to do a zero detect, you can
+basically build a optimized OR tree.
+And then you take the negation of N,
+sometimes people can do this with, their
+wired OR's or more analog e-circuits.
+But this is effectively a big OR gate,
+where you OR in all 32 bits if you have a
+32 bit processor, and then take the NOT or
+take the, the, the bit itself.
+And this is easy for zero detect, this can
+get harder for different types of
+branches.
+If you ask me, like, a branch-equals, or
+BEQ instruction.
+You can't use, well, you can't use zero
+detector.
+What you have to do instead is somehow
+actually do a full comparison between two,
+of the source operands.
+And that usually takes more time.
+So the, the nice thing about this is that
+It'll, take your, all your branches and
+take'em from, a CPI of three when they
+mispredict, or when you misspeculate.
+Two, two cycles of the same timeline that
+you had with.
+A jump, so that you end up with the exact
+same pipeline that we had for jumps now.
+The downside is that this is going to
+elongate.
+Your cycle time.
+So you have this wire coming out, and the
+wire needs to go into the logic which
+computes PC source and that's going to
+become a critical path.
+And it's a critical path because, you have
+to go through the decode.
+That's usually going to parallel, but you
+have to access the register file, then
+through a zero detect, then go into
+control logic which computes this, and
+then come around and latch the
+information, or, or, or flip-flop the
+information.
+So you can really negative, negatively
+impact your clock period and as we talked
+about the iron law of processor
+performance.
+You can either get performance by lowering
+your clocks by instruction or you can get
+it by lowering your clock frequency or
+excuse me increasing your clock frequency
+or lowering your clock period.
+So these two things trade off.
+So you can elongate your cycle time which
+will negatively impact your CP, or
+negatively impact your performance or time
+per program in our iron law of processor
+performance.
+But on the flip side you will Have
+branches resolve faster so your cost per
+instruction, or average cost per
+instruction, especially for branches will,
+will go down.
+So this is only one approach.
+Another approach is you can expose it to
+software.
+So, we can change the instruction set
+architecture.
+What is really cool here is the
+instruction set architect can actually
+have an impact on what's going on here.
+This is not all micro-architecture issues,
+this is not all fancy branch predictors,
+which is what we'll be talking about later
+in this course, but instead you can expose
+this problem or this challenge of the time
+it takes to resolve a branch to the
+software.
+So what we're gonna do well, I'll define a
+branch delay slot.
+And a branch delay slot is a architectural
+when I say architectural I mean big A
+architectural or instruction set
+architectural change which allows or, or
+forces some number of instructions after a
+branch to always execute.
+So it could be, lets say one, two, three
+or four, or some number architecturally
+defined.
+And in this delay slot that instruction
+is, executed irregardless of the direction
+of the branch.
+And what people try to do with this is
+they'll have to take work that was above
+the branch and move it below the branch.
+Because, if you know the works going to be
+done anyway, you can just put it below the
+branch and everything's okay.
+But the problem with that is the branch
+has to not be dependent on that work that
+you're moving below the branch.
+So typically for very short loops where
+there's not much work inside the loop,
+this becomes very problematic, cuz there's
+not enough work that the branch is not
+dependent on to move below the branch.
+To have the loop run effectively.
+And what we're trying to do here is the
+compiler has a hand in what's going on.
+Or the, the program writer really has a
+hand in what's going on.
+Cause that's what's doing the reordering
+of the information from above here to
+below here.
+So lets take a look at an example here
+where, we have a branch, and we have one
+delay slot.
+Some architectures have two or more, but
+like, right now we'll assume one delay
+slide.
+And let's also assume that we have this
+reduction of branch panel, the
+optimization, so now branches only have
+one dead cycle when we're, we're gonna
+execute them.
+So what we can do is, we can say, okay,
+the branch is at address 100, And this, ad
+here at address 104 in the delay slot
+executes irregardless of whether the
+branch gets taken or falls through.
+So then we don't actually have to kill the
+next instruction after the branch.
+We don't have to have all this fancy extra
+hardware there, we just have this always
+execute.
+The tricky thing is many times, as I have
+said, its hard to fill this branch delay
+slot.
+It'd be great if you could have many, many
+branch delay slots.
+So, if you go look at something like a,
+penny-before, I think they have a twenty-
+odd cycle mispredict penalty.
+They could have added twenty delay spots
+to their architecture.
+That would have been really, really cool.
+But at the same time the compiler would
+have to go find twenty instructions for
+every branch, to stick after the branch.
+And it's usually just not that much work
+to be put the after the branch which the
+branch is not dependent on.
+So, we have a really hard time filling
+these branch delay slots.
+And, and, roughly, if you go look on
+something like MIPS, across sort of old
+SPEC INTs to give you some example here of
+how often the compiler can actually fill
+branch delay slots, I think the, the rough
+rule of thumb is if you have one branch
+delay slot, you can usually fill it maybe
+about 70 percent of the time on something
+like, SPEC INT.
+Spec INT is a common benchmark suite
+that's used throughout the computer
+architecture industry, or computing
+industry to measure performance, and if
+you have two branch delay slots, that
+second branch delay slot only gets filled
+less than like half, half the time.
+So, fill in these slots relatively and
+frequently you might be better served by
+coming up with other prediction
+mechanisms.
+And we're going to talk later about, not
+this class but in a different lecture,
+branch prediction which is a technique to
+cover branch latency and to make a branch
+decision early or we can predict whether
+the branch has been taken or not taken.
+And this can be used to dramatically
+reduce the branch penalty.
+So let's draw, the pipeline diagram here,
+of, a, branch delay slot.
+Architecture has, has one branch delay
+slot.
+So we, we have the add flowing down the
+pipe, we have a branch flowing down the
+pipe, and now we're going to have this
+next add, and architecturally we've
+defined that, that always executes whether
+the branch is being taken or not taken.
+So this code sequence or, excuse me, this
+pipeline diagram sequence here is the same
+for whether the branch is taken or the
+branch is not taken.
+In this case we are going to say that the
+branch is taken and we go to execute, this
+next add here.
+But you see that there is no bubbles,
+there's no NOOPs been inserted.
+So, we have actually improved the
+performance here.
+This is assuming though, that this add is
+doing useful work.
+Now, this is really important to, to, to
+say because the compiler or the program
+writer has to put something here.
+And if they can't put anything useful
+they're gonna have to put NOOP.
+And that's not useful work, doing a no
+operation, you might as well just had the
+hardware insert, insert a, the NOOPs for
+you and save some instruction coding
+space.
+So there's a tough trade off here between
+how often you fill the branch delay slot
+versus having a branch delay slot.
+But for right now we'll say branch delay
+slots are one good technique to put useful
+instructions after a branch not have
+branches stall out.

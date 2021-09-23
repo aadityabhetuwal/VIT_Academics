@@ -1,0 +1,107 @@
+Okay.
+Let's, let's begin today.
+So, we are going to start where we left
+off last time, which was talking about in
+order super scalars, so as you may recall
+just a brief review.
+We were talking about these sort of,
+little bit more complex pipelines.
+We were able to execute multiple
+instructions at the same time.
+Sometimes instructions had to sort of be
+steered, if you will, between the A and
+the B pipe, coming from the two different
+instruction registers.
+We have to double our decode.
+We need to check to make sure that there's
+no dependencies between, the instructions
+we're trying to issue at the same time,
+and our decode logic will do that.
+So there's going to be some sort of cross
+communication inside of there.
+And in our previous example we were
+looking at an asymmetric pipeline.
+So what I mean by that is, you know, loads
+and stores went down this pipe.
+And branches, and you've obviously done
+this pipe, and also you've obviously done
+this pipe.
+So where we left off last time.
+Was talking about alignment and how do we
+deal with fetching multiple instructions
+from an instruction memory or instruction
+cache but at the same time how do we not
+have to make this structure have many,
+many ports for instance or do we, does it
+have to have many, many ports.
+So, we looked at a, a basic piece of code
+here, which has whole lot of interesting
+alignment issues.
+So, at the beginning here we were
+basically fetching the instructions which
+were nicely aligned into the caches,
+blocks, and then we, yeah, this one was
+okay.
+We jumped to the beginning of the block.
+That was fine.
+Here, we jump to the middle of a block.
+And depending on how our cache was
+implemented, we might need to do, sort of,
+two fetches.
+Let's say you could only, read out your
+cache half a block at a time.
+Then you might have to do a fetch to get
+this and a fetch to get that.
+And then, here, you know, things were sort
+of cross cache lines, across, complete
+cache blocks.
+Which is, quite a bit harder.
+So let's, let's take a look at this.
+So if we have some alignment constraints,
+So let's say the alignment constraint we
+have here is that you can only fetch
+either from the first half, or the second
+half of a block at a time.
+And if you're trying to execute something
+which straddles a cache line, you're gonna
+have to fetch even more data.
+So as you can see, if you recall from this
+figure, this, this, and that instruction
+or piece of data in the RAM, when we go
+forward, we're basically going to be
+fetching extra data with that alignment
+constraint than we would have been
+fetching otherwise.
+This gets even harder, you know, it's,
+it's okay to sort of over-fetch.
+It's another thing if you actually have to
+sort of straddle a cache line here.
+And, cause the question comes up, "Do you,
+can you fetch those two at the same time
+from the cache, or not?" and we'll look
+through an example here.
+We're gonna look with this alignment
+constraint and see that, no, if you can't
+actually fetch that you're gonna be
+introducing what's affection, effectively
+dead cycles going down the pipe, which
+hurts your clocks per instruction.
+So here is the same instruction sequence
+that we had here, and these stalls, or not
+stalls, I mean, dead instructions that go
+on the pipe here are killed.
+The instructions that go down the pipe are
+actually just these three X's.
+So we, effectively, over-fetched, and then
+you know, when we go to over-fetch, let's
+say, here, we fetched 208, but we had to
+fetch, 20C, and that's instruction that
+shouldn't go in the pipe and not actually
+do anything.
+So you can see that you can actually,
+whip, when you have alignment constraints
+you basically can just introduce extra
+stall, or extra dead instructions going
+down the pipe and you're not actually
+using that.
+And that's not necessarily great.

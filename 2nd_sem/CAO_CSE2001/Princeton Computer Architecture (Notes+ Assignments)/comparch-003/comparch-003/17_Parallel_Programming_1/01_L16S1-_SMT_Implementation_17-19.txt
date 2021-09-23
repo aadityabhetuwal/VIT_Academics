@@ -1,0 +1,468 @@
+We left off last time, talking about some 
+implementation issues around, 
+multithreading. 
+so a little bit of background on what 
+we're doing today is we're going to be 
+finishing up multithreading. 
+We're going to be using cutlery and 
+you'll see why we're using cutlery in a 
+minute. 
+That's right. A whole box a forks. 
+And we'll be talking about 
+synchronization and synchronization 
+permitives. 
+So let's, let's go back to 
+multithreading, And look a, actual 
+simultaneous multithreading which is 
+where we left off. 
+So just to recap, we talked about 
+different types of multithreading. 
+We talked about not multithreading 
+processors, so we have a superscalar 
+where we're trying to fill in the empty 
+slots here. 
+So we can do some fine-grain, but not the 
+simultaneous multithreading. 
+We can do coarse-grain multithreading we 
+can even possibly think about trying to 
+do this in some fast software layer. 
+You could think about just cutting your 
+cluster in half and using half your ALUs 
+for one thread and half your ALUs for 
+another thread. 
+That is sort of technically a version of 
+multithreading. 
+It's just not executing oh, it is 
+executing at the same time, but it's not 
+necessarily using all the resources. 
+and then you could think about actual 
+simultaneous multithreading, where you're 
+issuing instructions from different 
+threads into different functional units 
+at the same time. 
+So, we talked about this last time and 
+we, one of the things that came up was, 
+how do you go about getting a 
+parallelism? 
+So, if you have thread-level parallelism, 
+you can mix and match different 
+instruction slots from different threads 
+and get parallelism that way. 
+And one of the great things about 
+simultaneous multithreading is that if 
+you have a fast superscalar machine and 
+you try to use it for simultaneous 
+multithreading, 
+you could think about trying to reduce 
+the number of threads if you don't have 
+enough thread-levle parallelism and 
+actually go at instruction-level 
+parallelism. 
+So here, we see this blue crosshatch. 
+block zero instructions, 
+and this is the same thread running in 
+the same sort of time period. 
+And, if you have lots of threads running, 
+you could actually intermix the different 
+threads and run the blue crosshatch 
+threads slower, than if you were try to 
+use parallel resources to run one thread 
+faster. 
+And this is one of the big insights here 
+that symmetric multithreading lets us go 
+after. 
+So we briefly talked and flew through 
+this at the end of lecture last time 
+because we talked about, what is the cost 
+of implementing symmetric multithreading. 
+So, conveniently, there is actually a 
+really good example of this, 
+the Power 4 by IBM and the Power 5 by IB, 
+IBM. 
+They're very similar architectures, 
+except the Power 5 has two way 
+simultaneous multithreading, 
+and the Power 4 is almost the same 
+architecture without two way symmetric 
+multithreading. 
+So you look at these two pictures. 
+One of the big things they added is they 
+added more fetch bandwidth, so you can 
+fetch from two different program counters 
+at the same time. 
+You can decode more instructions, and 
+then, they added an extra pipe staging 
+here, which they, they do what we'll 
+call, what they call group formation, 
+which is basically the scheduling of the 
+two different threads instructions, 
+together by the time that it reaches the 
+execution units. 
+Also over here, they, 
+as, as we've talked about before, even 
+without symmetric multithreading, it's 
+pretty useful to have more registers or 
+more physical registers, registers and 
+more architectural registers. 
+You, you're minimally going to need more 
+architectural registers, 
+more physical registers probably is a 
+good performance thing. 
+So, we're talking about implementation 
+details. 
+So, one of the questions that comes up 
+is, what is the cost of actually going to 
+implement this symmetric multithreading 
+on this processor? 
+And one of the questions that also comes 
+up here is, why two threads instead of 
+four threads, or eight threads, or more 
+threads? 
+It has costs. 
+So, that's one of the things that they 
+would actually have to start replicating 
+more data structures. 
+For the pipeline that they had roughly 
+left over from the penny, excuse me, the 
+Power 4, they had enough compute and 
+bandwidth through their execution units 
+to be able to handle two threads. But if 
+they wanted to try to go to more threads, 
+they basically bottleneck somewhere in 
+their architectures. I don't completely 
+know exactly where they turtlenecked. 
+They, 
+the, the paper talks about this, it 
+basically says that they bottleneck. 
+Somewhere in their execution I guess they 
+kind of leave it a little vague. 
+so they decided that it wasn't worth 
+adding more than two threads, because 
+it's not going to give you any 
+performance increase, unless you have 
+threads that don't have or, or, threads 
+that have a lot of stalls. 
+If you have threads with enough stalls, 
+you probably have enough holes to try to 
+intermix another thread in there. 
+So, some of the changes in the hardware 
+they were about doing. 
+Well, they actually increased their cache 
+size, 
+they increased the associativity of their 
+caches their last level cache here that 
+went to 1.92 megabytes versus 1.44 of the 
+L2 and L3 together. Sorry. 
+and you can see here one of the 
+interesting things is they start to 
+actually separate data structures, 
+because if you have multiple threads 
+running and you try to mix them all into 
+one big data structure, one of the 
+problems like, or one of the big hardware 
+data structure, one of the problems that 
+comes up is maybe one of the threads is 
+going to hog the data structure. 
+So, threading actually introduces a lot 
+of complexity, having to do with figuring 
+out how to be fair in the usage of the 
+structures. 
+So one solution is you just replicate. 
+So anywhere there was, it was hard to get 
+it right or hard to have they have a lot 
+of conflicts you could just replicate. 
+So they added a separate instruction 
+fetch, prefetch and buffering. 
+and then they added more physical they, 
+they call them virtual registers here, 
+but it's more physical registers 
+effectively, 
+so more places to schedule into. 
+So there were some added hardware costs 
+to this. 
+And to give you an idea of sort of area, 
+24% area improvement increase, 
+a lot of this is just due to the cache, 
+because they made the cache so much 
+larger. 
+So, you have to ask yourself, does it 
+make sense to use a 25, 24% more area to 
+run two threads or at one point does it 
+make sense just to plop down a second 
+processor? 
+It's tough trade there. 
+Well, if it's 24% bigger and you get a 
+two times performance boost, it was a 
+good trade. 
+If it was 24% bigger and you get less 
+than a 24% performance boost, it's pretty 
+questionable. 
+So let's look at another example and then 
+we'll wrap up on the performance of this 
+and see if they did get their 24% 
+performance boost. 
+The first implementation of symmetric 
+multithreading, there's been many 
+implementations of multi threading. 
+But excuse me, not symmetric, 
+simultaneous multithreading, was the 
+Pentium 4 processor. 
+Now they called it, hyperthreading. 
+that's a Intel marketing term. 
+it is simultaneous multithreading, 
+but the Pentium 4, they didn't actually 
+replicate very many structures. 
+They didn't really change the processor 
+very much. 
+And in fact there's basically modes to 
+turn off simultaneous multithreading 
+they're paying for, and it was not a 
+flagship feature when the processor was 
+first shipped. 
+So the, the, the basic idea in the 
+Pentium 4, the, the, the little bit of 
+extra hardware they added was, they did 
+duplicate some, some resources here. So, 
+overall they, they increased their dye 
+area by about 5%., So very, very small 
+amount. Now the question is what is the 
+performance boost they can get from this? 
+[COUGH], and one of the interesting 
+things here is that there was a big 
+problem that started to come up with the 
+Pentium 4 that when you were trying to 
+run one thread on it, well, you weren't 
+guaranteed that the performance of that 
+one thread would be equal to if you 
+turned off hyperthreading, or sorry, 
+symmetric simultaneous multithreading. 
+So they had a mode switch, 
+they could turn off, where they would 
+take some structures that they would 
+partition when they were in 
+multithreading mode and partition them 
+50/50. 
+So you didn't have deadlock problems and 
+you didn't have resource contention 
+problems on the shared structures. 
+And when you turn this mode switch off, 
+[LAUGH], some programs got faster, to 
+some extent what that meant is, they 
+didn't size those structures correctly to 
+be running in multitraining mode at all 
+times. And the switch was not a little 
+switch. It was like a big switch. 
+It's like reboot the computer and change 
+the switch. 
+It was it was a boot time parameter, 
+parameter to the chip. 
+And this left such a bad taste in, in 
+Intel's mouth that simultaneous 
+multithreading got kicked out of Intel 
+land for a few generations. 
+The Pentium M, Coreduo, Core2duo all 
+kicked out simultaneous multithreading. 
+And it didn't work it's way back in until 
+inhalem core i5, i7 sort of processors 
+there recently. 
+So, it's interesting to see that, you can 
+use a little bit of hardware, but you 
+have to be careful, now, what was, what 
+was the biggest problem that they had 
+here? 
+The, the biggest problem was that the 
+load store queue on the Pentium four was. 
+Split in half when they were running in 
+two thread mode. 
+So the first Pentium 4 architecture that 
+was shipped. 
+It had symmetric or simultaneous multi 
+threading turned on. 
+They just split the structure in half. 
+And it didn't have enough bandwidth for 
+lots of programs. 
+Or didn't have enough entries in there 
+for lots of programs when it was cut in 
+half. 
+So it was sized to run one thread. 
+They cut it in half statically and when 
+they tried to run two threads it was, 
+effectively. 
+Not providing enough performance. 
+So they couldn't get enough loads out to 
+the memory system from one thread when 
+they cut that structure in half. 
+So it really starts to bring up the 
+question of what is the right allocation 
+of resources. 
+And, should you use some sort of round 
+robin scheme? 
+Should you use dynamic allocation? 
+Should you use static allocation? 
+Should you replicate? 
+If you replicate it costs more area and 
+this is, these are some of the big 
+challenges here. 
+Okay so let's look at the, the, some of 
+the performance here. 
+So the, The numbers were pretty abysmal 
+for the Pentium 4. 
+Even when. 
+Everything was going well. 
+So. 
+Example here. 
+Pentium 4. 
+Extreme edition with simultaneous 
+multithreading give you one% speed up 
+when you're running two threads, for spec 
+int. 
+Rate. 
+So you're running multiple, copies of the 
+same program, that's how spec, spec rate 
+is done. 
+And that was the integer of one. 
+For the floating.1, it did a little bit 
+better. 
+Seven% improvement. 
+Now, that's not horrible, considering it 
+was only a five% area. 
+Improvement or area increase, but still 
+that's, that's not saying a whole lot. 
+I mean you have to question if that's 
+really, this whole level of complexity 
+was worth it. 
+And was at five% area, could have been 
+used for something else to get a few 
+percent performance increase. 
+And this was to some extent pretty 
+typical across applications for the 
+Pentium 4. 
+One of the, the interesting things about 
+the, the, the Pentium 4 was. 
+Because the cash wasn't huge, especially 
+the L1 cash was relatively small because 
+they wanted it to operate so fast, at the 
+very high clock frequencies. 
+You get a lot of data pollution in there 
+from the two threats that would actually 
+destructively interfere in the level one 
+cache. 
+So that was one of the big things they 
+had to try and make up was this is a 
+problem of any multi-threading. 
+Not just simultaneous multi-threading, 
+that you can actually fight for space in 
+the cache. 
+And end up with both capacity and 
+[INAUDIBLE]. 
+The Power five did a lot better here. 
+You know it was, they, they thought a 
+little bit harder about sharing 
+structures, duplicating structures, and 
+allocation of different resources in 
+there. 
+So on, on Specint, they, Specint rates, 
+they were getting 23% improvement for 
+their 25% area. 
+Okay. 
+Well, this, this might actually be a good 
+idea. 
+It might have some value. 
+[COUGH] And for the floating point 
+version, they are not doing great, but 
+doing better here. 
+And. 
+The, the floating point apps had a lot 
+of, cache conflicts, so the floating 
+point spec FP apps, if you go look at 
+them in the inside, they typically have 
+very large data sets, so they were 
+basically conflicting in their large, 
+larger, last little caches and things 
+like that. 
+So finally I wanted to just give a little 
+bit of color to this idea of picking 
+fairly and not having starvation in 
+different resources in a simultaneous 
+multi trading pipeline. 
+So one processor that's sort of the 
+famous, simultaneous multiframe processor 
+that was never built, was the EV eight, 
+or the Digital Equipment Corporation last 
+alpha, that was never built. 
+So this last alpha, the, EV eight or also 
+known as the 21464, 
+Have introduced they had eight way 
+threaded processors note this was never, 
+never built but, it was [INAUDIBLE] super 
+scale that it had eight way, eight way. 
+Simultaneous multi-threading. 
+It also was a very aggressive processor. 
+And when I say it was never built, it was 
+never shipped commercially. 
+They went pretty far in the design of it. 
+So one of the questions that they 
+realized upon here is, what is the right 
+way in an out of order pipeline to make 
+sure that you're getting correct 
+utilization of the pipeline when you're 
+issuing instructions from different 
+threads? 
+So in this example here, we have four 
+different threads we'll say. 
+And, you need to choose to go into your 
+multi issue out of order pipeline here, 
+which thread to go pick from. 
+And, by definition you want to try to 
+fill in the holes of one of the threads 
+with work from another thread. 
+So, complete fairness here or lockstep 
+round robin choosing for instance is not 
+what you want to do. 
+Completely wrong thing to do. 
+Because you want to fill in when one 
+processor is stalled, with other 
+processors work. 
+But, you want to make sure that the 
+thread which let's say, has no 
+dependencies on each other. 
+Or could run very fast, doesn't go to 
+memory very often, we'll say, it just 
+doesn't stall very often. 
+Doesn't just hog the processor. 
+Because it's never going to introduce 
+stall cycles on itself by itself. 
+So they came up with this idea called 
+icount, and it was a choosing policy 
+which basically looked at the number of 
+instructions that were retiring out of 
+the back of the pipeline, had like a 
+moving window to try to estimate how many 
+instructions from each thread were 
+completing and then, feedback around to 
+the front of the pipeline here to 
+determine where to issue from. 
+So I, I just wanted to get across the 
+idea that, if you try to intermix 
+different threads in a data structure, 
+it's relatively simple. 
+You can either cut the data structure in 
+half, or have some round-robin allocation 
+there. 
+It gets much more complicated when you 
+have a full processor pipeline that you 
+need to figure out how to issue into that 
+processor pipeline. 
+And, then you know 20 stages later, if 
+something happens, 
+there's so much stuff in flight that you 
+need to, need to worry about this a 
+little bit harder. 
+So here, they, they basically were 
+looking at how many instructions were in 
+flight and how many instructions had 
+recently committed from a thread to 
+determine what to do. And, on average 
+they were hoping that they had some 
+fairness between the threads. 
+

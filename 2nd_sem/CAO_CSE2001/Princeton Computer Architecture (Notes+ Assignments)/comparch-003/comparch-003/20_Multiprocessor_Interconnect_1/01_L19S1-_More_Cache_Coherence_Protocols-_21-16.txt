@@ -1,0 +1,567 @@
+So, today we're going to continue our 
+adventure in computer architecture and 
+talk more about parallel computer 
+architecture. 
+last time we talked about coherence, 
+memory coherence, and cache coherence, 
+systems and to differentiate that from 
+memory consistency models which is a 
+model of how memory is supposed to work, 
+versus the underlying algorithms that try 
+to keep memory consistent, and try to 
+implement the consistency models. 
+We left off last time, we, we were 
+talking about MOESI, or also known as the 
+Illinois protocol, 
+and we walked through all of the 
+different arcs through here. 
+And if you recall what we were talking 
+about, was, we split the shared state 
+from the MSI protocol into two states, 
+shared and exclusive. 
+And the insight here is, it's very common 
+for programs to read a memory address, 
+which will pull it into your cache. 
+And then go modify that memory address. 
+So for instance, if you want to increment 
+a number. 
+You're going to do a load. 
+It's going to bring it into your, your, 
+ca-, or into your register set. 
+But also into your cache. 
+You're going to going to increment the 
+number and then you do a write back to 
+the exact same location. 
+Pretty common in imperative programming 
+languages. 
+Declarative programming languages like 
+Scheme and such, they may at times copy 
+everything. 
+But for declara- excuse me, imperative 
+programming languages it's pretty common 
+to actually change state in place. 
+So, because of that, you can bring it 
+right into, this exclusive stage, and 
+then when you have to go to modify it, 
+you would have to go and broadcast in the 
+bus. 
+You know, you would have to talk to 
+anybody and would loose, hm, effectively 
+this intent to write message. 
+Then you would have to send otherwise 
+across the bus and waiting for that 
+address to be snooped on the bus, or be 
+seen by all the other entities on the 
+bus. 
+note I, I say entities in the bus. 
+We've been talking primarily about, 
+processors, the last day, 
+but there can be other entities on the 
+bus that want to snoop the bus. 
+So examples sometimes include coherent, 
+IO devices. 
+So, 
+this isn't very popular right now, 
+but I think this will become much more 
+popular as soon as we start to have, GPUs 
+or Graphics Processing Units or general 
+purpose GPUs, 
+which will be sitting, effectively, very 
+close to our processor on the same bus, 
+and will want to take part in the 
+coherence traffic of the processor. 
+So it's going to want to basically read 
+and write to the same memory addresses 
+that the processor is reading and 
+writing, 
+and take part in the cash coherence 
+protocol. 
+[COUGH] At a minimum, usually your IO 
+devices need to effectively tell the 
+processor when its doing a memory 
+transaction that the processor should 
+know about. 
+So typically when you are moving data 
+from a IO device to main memory, 
+that's going to have to effectively go 
+across the person. 
+Everyone is going to have to validate 
+their cache's, you have to snoop the 
+traffic, or they will all have to snoop 
+that memory traffic from the IO device. 
+So we had talked about MOESI as an 
+enhancement to MSI. 
+Well, we left off last time, and we were 
+going to talk about two more enhancements 
+that are pretty common. 
+one is been used widely in AMD Opterons. 
+I think they still use this in AMD. 
+I think they use something similar to 
+this still in AMD, is my understanding. 
+and the idea is you add an extra state 
+here, 
+which is called ownership, or the owned 
+state. 
+And effectively, what this is, is it 
+looks just like our MOESI protocol from 
+before. 
+But now, instead of having data in the 
+modified stage, when you, let's say 
+another processor needs to go access that 
+data, instead of having to send all that 
+data back to main memory, and validate 
+that line out to main memory, and go 
+fetch it back from main memory. 
+Instead, you can do direct cache to cache 
+transfer. 
+This is of a, basically an optimization 
+here. 
+So, you don't have to right back to data 
+to main memory, 
+and in fact you can allow main memory to 
+be stale. 
+And you can just transfer the data across 
+the bus from the one cache to the cache 
+which needs it. 
+So in this example here, we're going to 
+look at this edge here. 
+So another processor wants to read the 
+data. 
+So we see an intent to write to a 
+particular cache line and our processor 
+currently has it in the modified state. 
+We see this other processors intent to 
+write, and. 
+[COUGH] or excuse me. 
+Intent to read. 
+And we're actually going to provide the 
+data out of our cache, 
+and not write it back to main memory, 
+and transition the line in our cache to 
+this owned state. 
+The other processors can now take it in, 
+and take it in a shared state. 
+So they will have it a read, read only 
+copy. 
+Now, note this is only for, for 
+read-only, we'll talk about if another 
+processor wants to write to the state in 
+a second. 
+So we have it in its own state, and what 
+we're trying to do here is this processor 
+is tracking that, that data needs to be 
+written back to main memory at some 
+point. 
+That's the whole purpose of this state 
+here, 
+is we've basically designated a processor 
+which owns the data and owns the modified 
+state. So the processors which take at 
+read only get it into the shared state, 
+and if they need to invalidate the line, 
+they don't need to contact anybody. 
+Because they are having a share state, 
+they have a read-only copy. 
+They don't need to make any bus 
+transactions. 
+[COUGH] So if you think about it, if you 
+actually want to effectively have one 
+core, read the state from other, read 
+this dirty state from the other core, 
+and then in some points it goes in and 
+just invalidates it in the, in the second 
+core. 
+If the data is not up to date as in, it 
+would be in main memory, you lose the 
+changes. 
+So, by one processor keeping it in the 
+own state here, it keeps track that at 
+some point, if it never gets invalidated 
+out of that processor's cache, it needs 
+to write that out to main memory, to keep 
+it up, up to date. 
+Now, there's a couple other arcs here. 
+you can transition from the own state 
+back to the modified state if the 
+processor, which has it in the owned 
+state wants to go to a write. 
+[COUGH]. 
+It can't do that while it's in the owned 
+state, 
+because while it's in the owned state, 
+other processors may have shared copies 
+of it. 
+So, when it needs to do that, 
+if it wants to do, P1 wants to do a write 
+here, it needs to re-invalidate everyone 
+else's copies across the bus. 
+So it's going to have to send an intent 
+to write for that line, 
+and everyone else will snoop that 
+traffic, and transition to the invalid 
+state. 
+And then, this processor will be able to 
+transition to the modified state, 
+and now it's able to actually modify the 
+data. 
+Okay. 
+So we've got this arc here, which we sort 
+of already talked about, is that if 
+you're in the owned state, anyone else 
+can get read only shared copies of it. 
+[COUGH]. 
+They can't go get an exclusive copy, 
+because that would basically violate this 
+notion, because then they would be able 
+to upgrade to modified without telling 
+anybody, and we don't want that. 
+But they can get shared read-only copies 
+of the data and then there's this arc 
+here from owned to invalid, is if some 
+other processor wants to write the data. 
+We're going, processor 1, P1 here will 
+say, 
+we'll see the intent to write from 
+another processor. 
+It will, snoop that traffic effectively, 
+and at that point it will transition to 
+this invalid state. 
+note here that this intent to write, we 
+may need to provide information across 
+the bus when we're in the owned state. 
+Because if the only, if we're the only 
+owner of that, or the only cache that has 
+that data, and the other processor is 
+basically going straight into this state 
+here via rightness, we're going to need 
+to provide the data. 
+Okay, so, questions about MOESI? 
+So far, 
+But a basic, extra optimization.'Cause we 
+don't have to. 
+We can basically transfer data around. 
+And one cache can have a, a, a cache line 
+in the owned state. 
+And later, some other cache, you know, 
+the exact same cache line in the own 
+state. 
+And it can basically bounce around 
+without ever having to go out to main 
+memory. 
+And this, this decreases our bandwidth 
+out to the main memory system. 
+Okay. 
+Then we're going to talk about MESIF or 
+MESIF, which is actually used in the core 
+I7 in the most up to date Intel 
+processors. 
+And it looks very similar to MOESI, 
+except we're going to see an extra little 
+letter in this one bubble here. 
+Effectively, 
+the, what's going on here is we add an 
+extra state called the Forward State. 
+And this is similar to sort of the 
+optimization we saw in MOESI, except it 
+can't keep the data writeable. 
+So, what happens in this protocol is, 
+let's say the first cache, which does a 
+read miss on a line for widely shared 
+data is going to be elected and going to 
+get the data in this forward state. 
+And then if other caches want to get read 
+only copies, bring it in shared. 
+Instead of having to go out to main 
+memory, 
+the cache that has it in the forward 
+state is going to provide that data 
+across the bus. 
+So this is going to effectively decrease 
+our bandwidth to main memory, by 
+providing the data out of another 
+cache's, 
+cache, effectively, or another 
+processor's cache rather, and then you 
+won't have to, have to transition it. 
+Now, this is a little bit of a 
+simplification. 
+There is a question here of, if you're in 
+this forward state and you invalidate the 
+data. 
+Who has it? 
+does anyone provide the data? 
+So there's sort of two choices here. 
+One choice is no one has it in the 
+forward state. 
+So when it's a snooper quest for a line, 
+it actually has, it just have to go out 
+of the main memory. 
+That's kind of the easy case. 
+The other case is you could try to 
+actually build a protocol where another 
+cache when one, one cache invalids the 
+forward, it just chooses another cache. 
+But probably the simplest thing you do is 
+when the forward, the forwarding core 
+invalidates the data. 
+For whatever reason, you just go back out 
+to main memory, because there's always a 
+copy in main memory. 
+So effectively you're just keeping read 
+only copies. 
+Yeah, 
+you're right. 
+You're probably going to enter, into the 
+exclusive state. 
+That's a good question. 
+so I read two different versions of this 
+in, in different books. 
+So, 
+I'm not quite sure Intel actually 
+documents what they do for, for this. 
+probably what's okay, so, so, you 
+probably will, youre probably right. 
+You probably want to enter straight into 
+exclusive state. 
+If you have a read only copy, 
+What. 
+You, you, yeah. 
+So what's going to happen is when you 
+transition from E to S here, you're 
+going to transition from E to F. 
+And then you're going to be able to make 
+this, you'll end up in the F state. 
+So the first person who actually 
+downgrades is going to always end up in 
+the F state. 
+but like I said. 
+I saw other references where people said, 
+There were other people implementing 
+something similar to this. 
+Where they, 
+Some have, some have some election where 
+they figure out who is the, the 
+forwarding, 
+Node, but probably the easiest thing to 
+do is to downgrade from E to F. 
+So the rest of the course, we're going to 
+look at how to scale beyond these 
+broadcast and these invalidate protocols 
+that have to snoop on a bus. 
+so, some of the problems of building 
+these. 
+Snooping systems is, that you need, it 
+really affects how you design your 
+processor. 
+So first of all, you're going to have to 
+add more bandwidth into your cache. 
+Or at least more bandwidth into your tag 
+array. 
+so one choice is going to dual port your 
+tags. 
+Another choice is you can steal cycles 
+for snoops. 
+So what I mean by steal cycles is if 
+there is a bus transaction happening and 
+you need to check this against your tags, 
+you actually block the main processor 
+that is associated with that cash from 
+accessing the cash that cycle, so you, 
+you generate a stall signal to the cash 
+or to the main pipe. 
+[COUGH] And one of the things here that 
+get a little tricky is, and this will 
+affects your design, is if you have a 
+multilevel cache, usually you want to put 
+your sort L2 tag array on the bus and 
+snoop against your L2 tag array. 
+But if it hits there and you figure out 
+that you have to invalidate something. 
+You're going to have to invalidate down 
+the entire cache hierarchy, 
+all the way down to the level one cache. 
+So this can actually affect your 
+throughput on your level one cache 
+effectively. 
+And also, it sort of is, is annoying to 
+do, 
+because it's going to effectively have to 
+reach down and touch your tag array of 
+your L1 cache. 
+And as I had mentioned, I think, last 
+time, briefly. 
+If you're thinking about something like a 
+exclusive cache. 
+So a cache where the tags and the L2 
+don't have the tags in the L1. 
+You're going to have to check both tags 
+for every snoop transaction, and that can 
+be pretty, pretty painful, to do. 
+[COUGH] Or you have to copy, the L1 tags, 
+but it's effectively the same thing as 
+just having a, inclusive cache, 
+but maybe for little less data storage. 
+Okay, so what limits our performance? 
+Why can't we just build 1,000 processors 
+on a big bus? 
+Well it's the same idea if you have 1,000 
+people in this room, and they're all 
+trying to shout to each other at the same 
+time. 
+At some point you, you run out of both 
+bandwidth, and more importantly you need 
+some way to coordinate them. 
+But also, but also if you wanted to, if 
+you're required to basically serialize, 
+the occupancy on the bus goes up. 
+So, if you have one bus with two people 
+talking on the bus at a time, they each 
+can, let's say, and they talk 10% of the 
+time, then you have a 20% utilized bus. 
+Well all of a sudden, if you have ten 
+people on this bus, you have 100% 
+utilized bus and if you have 1,000 
+people, you have an oversubscribed bus 
+so, you have to worry about the 
+bandwidth, and occupancy, because we do 
+need to make these different bus 
+transactions atomic. 
+So it's not quite just a bandwidth 
+problem. 
+And what, what I mean by balance, you 
+could make the bus wider. 
+To increase the bandwidth, but it's not 
+going to solve our problems. 
+Because there's an occupancy challenge 
+here also that you need effectively 
+atomic transactions to happen across the 
+bus in order to keep the cache coherence 
+protocol correct. 
+Okay, so before we move off this topic 
+into our interconnection networks, that 
+we were talking about today, hm, I want 
+to talk about one of the challenge of, 
+that happens in simple cache coherence 
+systems. 
+And that's false sharing. 
+So caches, like to track information on, 
+a particular bloc size. 
+So, we've talked about caches which have 
+64 byte, lines, or 64 byte block sizes, 
+and they can be bigger or smaller than 
+that. 
+Now, one of the things that happens that 
+is pretty unpleasant in these coherence 
+protocols is let's say, you take a piece 
+of data which is shared, and needs to be 
+coherent between two different 
+processors. 
+And it's gets communicated relatively 
+often. 
+And you put some other piece of critical 
+data right next to it, on the same cache 
+line. 
+All of the sudden, what's going to happen 
+is, because they're packed into one cache 
+line, and we only track that information 
+on a per cache line basis, 
+whenever that one piece of data, let's 
+say it's a four byte integer, and there's 
+another four byte integer which is not 
+shared, [COUGH]. 
+Whatever the first four by energy which 
+let's just say a lock or something like 
+that gets, gets bounced around between 
+caches you're going to bounce around the 
+other data. 
+So this can effectively can hurt your 
+performance common case performance for 
+non shared data by having this true 
+sharing of data happening. 
+And this is not something that typically 
+happens in a normal cache because in a 
+uniprocessor cache system you're going to 
+bring the data in and it's going to bring 
+everything in and you get spacial 
+locality. 
+And if you. 
+Pump it out, you know, you can, you can 
+get conflicts which are sort of 
+equivalent to this but it's a little bit 
+different idea here. 
+It's never going to be in the same line. 
+But with false sharing, we, we do see 
+this. 
+Hm, now false sharing is interesting 
+because people have come up with a whole 
+measure of techniques to avoid it. 
+So, anyone have an idea, one, one really 
+good technique to avoid false sharing? 
+What we can do, and this is pretty 
+common, is either the programmer or the 
+compiler can detect that this is 
+happening and it will actually pad the 
+information out. 
+So waste memory for highly contended 
+pieces of data, and co-locate it with 
+nothing that is shared. 
+[COUGH]. 
+So one of the better examples of why you 
+really have to care about this is 
+something like your stack. 
+Sometimes if you, if you were to have, 
+let's say, a lock on your stack, there's 
+a lot of data which you need to use 
+often, and it's all local. 
+Stacks between threads are all local. 
+But if you have, like, some sort of 
+variable that you pass to someone else, 
+which is a struct, and inside that struct 
+is a lock, or something like that. 
+All of sudden, you're basically going to 
+be bouncing a line around which is your 
+stack. 
+And it's, other people are going to be 
+invalidating your stack. 
+So one way to solve this is 
+when you put a lock, 
+and the compiler can sometimes recognize 
+this. 
+Because you can actually designate memory 
+addresses as locks, 
+with special keywords, sometimes, 
+depending on the language. 
+And when you do that, it'll say, oh, 
+don't put this with anything else, 
+or maybe only collocate this data with 
+things that are other locks. 
+because that may have bad sharing 
+performance anyway, for instance. 
+So and really what you want to do here, 
+is not have a false sharing case. 
+Now, the analog default sharing is 
+actually true sharing. 
+So there are, there are cases where 
+you'll have multiple pieces of data that 
+are, shared differently between different 
+lines. 
+But they are also widely shared. 
+So example of this is, you have an array 
+of locks, and different processors won't 
+be grabbing these blocks randomly. 
+[COUGH] You can use similar techniques in 
+fold sharing. Now, you probably don't 
+want all those locks to be on those cache 
+line. 
+Because the locks are basically going to 
+be bouncing around, 
+and everyone is going to be contending 
+for that one cache line to get it, 
+modified in their ache, 
+or in the M state in their cache. 
+So what you can think about doing is, is 
+actually just doing the similar 
+technique, and putting, each of those 
+locks on a separate cache line. 
+Okay, so let's switch gears here. 
+

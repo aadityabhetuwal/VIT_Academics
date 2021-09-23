@@ -1,0 +1,32 @@
+﻿L4S2:
+
+In Lecture Quiz 1:
+Time: 3:30
+
+Question:
+Will a larger cache always have a smaller cache miss rate than a smaller cache?
+
+Choices:
+
+A. Yes
+
+B. No
+
+
+--------------------------------------------
+
+In Lecture Quiz 2:
+Time: 16:39
+
+Question:
+What is wrong with building a 2-way set associative cache always (compared to direct-mapped cache)?
+
+Choices:
+
+A. More data storage logic is needed.
+
+B. More tag check logic is needed.
+ 
+C. The cache miss rate is higher sometimes.
+
+D. All of the above.

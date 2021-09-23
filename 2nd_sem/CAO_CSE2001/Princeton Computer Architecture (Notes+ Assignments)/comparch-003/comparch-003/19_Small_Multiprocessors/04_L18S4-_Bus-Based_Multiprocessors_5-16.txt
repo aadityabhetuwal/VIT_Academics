@@ -1,0 +1,101 @@
+So, let's start thinking about how to go
+build
+a memory coherence protocol.
+So, as a little bit of warm up.
+For a memory coherence protocol we'll
+actually see that this problem.
+Exists beyond multiprocessor systems.
+So a lot of the motivation for these ideas
+in
+[UNKNOWN]
+coherence protocols actually pre-date even
+having multiprocessors.
+And how is that possible?
+Well the same problem ends up in.
+I/O.
+So let's say you have parallel I/O.
+So let's take a look at this picture here.
+We have one processor, a uni-processor
+system and we have main memory here.
+And we have a cache.
+And then over here we
+have a disk with a DMA engine.
+So a direct memory access engine.
+So this is an autonomous,
+controller here which can move data from
+the disc to main memory and
+vice versa.
+So how does, how does this come up with,
+something like parelell, what problems can
+come up with something like parallel i/o?
+Well, let's say that the disk here wants
+to
+transfer a page from the disk to physical
+memory, or to main
+memory, while the processor is running.
+Well, you program up the DMA controller,
+it says go.
+Well, it's going to start copying data
+here from the disk out to main memory.
+Well, because we have not done anything on
+this bus, we just use it as a way to
+communicate, the cache here might have the
+same addresses that are being written to.
+And, now they're going to have stale
+values.
+So they'll never actually pick up the
+value from
+That just got DMAed, or just got moved
+from the disk to physical memory.
+Likewise so that's disk to memory.
+You might get scale data in the cache.
+Likewise you could have memory trying to
+go to disk here.
+So, let's say you start to have a DMA
+transfer from main memory to disk,
+but you might have data in the cache here.
+Let's say it's a write back cache.
+Well, this transfer could get started, but
+it could miss.
+Updated data here in the cache.
+So we can try to start doing copies, but
+because we said the DMA
+agent just copies directly from physical
+memory
+to disk, it'll just miss those updates.
+So there's no good way for the processor
+to go and write data to the disk, and,
+and this is something you fundamentally
+want to do, so there's a couple
+solutions to this.
+And this is sort of brainteaser to get you
+thinking about this.
+But what do you need to do to guarantee
+some way of having the disk here.
+For instance we will see the data that's
+in the cache.
+Well How do you go about doing this?
+You need some way to either invalidate the
+cache and send these to main
+memory and have the disk pull out the
+updated or most up to date copies.
+And this is a sort of similar notion as
+what we have to do, back in this example
+here.
+We need some
+way to
+either get
+the most
+up to date
+value or, or
+invalidate or
+pick data
+out of
+apical
+cache.In
+other wards
+to allow
+new windows
+to see
+updates.
+

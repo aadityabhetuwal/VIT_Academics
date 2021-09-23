@@ -1,0 +1,21 @@
+L19S1:
+
+In Lecture Quiz 1:
+Time: 8:53
+
+Question:
+In the MOESI Protocol, when data is in the Owned State, if the data is evicted, does the data need to be written to main memory?
+
+In Lecture Quiz 2:
+Time: 18:44
+
+Question:
+How can you avoid false sharing?
+
+A. Put unrelated data on different cache lines
+
+B. Increase cache line size
+
+C. Decrease cache line size
+
+D. Increase cache size

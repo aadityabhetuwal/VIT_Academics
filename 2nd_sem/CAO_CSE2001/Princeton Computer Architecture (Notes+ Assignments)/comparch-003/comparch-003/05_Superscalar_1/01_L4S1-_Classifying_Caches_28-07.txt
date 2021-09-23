@@ -1,0 +1,744 @@
+So, a few things that on our agenda for
+today, we're going to finish up talking
+about a review of cashes, and that we're
+going start talking about in order
+superscalars so this is something new.
+And I want to say this now but, well, I'll
+reiterate when I come to it.
+This other book.
+The [unknown] book, is probably use more,
+is much more useful for the super scalar
+portion of our class than the Patters or,
+Hennessy and Patterson book.
+And I recommend either acquiring it or
+borrowing a friend's Or the library has a
+copy of that book.
+And at least reading the, sort of, two to
+three chapters in there would be useful.
+But that's not until the second half of
+today's lecture.
+The first half, we have to go and finish
+up caches.
+So, going back to review, let's, let's
+talk about caches can look like on the
+inside and a couple, a couple of different
+things about how to classify caches.
+So, we've already talked about why caches
+are good.
+So, a little bit of a review here.
+You have big slow things over here.
+Big slow memories and you have the
+processor.
+And you can, you know, you can think about
+how to build small fast memories.
+And if we can put a small, small fast
+memory close, and have a high probability
+that, you know, things are actually
+located in this small fast memory, then we
+don't have to go out to the big slow
+memory as often.
+We can save power and perform, and, and,
+and, have better performance, etc.
+Okay.
+So, how do we, how do we classify caches
+and what, what are, going, reviewing what,
+what a cache, sort of looks like on the
+inside?
+So, processor, cache, main memory,
+addresses flow that way.
+Data can go either direction cuz you can
+either do a store which will put data out
+from left to right or you can read back
+data or do a load which will have data
+going back the other way.
+So, let's look, look at our sort of a
+mythical view here of what a cache looks
+like, or, or our view of what a cache
+looks like on the inside.
+So, caches contain copies of what is being
+stored in the main memory.
+And if you look at it inside of it here,
+you know, this, let's say, first line is
+at [unknown] store address 100.
+So here, we have address 100, and it has
+some data in there and, typically, you
+introduce this notion of a line in a cache
+because we want to reduce the tracking
+information for a particular cache line or
+sometimes called a block in the cache.
+If we, it is possible to build something
+which, you know, tracks data on, let's
+say, a bit or a byte basis.
+But then, you're tracking information
+that's probably larger than the amount of
+data you're actually trying to store.
+So, that's not, not really a great idea
+there.
+In the cache here, if you look inside of
+it what we store, is we store an address
+tag.
+So, it's not the full address.
+It could be the full address, but then
+you're probably storing extra, extra bits.
+You only need to store enough of the
+address to be able to differentiate
+different things that could be stored at
+the same location.
+So, in a fully associative cache, where
+you can put any data in any location, you
+will have to store for instance, the whole
+address in the tag.
+But, if you, let's say, have a direct
+mapped cache where each address can only
+go to one location, you would get up to
+store a subset with this.
+Yes, and I wanted to sort of point out
+here, you know, sometimes people call the
+whole thing here, a line.
+A line typically includes the tag
+information and possibly valid bits, and
+the block is the actual data that we're
+storing.
+Okay.
+So, this is really review here of how the
+algorithm or what the cache, caches looks
+like.
+Well, let's view briefly.
+So, processor issues a load, so we're
+going to look at the load case here.
+We take the address and we compare the sub
+sets of the bits that can be, could be
+different for different things that store
+in interesting location in the cache and
+we check against the tag.
+One thing not shown here is we also need
+to check to make sure it is valid, because
+it is possible you could have an invalid
+cache line.
+So, it's typically, is one bit which says,
+whether the cacheline is valid or not
+valid.
+You have to make sure it is valid.
+And if so, you get a cache hit and just
+return the data.
+If not, you go out to the main memory.
+Ooh, this is a tricky one here.
+You have to go find someplace to go put
+that data because this new data comes in
+and if you want to store it in your cache
+now, there's probably something in that
+cache at that same location, these just
+sort of bump out.
+And, we're going to talk briefly about
+replacement policies, and later in the
+advanced caches lecture, we'll talk more
+about that and other cache policies, and
+much more advanced replacement policies.
+But you kick something out, and you fill
+it in, and then finally you return the
+data.
+You could also think about trying to do
+sort of, this step and this step in
+parallel effectively, and a lot of cache
+system and more advanced cache system will
+actually return the data before they sort
+of finish the eviction or, to, to reduce
+the leniency of the load.
+Okay, so let's, let's do some
+classification, so some pathology here of
+what a cache looks like.
+So, what, what could we talk about?
+We could talk about block placement.
+So, this is locations that a particular
+block or particular, particular address
+can be found in the cache.
+Block identification, which is the
+structure of how to actually go find
+something in a cache if I give an address.
+So, this is kind of an inverse of the
+placement question.
+Block replacement which is figuring out
+what should be replaced on a miss and then
+finally what happens on a write.
+So, these are all sort of read questions.
+Well, block replacement is not really a
+read question here, but the write strategy
+is a, is a good question here of what
+happens when a write occurs, do we update
+all the caches, only the main memory, do
+we evict just out of the cache?
+And all these are possible strategies to
+choose.
+Okay, so let's look at a block placement
+figure here, and look at a couple
+different types of caches.
+So, up here, we have a 31 or excuse me,
+32-word memory.
+So, let's say, this is the, all of the
+memory in the machine.
+And, depending on how you want to look at
+this, maybe the, each block, let's say, is
+one byte, or it could be some number of
+bytes.
+So, to give an example, a typical,
+something like your Core two Duo, I
+believe has a 64-byte cache line, or cache
+box size.
+Some people have tried to, for, push that
+up, and, and there's reasons to, sort of,
+make it larger or smaller, but we'll talk
+about that in a second.
+So, let's take a, this highlighted
+location here, block number twelve.
+And let's see, where it can fit into
+different types of caches.
+So, we have three different types of
+caches here.
+Let's, let's start on the right side here.
+So, on the right side, we have what's
+called direct mapped cache.
+So, the direct mapped cache.
+It is, literally, an array and each block
+can only fit one place into the cache.
+And the indexing function that you use is
+you take the block number mod, the size of
+the cache.
+So, in this case, we are, have block
+number twelve, or byte number twelve here,
+we take twelve mod eight, it says block
+four.
+So, this is the only place to go look for
+the data.
+Okay, that's, that's nice and, nice and
+simple.
+It may not be the best performance, easy
+to build.
+It's all index-based.
+Okay, then, sort of one step up from
+there.
+We can start to look at things like set
+associativity.
+So, what set associative means is instead
+of having only one location, one unique
+location that a block can be placed, you
+allow it to be in some number of
+locations.
+So , in this, there's, in this drawing
+here, there's a two-way set associative
+cache.
+So, each block can either fit in one of
+two places.
+Now, you can actually have, you know,
+machines which have much more
+associativity, or higher associativity.
+So, an example of this is the modern Core
+i7 processors.
+Their, sort of L1 caches are 8-way set
+associative and farther out, they're even
+higher associative.
+Probably, I think they have a 16-way set
+associative cache out in their L3 or L,
+farther out caches.
+So, let's, let's look through basic
+example here.
+If we want, twelve mod four, so how do we
+do this?
+Well there's only four buckets, if you
+will.
+And inside of that bucket, it can fit into
+either of the two sort of sub-slots in the
+bucket, or they're called ways.
+So, if we take twelve mod four, that means
+twelve mod four, is zero.
+So, it has to fall into, this, this bucket
+here.
+It can be in either one of those two,
+ways, and it can't be in both.
+That's an important, important point
+there.
+Finally, there are types of caches which
+we'll call fully associative caches.
+So, what this means is the associativity
+or the number of ways is equal to the
+number of elements in the cache.
+So here, there is a, there are eight
+elements, there are eight walk locations
+in this cache.
+And it's fully associative, which means
+that there are eight different sets, if
+you will.
+So, it can fit in any of these locations.
+So, this same address here or block number
+twelve can fit anywhere in this cache.
+Okay.
+So now, the next question is how do we
+actually find the block in the cache?
+So when, you're going to, let's say, take
+an address, and you want to go figure out
+where it goes in the cache.
+Let's, let's take a look at the example of
+a, a direct mapped cache first.
+And here, here's sort of our information.
+We have, we have the data block and then,
+we have some tag information and we have a
+valid bit.
+So, if we look at the address that we're
+sticking in here, so, let's say, this is
+like a 32-bit address.
+Some portion of that address is just going
+to figure out where in the data block the
+load or store is going to.
+So, if you have, let's say, a 64-byte
+cache line or 64-byte blocks, data block.
+You're going basically index into some
+sub-word in there based off the offset
+bits.
+Then, we start to look at the block
+address.
+So, the next the, this is the traditional
+way to do this is that you use, that you
+use these sort of middle order bits as the
+index.
+There are more complicated cache systems,
+which move this around or do much more
+complicated hashing functions.
+But the basic hash function here, is we're
+going to take the index.
+So, in this cache here, let's say, that
+has three, I'm assuming four entries in
+the cache.
+How many, how many bits are in this index?
+Two, yes, okay.
+So, two to the two is four.
+So, there's, this index is in here and
+chooses one of these four locations.
+And then finally, this tag information
+here is used to compare against the tag
+that we store.
+And that will say whether this address is
+actually in the cache right now or if we
+have to go out to main memory.
+So, let's, let's, work a brief example
+here.
+We have, 32-bit addresses.
+We have a four way, or excuse me, a four
+set cache, direct maps cache.
+How many, how many bits?
+And we have, okay, so we have 64-bytes in
+our block size.
+How many bits are in the offset?
+Let's start with that.
+The offset is going to have to index a
+byte within the block here.
+So, if we have byte addressable memory and
+there's 64 different entries, log base two
+of 64 is six.
+Okay.
+So, we have six bits of offset.
+Okay, what do we say about the index here?
+And we said, this was already two bits.
+Okay, so that's eight bits.
+So, how many bits of tag do we have?
+So, the tag information is 24-bits.
+And as you can see, as you make the data
+block larger, or the data block size
+large, larger, or the cash line size
+larger, you need fewer tag bits because it
+sort of, eats away this way, and the index
+gets shifted up.
+So, that's, that could be, that could be a
+good thing.
+Finally, there's this V column here.
+This is what I was looking to before, it's
+really important.
+You need a, valid bit to see whether the
+lines valid.
+It's very possible you could have old data
+or the cache is not initialized.
+At which point, these V bits would all be
+zero or, or not valid.
+Okay, so let's do a little more advanced
+example here, we have a, a two-way set
+associative cache still with four lines.
+And we want to go find our data.
+Hm.
+So, how do we, how do we go about doing
+that?
+What's interesting here is, when we did
+this, we only had to check one tag
+location.
+Well, for a cache like this.
+The index is going to tell us which of the
+two sets it's in.
+But, it can either be in either of the two
+ways of, of these sets.
+So, we actually need to do a tag check
+against this tag and that tag, and check
+the two valid bits.
+Many caches can do this in parallel, but
+that's how you can figure out, and it's
+possible that it's in neither of those two
+and we have to just say, that, it's a
+cache-miss.
+Okay.
+So, let's, let's talk about, when you need
+to go taking things out of the cache.
+So, let's talk about block replacements.
+We need to figure out what to go, kick out
+of the cache, when you take cache missing,
+it will bring, bring some new data in.
+So, an important point here is in direct
+mapped cache, this question makes no sense
+cuz in direct mapped cache, it can only go
+to one location.
+In set associative or fully associative
+caches, we need to make a decision.
+And hopefully, we only need to make this
+decision when a set becomes full.
+Because, otherwise, we'll just choose the
+empty location in that set.
+So, if you have a two-way set associative
+cache.
+And one of the ways is full of data, and
+the other one is just empty.
+The valid bit is empty.
+We probably shouldn't even be looking at,
+sort of different choices on how to
+replace things, because, there's an open
+spot to go put the data, we should go put
+the data there.
+Okay.
+Som what are, what are some, good block
+replacement policies, or good cache
+replacement policies?
+First one, is random.
+You can just choose randomly out of a hat.
+Actually, it doesn't work so bad.
+It's, it's, it's, you know, it's easy to
+implement, you just like, have some random
+unique feedback shift register, or
+sometimes you just sort of choose some
+random number and, and you replace it.
+Not so, not so bad.
+Well, well, now, now we start thinking
+about put, put our thinking caps on, we
+can start thinking about some better,
+better ways to go do this.
+When we need to think about least recently
+used, hm.
+So, the idea behind this strategy is that
+you are trying to preserve temporal
+locality.
+So, if you've used some data recently,
+there's a heuristic here, that it's likely
+to be used again in a not too distant time
+axis.
+So, if you look back to that sort of time
+versus address block that we had, in the
+time axis we think that, you know,
+temporal locality is something that
+happens relatively often.
+So, one, one really good strategy is to
+try to look at the least recently used as
+the block to get rid of.
+So, if something has not been used
+recently we kick that out of cash.
+Now, some problems with this is, this gets
+really hard to do.
+Well, there's two problems.
+One, to implement appropriate lease
+recently used, every single load or store
+that happens to the cache, needs to update
+the information.
+Well, that's not great for power.
+But it's also not great because you
+basically need to have sort of a very fine
+during tracking information on each cache
+line on every single cycle that does a
+load or a store.
+So, you know, you need, you need some
+cache data that needs to be updated pretty
+often.
+Plenty of people do that, though.
+There's, you know, if you have a least
+recently used, piece of information where
+you have extra bit on each cache line, you
+can think about just sort of flipping that
+back and forth and having one bit for that
+information and every single load and
+store actually sets that bit and lots of
+processors do that.
+So, what, what starts to get hard here is
+when you try to go above 2-way caches.
+So, 2-way you have sort of one bit that
+can decide where, which is the most least
+recently used.
+If you start to have, let's say, an 8-way
+associative cache, you want to do true,
+least recently used, you've got to somehow
+keep like timing stamps for each different
+way.
+You have to say, oh, well, this one was
+just recently accessed and, you know, you
+can time stamp it.
+You can try to sort of reorganize a list
+of numbers in order.
+And these are the things that start to get
+harder to do in hardware and especially,
+you know, on the critical path of your
+processor.
+So, lot of times what people do is they
+have pseudo list recently used for higher
+associative caches where you'll try to
+sort of keep maybe accurate information of
+the last two most recently used lines and
+the other ones you do random or something
+like that.
+Or there's some more complex things which
+we'll talk later in the class about.
+Another one, first in, first out.
+So, whatever gets brought into the cache
+first, sits in the cache for some period
+of time and then gets kicked out in the
+future.
+So, you're sort of guaranteed that some
+piece of data that you bring in will sit
+in your cache for some period of time, and
+this is a lot easier to implement in
+highly associative caches.
+But it's certainly not implementing least
+recently used because if you sort of bring
+in a cache line.
+Let's say, you have a four-way set
+associative cache.
+Four axises later, it's sort of the top of
+the list to get kicked out.
+But what's nice about this is you're
+guaranteed it'll sit in your cache for
+some period of time and won't just get
+sort of randomly kicked out, which like
+random, has problems with.
+Finally here, another, another acronym
+here, not most recently used.
+Well, let's think about that one for a
+second.
+So, we're going to kick out something,
+that is not the most recently used block.
+So, if we can sort of keep track and say
+that we and we have some index into our
+cache, if we have a four-way cache, we can
+think of having sort of two bits that
+says, well, this line was the most
+recently used and the rest of them was
+sort of random.
+And we know we are not going to be kicking
+out the most recently used cache.
+So, write strategies, you're going to do a
+store, you've got to know where you put
+the data.
+Important, important, important thing
+here.
+Caches have of lot's of different
+allocation policies and policies about
+whether you keep the data or throw out the
+data in the different levels of cache
+hierarchy, when a store happens or a write
+happens.
+So, let's, let's take a look at couple,
+couple of different choices here.
+Let's say, you are doing a store and you
+have a cache hit, so hits in your, your
+cache, Should you go put that in main
+memory also?
+If you, if you do a, a store, and you put
+every single store into your cache and
+into main memory, if it's already in your
+cache, then, as you point out, it uses
+bandwidth out to the main memory.
+So, that can be a downside.
+There are some positives to this, though.
+When you go to evict the line, you don't
+have to write anything back to main
+memory.
+So, you sort of are pre-putting data in
+the main memory.
+So, that's, that's a positive.
+You could also think about if you have a
+multilevel cache hierarchy.
+Some levels of hierarchy may, may make
+sense to actually put it in the sort of
+the next level out if you have enough
+bandwidth.
+So, this is actually a trade off.
+As I said, Computer Architecture is all
+about trade offs.
+Neither of this actually correct.
+So, the one is called write through.
+So, right through means, you put it in
+your cache, if you get a cache fit and you
+put it in memory.
+Write back cache just means you just put
+it in your local cache.
+And when that block gets evicted and it
+has dirty data, you have to go put it back
+in the main memory.
+So, so, that's, that's kind if the
+downsides and upsides there.
+One, one thing you do need to do if you
+have write back, as we say here, is that
+you need to keep track of, if the data is
+dirty or not.
+So, if you go look at more complicated
+cache coherence protocols, sometimes
+you'll actually favor things like write
+through.
+Because right back gets really
+complicated.
+When you have data that has to be
+invalidated and, and sent out to other
+places.
+But if you knew the data was clean i.e.,
+it has no dirty data, you never have to a
+write back when an invalidation comes in
+for a multiprocessor scenario.
+So, it's a tough, tough trade-off there,
+but, generally, sort of write back is
+considered to be more advanced and saves
+bandwidth.
+But, there are trade-offs there of why you
+might want to do one or the other, because
+write through is definitely simpler to
+design.
+Okay.
+So, that's our, and, and, oh, I do want to
+point out that, you know, you may not
+actually go all the way out to the main
+memory.
+So plenty of architectures have small L1
+caches, for instance, where you don't
+necessarily want to deal with
+invalidations coming in and complicated
+things happening.
+Where you might do write through from your
+L1 to L2, but then you want to save, let's
+say, off-chip bandwidth here.
+So, you write back out of your L2 to the
+DRAM.
+So, that's, that is a pretty common sort
+of thing to do.
+And as I was saying, the real motivation
+for this is if you have a multiprocessor
+system, and you have, let's say,
+invalidation requests.
+So, let's say, another processor wants
+that same cache line, and the data is
+dirty here, but not into, not in the DRAM,
+You'd actually have to sort of reach down
+into the L1 cache.
+If you have write back out of the L1 cache
+and that gets pretty complicated.
+The, and it especially gets complicated if
+your L1 cache is very tightly integrated
+into your CPU because it's on your
+pipeline.
+Like, it's in your main pipeline and you
+have to sort of bubble the pipe somehow or
+have structural hazard for any
+invalidation that comes into that L1
+cache.
+So typically, a lot a times, people try
+not to have or they, or they, people will
+consider write through caches, at least
+from the L1 to the L2.
+But you definitely won't say bandwidth,
+for a L2, sort of out to DRAM cache, if
+you don't it write through every time.
+Okay, let's take a look at what happens on
+a cache miss?
+So, on a cache miss, we're doing a store
+or write to memory.
+Do we need to put it in our cache at all?
+Choices, maybe yes, maybe no.
+There's no gearing, you don't have to put
+in your cache.
+A lot of times, and, and this comes down
+to heuristics here, a lot of times you'll
+actually do a store, and you may just not
+read that again.
+So some architectures actually have store
+instructions with locality hints, or, or
+temporal locality hints saying, I'm doing
+this store, I'm doing this write right
+now, and I'm trying not to read it again
+right now for a very long period of time.
+Don't put it in my cache.
+Also somethings just decide not to do
+write allocate, because or so, no, no,
+I'll define these two things here.
+No write allocate means you are doing the
+store, or write to your cache and you're
+not going to pull the data into your cache
+to do the merging there, locally if you
+will.
+And you're not going to actually store any
+data into your cache.
+Cuz, you don't have to.
+You're just keeping a local copy of it,
+you don't actually have to, you're not
+forced to keep a local copy.
+You can always send it out to your
+canonical main memory.
+Write allocate says, go fetch the data
+from memory, merge it in the cache because
+usually the block line, block size is
+longer than the amount of data you're
+writing.
+So, merge it, and then, probably either
+put it out to main memory if you write
+through, or just keep it in the cache.
+So, you, you, if you write back.
+So, you can think about having theses two
+policies, and, and they both, they both
+have places.
+Sometimes, people will, you know,
+typically, people try to write allocate,
+unless you have some locality information.
+Cuz data, lets say, it's at the top of
+your stack, in your processor, or in your,
+in your sort of software stack.
+You are going to basically be writing and
+reading from that relatively often.
+So, it makes sense to try to allocate
+that.
+The other thing I did want to point out
+is, there is a heuristic sort of going on
+with this no write allocate that, if you
+read that block, then, it will get into
+your cache.
+So, maybe the first store that you do to
+the address won't allocate, but the next
+load, you do will allocate.
+So, you're not going to miss that much by
+doing no-write allocate.
+It's not like you've lost everything for
+forever.
+It's just that, that first write, oh,
+well, I had to go on to the beat and erase
+this system.
+But the next load that I do from, let's
+say, my stack, or some local variable,
+will pull that line in anyway.
+Okay.
+So, some common combinations here.
+Write back with write allocate.
+So, this is sort of the full blown
+solution that a lot of people do.
+This is kind of like the base high
+performance one.
+Write through and no-write allocate is,
+kind of possible, this is, like, the cheap
+one to build.
+You don't need any logic here to deal with
+no-write allocate.
+But all possible mixes are, are, are
+valid.

@@ -1,0 +1,287 @@
+Okay.
+So that brings up the, the question of
+register renaming.
+What is register renaming?
+Hopefully some of you skimmed the Thomas
+UIlo algorithm paper that I assigned, cuz
+we're going to be discussing that and the
+motivation for that work.
+Okay.
+So, what is learning our performance in
+these pipelines, these out of order
+pipelines that we've discussed so far?
+Okay.
+A couple things.
+Write after write and write after read
+dependencies.
+Let's, let's talk about these.
+In write after write dependence, you're
+going to write to one register, then
+you're going to write to the register
+again, and in our pipelines we've talked
+about so far, you're basically gonna stall
+the pipe while you're waiting for the
+first right to commit.
+Because we're not able to handle multiple
+rights in, in the pipeline at the same
+time.
+But these are not fundamental
+dependencies.
+So computer architects put on our thinking
+cap and we came up with ways to break
+these dependencies.
+A read after write, that, that also is
+true for a write after a read.
+So, if you do write to let's says register
+four after a read from register four,
+well, there should be nothing wrong with
+that.
+But, if you try to execute the
+instructions out of order, then you need
+to think about that.
+A read after write is a true dependence,
+because you actually need the data, you
+need the value to go execute the
+subsequent instruction.
+And we're going to call write after read,
+write after write and write after read
+dependencies name dependencies, and we're
+going to call a read after write a true
+dependence that we can't break.
+Okay.
+So let's, let's look at a some example
+code here, and see what can go wrong if
+you just ignore all the name dependencies.
+Like I said, they're not true
+dependencies, so maybe we just don't need
+them.
+Okay, so we have, a different code
+sequence here, we have a mul, mul, then
+two add immediates.
+Let's, let's identify some important
+things in here.
+First let's identify the true read after
+write dependencies.
+So I, I put some circles and some arrows
+here.
+So let's take a look here.
+This writes register one in the mul.
+The second mall reads the results of that.
+Okay?
+Let's see here, this add reads register
+four in the previous instruction and
+writes register four, so that's a true
+dependence.
+We can't break those.
+We make talk at the end of class at the
+end of the term, maybe about some ways to
+break those, but they get pretty, pretty
+crazy.
+So, let's, let's look at the, write after
+write dependence.
+So the first write after write dependence
+is here.
+We're writing register four, and then we
+write register four again, but an
+out-of-order processor, if we try to break
+all these dependencies, we can see that
+we're actually writing to register four
+here, and then we write register four
+here.
+And that's, like, out of order.
+Whoa, what just happened here?
+Well, we said we just broke the
+dependency.
+We're not gonna stall the front of the
+pipe on this.
+So if you to execute this on one of our
+out of order issue pipes that we've,
+looked at so far.
+Let's say this is executing on the in
+order fetch, out of order issue, out of
+order execute, and, right back in out, in
+order commit pipe.
+We can see that we will write to register
+four in time before we wrote to register
+four here.
+Now that's going to cause some major
+problems.
+We just wrote the wrong value.
+Oops.
+And the other one here is a write after
+read dependence.
+So here we have a read of register four.
+And here we have a write of register four.
+And because this add got pulled so early
+in the, in the execution order, we
+actually wrote before this instruction had
+a chance to read the value.
+And the reason this instruction got
+delayed was cuz it was also dependent on a
+true dependency here.
+But it's dependent on two things.
+But all of a sudden we wrote register four
+with the value from this add, and then we
+went and read it, and we read the wrong
+value.
+So, we can't just go change and break
+right after write dependencies and right
+after read dependencies very easily.
+We need to think a little bit harder about
+this.
+One, one last interesting thing that
+happens here.
+This is, this is kind of fun.
+We do commit in order in this pipe.
+But look what happens to register four.
+We wrote register four, here, then we
+write register four again.
+And then we commit from physical register
+four to architectural register four.
+So we just committed the wrong state,
+also, to the architectural register file.
+So we're having lots of, lots of problems
+with here.
+It's not just, basic things.
+So what's the solution to this?
+Well solution, as we can start thinking
+about how to add more registers, so at the
+top here is the same example I had in the
+previous slide so nothing, nothing new
+there but I wanted to compare this to,
+let's say our conservatively stalling
+pipeline from performance perspective
+first.
+So here we have our in order, our in order
+fetch out of order issue out of order
+write back and in order commit pipe.
+This is our most advanced one from last
+time.
+But, it conservatively stalls on write
+after write and write after read
+dependencies, and that's drawn here of
+these arrows.
+So we can't even issue this instruction
+until we know that, let's say these two
+instructions here, which have something to
+do with register four, commit.
+And then we can go to issue this.
+Now this might be a little bit
+conservative.
+This might be even a little bit over
+conservative.
+It might be possible to pull this back one
+or two cycles, maybe to, sort of to the
+point where this instructions does the
+write back.
+But one of the challenges there is, you
+don't necessarily, you can't necessarily
+track that very easily inside of your
+reorder buffer, unless you have something
+there that scans for this exact case.
+It's not going to save you that much
+performance either.
+What, what I'm trying to get across here
+though is that the performance of this
+instruction sequence is actually worse.
+It takes longer than our incorrect, but
+we'll call ideal case here on top.
+So let's, let's do one little change to
+the instruction sequence, highlighted in
+red here, and see what happens to our
+execution.
+So we took this ad which wrote to register
+for and changed it.
+We added another register usage here and
+now we write to register eight.
+And lo and behold, it breaks all the write
+after write dependencies, and it breaks
+all the write after read dependencies.
+And all of a sudden, we get to, our
+idealized performance, this, exact, this
+is the exact same case as that.
+But we require another register.
+Hm.
+Well, please add infinite numbers of
+registers.
+So, what is, what's, what's the con of
+adding infinite numbers of registers?
+Anyone have any ideas?
+So, if we're trying to use more registers
+here we might use up all of our
+architecture registers.
+Can we just add more architecture
+registers to our instruction set?
+Yeah so, so it takes up space.
+So if we look at our registers, we could
+have a larger name space for our
+registers, but if we have 32 registers,
+that takes five bits.
+If we have 128 registers, that's gonna
+take, you know, seven bits.
+And if we have infinite, that will take
+infinite number of bits.
+But what we're gonna talk about in today's
+lecture is how to do this in hardware such
+that you have some more registers in your
+physical register space, but not more
+registers in your architecture register
+space.
+And this is, I should point out this is
+not only a register problem.
+This could also happen with memory.
+If you name your memory inappropriately if
+you have a very small amounts of memory
+and you try to reuse it very aggressively,
+you can get name, naming problems in that
+also.
+But for today we're going to mostly be
+focusing on registering.
+And so I'll define registry name as, well
+you're gonna change the naming of the
+registers in hardware to eliminate these
+write after write name dependencies and
+the write after read dependencies.
+Okay, so we're gonna be talking about two
+major schemes, and there, they are mirrors
+of each other and have slightly different,
+hardware requirements.
+What their lot, mostly when you think of
+them, they're just sort of logically duals
+of each other and there's different ways
+of thinking of the same problem.
+So the first scheme we're gonna be looking
+at is we are going to add pointers at, in
+our instruction queue and reorder buffer.
+To allow us to have different register
+names in them and not actually just have
+architectural register names in those data
+structures.
+The other option, which is, if you, if
+anyone actually read the Thomas Ullo
+algorithm paper, is to actually store the
+actual value, the data value, in these
+data structures.
+In the reorder buffer and in the
+instruction queue.
+And, and they look, they look very
+similar, if you sort of think about it,
+and they're gonna have the same
+performance.
+I'll, I'll, I'll give you the sort of end
+of the novel at the beginning here.
+They're gonna have the same performance,
+they're, they're, they're doing the same,
+doing the same thing but they're, they're
+slightly different in the mechanics
+perspective.
+And, and we are gonna start off by looking
+at this first one here, we are gonna have
+pointers in the instruction queue in the
+reorder buffer, Mainly, because we already
+have pointers in our design, that we
+looked at the last time, this in order
+issue, out of order, or similarly, in
+order fetch, out of order issue, out of
+order executing right back and in order
+commit design.

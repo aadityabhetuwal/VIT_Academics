@@ -1,0 +1,236 @@
+Okay.
+So, we've talked about structural hazard,
+or we've talked about pipe-lining basics.
+And now, we're going to go into the three
+main types of hazards.
+Structural hazard, data hazards, and
+control hazards.
+Let's start off by talking about
+structural hazards.
+Okay.
+So, let's, we'll review structural hazards
+here.
+So, structural hazards, as I said before,
+occurs when two instructions need to use
+the same hardware resource at the same
+time.
+And there's a couple approaches on how to
+resolve this problem.
+I mean, we can't actually throw up our
+hands and just stop the pipeline or maybe,
+maybe that kind of is one of the
+solutions.
+But, you need to somehow, think really
+hard about how to deal with the structural
+hazard.
+One thing you can do is you can explicitly
+avoid having different instructions that
+will be in the pipeline at the same time,
+use one structure at the same time.
+And, you can do this by the programmer, or
+maybe the compiler can do this.
+Next way that you can go about doing this
+is you actually have the hardware take
+care of, basically, all of the problems.
+And, there's some complexities to actually
+building this, but you want to stall the
+processor, or stall a portion of the
+processor, or stall the dependent
+instructions or just going to, you, you
+stall, let's say, the earlier one, when
+you go for the contended resource.
+So, a good example of this is if you have
+one resource, two things are trying to use
+it.
+You have a priority encoder in there and
+the priority encoder says, the earlier
+instruction gets to use that because if
+you sort of invert the priority order, you
+might end up with deadlocks.
+Another good way to do this is you
+actually can duplicate the hardware
+resources, or you can add more ports to a
+memory structure, which is sort of the
+colon of duplicating the hardware
+resource.
+And this is to some extent a solution that
+is used pretty widely in something like
+the, the MIPS pipeline, the basic 5-stage
+MIPS pipeline.
+It lets you duplicate certain resources.
+For instance, there's two memory arrays.
+There's an instruction memory array, and
+the data memory array.
+And we'll look at an example where those
+two things are together.
+But, the simple 5-stage MIPS pipeline was
+really designed not to have any structural
+hazards and the ISA was basically designed
+for that to be the case.
+But, more complex instruction sets and
+pipeline designs, you know, you might have
+to deal with something like a structural
+hazard.
+And even if with the MIPS ISA, if you go
+into deeper pipelines you might end up
+with structural hazards and, and we'll,
+we're going to talk about that now.
+Okay.
+So, the first thing we're going to talk
+about here is structural hazards if we
+want to unify the memory.
+So, as I said in the 5-stage MIPS
+pipeline, you have all the hardware you
+need for every stage, and all the stages
+are basically independent.
+But, let's say, we were going to modify
+this, and instead have one memory here.
+And we wire out, and, and we only have one
+port into this memory.
+So, only one thing can access the memory
+at a time.
+And we wire the program counter into here
+to [inaudible] our instructions, we wire
+the data out up here into the instruction
+register so it's just wired in the same
+place as the instruction memory was
+before.
+And we take the, where we had the data
+memory access when we want to do load a
+restore, and we run those wires down here.
+And, we put a multiplexer here to share
+the address and only one of these
+resources can use it as time.
+Hm.
+Okay, well let's draw the pipeline diagram
+for what happens with something, something
+like this hap, when, when you go to
+execute a load instruction, we'll say, on
+a unified memory architecture.
+So, if we take a look at this structural
+hazard example where we have a unified
+memory, where we have the one memory here
+which is replacing both our instruction
+memory, and our, our data memory.
+We need to do a walk through, let's use
+this example to walk through the pipeline
+diagram of how instructions will flow
+down, this, this example here.
+So, let's start off by executing something
+like a load first.
+Then, let's say, we have an add followed
+by an add followed by an add.
+Okay.
+So, this is our first pipeline diagram
+here.
+We're going to have the load coming down
+the pipe, and it's going to execute, or
+it's going to enter the fetch stage.
+Then, it's going to go into decode stage,
+then it's going to go into the execute
+stage, then it's going to go into the
+memory stage, and finally, write back.
+The first add comes down here and it's
+going to go into fetch.
+So, you go into decode, it's going to go
+into execute, it's going in the memory
+stage, and finally, go into here write
+back.
+The third add's going to come down the
+pipe and go into the fetch stage, decode,
+execute, memory, write back.
+So far, it looks like a pretty idealized
+pipeline.
+This next add, maybe we should just put an
+F here.
+Let's think about this, is, is this right?
+Can we have an add fetching from an
+instruction memory at the same time as a
+load is accessing the memory, this unified
+memory that we have here.
+And this is, this is the question.
+We have this unifying memory and we're
+trying to have two things, accessing it at
+the same time.
+And this is a structural hazard, we can't,
+we can't do this.
+So, instead, we are going to push a dash
+here.
+And we will somehow install, or bubble, or
+no opt, this add for cycle and we're gonna
+use this fetch, we're going to use the
+instruction memory on the subsequent
+cycle.
+And the reason we stall the add and we
+don't stall the load is because this is an
+earlier instruction than this, this is a
+later instruction.
+We want the earlier instructions to finish
+first.Otherwise, we might have some
+deadlock concerns or deadlock problems.
+So now, we fetch, we decode, we execute,
+we use the memory, and we write back.
+And you'll note here, this just gets
+pushed out one cycle because we had to
+stall here at the beginning one cycle.
+And, this memory and this point here is a
+structural hazard that we saw, that we had
+to resolve.
+And, in this case, let's say, we stalled
+one cycle to resolve that hazard.
+So, now that we've seen how to do a
+unified memory and what the pipeline
+should look like for that, let's go on to
+a different example here where we have a
+two cycle memory.
+And this two cycle memory, we're going to
+have stage M0 and M1.
+We put a pipeline register down the middle
+of our memory here, but only one thing is
+able to use that memory at a time.
+So let's, let's briefly draw the pipeline
+diagram for something like, like this.
+Okay.
+So, the second add is going to start
+flowing down the pipe and it's going to be
+in the fetch stage, decode, execute, M0,
+M1, write back.
+Then, we're going to have the load so we
+go fetch, decode, execute M0, M1, write
+back.
+And now, we're going to see a structural
+hazard.
+We're going to have, this second load here
+is going to fetch.
+So, I'm going to go into decode, this
+thing going into execute.
+Now, here is the problem.
+If we were to put M0 here, what we see is
+we actually have two different
+instructions in time waiting to use one
+resource, the memory.
+So, we need to solve this somehow.
+Now, how do you go about doing this?
+Well, there's different approaches and
+we'll talk about that in a minute.
+One approach let's say, is you could
+actually stall the pipeline here.
+So, that was one of our solutions.
+You stall a pipeline, so we put a dash
+here to mean we stalled for a cycle.
+And then, we're going to have M0, M1, and
+then write back.
+And you can see that it's basically pushed
+this instruction back one cycle, but this
+doesn't happen with other instructions.
+And the other thing to note, is that it
+doesn't happen if you have something like
+ad add after a load here, cuz that's going
+to go fetch, decode, execute, oh sorry, it
+stalls here too execute M0, M1.
+And these can be overlapped because we're
+not, we don't actually have any hazard in
+this case because there's not load loads
+or two things that are not trying to use
+this memory at the same time.
+So, you won't end up with a hazard there.

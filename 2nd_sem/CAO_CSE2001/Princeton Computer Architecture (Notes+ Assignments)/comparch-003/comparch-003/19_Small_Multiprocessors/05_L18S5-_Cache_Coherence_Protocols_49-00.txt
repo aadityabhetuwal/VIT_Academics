@@ -1,0 +1,1332 @@
+So we're going to introduce this notion of
+snoopy cache coherence
+or snoopy cache.
+And this is work by Jim Goodman and one of
+his students who's now I think a UC Irvine
+faculty member.
+And they had this idea that have the cache
+watch.
+Or what they'll call is snoop either
+DMA transfers or later it was extended to
+transactions from other processors.
+Other caches.
+And then do the right thing.
+Now, what do we mean by, do the right
+thing?
+Well, I'm purposely being a little bit
+vague there, because there's sort of two
+or
+two classes of ideas that you can, you can
+do for doing the right thing.
+But the most basic, do the right thing, is
+If a cache sees a memory transaction
+go by for an address it has inside the
+cache, it needs to take some action.
+Now what is that action, could be?
+Well, maybe the most basic thing it could
+do is if it
+sees that transaction go by and it knows
+that it has an address.
+Which is going across the bus and someone
+is trying to do a.
+Memory transaction for
+an address, which it's caching.
+It might need to at least tell the other
+entity that something is going on.
+That it has a, the more up to date copy,
+somehow.
+And we're going to look at in today's
+class two different
+protocols, or two different classes of
+protocols to handle this problem.
+Now, if we go look at this the, the
+implementation of this we have a
+processor and we have a cache.
+And what do we have in a cache?
+Well, we have the data array, which
+actually has the data and then you
+also have a tag and state array.
+So the tags have the, the tag match logic.
+And it also has the actual tags.
+the upper bits if you will of the address.
+And the state array has whether the data's
+dirty and whether it's valid.
+and usually sort of least recently used or
+most recently used information.
+And the insight that the Snoopy cache work
+had was that instead of
+having only one port into the tag array,
+the tag and state array.
+Instead you add a second port.
+So the second port here is attached to the
+memory bus.
+And this second port has to watch all
+transactions on the bus.
+And if it sees a transaction, which has an
+address that is it has in its cache
+already.
+It has to somehow signal that there's a
+case where there's
+going to be sterile data and something
+needs to be done.
+So that might include removing the
+removing the data from
+its own cache.
+That might include it sending the data
+across
+the bus and telling the other entity data
+processor
+we'll say it or DMA agent is trying to
+read the data to wait a little bit.
+And we're going to look at that over the
+next
+few slides of what different things can be
+done there.
+But what's the downside to something like
+this snooping protocol?
+Well, every entity, every processor or
+every cache
+that sits on the shared bus has to watch
+all memory transactions.
+So they have to watch everything.
+And, the problem with this is the
+processor wants to access this cache.
+So it wants to be able to do operations
+can currently while
+the stuff happening at the bus, which is
+not related to it.
+So this requires our Snoopy cache tags to
+be dual ported.
+So, there is two ports to this tag which
+makes it bigger and potentially weighs
+power etcetera.
+Okay.
+So let's take a look at our shared memory
+multiprocessor, now that
+we are thinking about having snooping
+caches or snoopy caches.
+So in this picture here we now have a
+shared memory bus, in the
+middle we have three processors on the
+left and we have three snoopy caches.
+So now, whenever,
+let's say, processor 3, tries to do a
+transaction, it needs to, let's
+say broadcast onto the bus that it's
+trying to read a certain address.
+The other cache needs to be notified that
+they need
+to check their own tags then do the right
+thing.
+So what is do the right thing mean?
+So let's, let's, let's take a look at
+that.
+And we're going to broadly put snoopy
+cache coherence
+protocols into two different categories
+here.
+The first one we're going to call is
+update protocls.
+And the second one is going to be
+invalidation protocols.
+So what's, what's the difference?
+Well,
+we're trying to maintain the data to be
+consistent amongst all of the caches.
+So we're trying to get rid of this tail
+data.
+The first thing you do is you can try to
+do
+a write update or what sometimes people
+will call broadcast based protocols.
+So the basic idea is whenever you do a
+write,
+to your cache, you also write that on to
+the bus.
+And everyone is listening on the bus.
+Everyone's snooping on the bus.
+And if you let's say processor one does a
+write
+to address five.
+If processor two has address five in its
+cache, it's going to
+see the write and it's going to take the
+updated data and update itself.
+So this is going to this is sort of the
+moral equivalent of the write through case
+we saw before.
+But now on the bus when someone does a
+write, everyone updates their
+local caches by listening on the bus for
+the particular address and listening
+for the new updated data.
+So its a broadcast.
+So every write you do that transitions or
+every write you do sort of through
+a memory transaction is going to update
+all of the other caches in the system.
+Now, why is this good?
+Well, it guarantees that when another
+processor tries
+to do a read of, say, that address five,
+it now longer has a stale value.
+It has now the most up to date value.
+Because we broadcast it when we update it
+in place.
+We'll talk about that in a little more
+detail in a second.
+Second thing you can do is what is
+actually more
+commonplace today is called an
+invalidation protocol or write invalidate
+protocol.
+And a write invalidate protocol,
+whenever you do a write, you invalidate
+all other copies of a piece of data.
+And by invalidating all other cache
+copies, you've effectively
+remove the possibility that you could have
+stale data.
+So, let's look at this, these two
+protocols in more detail here.
+So, first of all we'll look at
+a write update based protocol or a
+broadcast based protocol.
+And we're going to look at two cases.
+A, write miss to the cache and a read miss
+to the cache.
+Okay.
+First of all, a write miss.
+So you go to a write miss.
+Well, if your miss in your cache and doing
+it right, you
+tell everyone else in the system that you
+are doing the write.
+And all other processors which are
+listening
+to the bus, update their copies in place.
+So, you broadcast on the bus,
+I'm running to address five.
+Somebody has address five in their cache,
+they update their copy internally.
+Okay.
+that, that sounds not, not not so, not so
+bad but there's a lot of bandwidths there.
+You're basically broadcasting rights to
+everybody.
+let's look at the read side.
+On the read miss case here, you know that
+main memory is always up to date.
+Because you are forced to basically write
+through to main memory.
+So you just go to main memory without
+reading this.
+And you don't have to even, sort of, check
+other caches.
+On let's go to read hit.
+a read hit your cache and you know that
+the data is in your cache and
+you know the data is up to date, so you
+don't have to worry.
+Okay.
+So let's say up, update protocol, let's
+take a look at a right invalidate
+protocol, what happens on a write miss and
+a, and a read miss.
+So on a write miss in a invalidation based
+protocol, you're going to
+actually invalidate all of the other
+caches, which have that address in them
+before you're allowed to do the right.
+Now how does this work?
+Well, on that shared multi-drop bus we
+screen,
+I'm going to do a write to address 5.
+And everyone else because they have a
+snoopy cache, is listening
+and they hear someone is doing a write to
+address 5.
+And what they do is invalidate their data.
+They remove it from their cache.
+And by virtue
+of them removing it from their cache, You
+can
+no longer have a stale value in the, their
+cache.
+Now, I will want to point out here though
+that,
+one of the things you might have to do is.
+When you go to do the invalidate, you
+might actually
+have to write back that data to main
+memory somehow.
+Because, if you have a, let's say a right
+back cache.
+And a different processor has a dirty
+piece of data let's
+say for address five and then processor
+one tries to write that data.
+Well, at some point you need to, sort of,
+merge the data in a cash line.
+Processor 2 might have to go and
+invalidate.
+But at least it knows that it has to do
+this invalidation.
+It has to do the invalidation before
+processor 1 does the write.
+But we can do this all on our Snoopy
+shared bus.
+Okay.
+What happens on a read miss?
+well, if no one else has the copy this is
+easy.
+You scream on the bus, you scream in the
+room saying does anyone have address 5?
+And then if it's an empty room no one
+yells back and no other caches have that
+data.
+But conversely if someone
+has a dirty copy of that data, they need
+to write it back to main memory.
+And you need to read that most up to date
+copy.
+So you need to flush the data and
+potentially
+invalidate the data depending on the cache
+coherence protocol.
+And we're going to look at a couple
+different cases of that.
+So before I move off this, I just want to,
+sort of, point out when
+write invalidate protocols versus write
+update or
+broadcast protocols are good and vice
+versa.
+So most processors you'll see today use
+some sort of invalidation protocol.
+And generally, those are those actually
+are going to work
+better because there's going to be less
+bandwidth across your bus.
+Because you only need to communicate
+across a bus
+when you take a cache miss or write or, or
+read.
+conversely update protocols you basically
+have to broadcast all, all your updates.
+But the, the, in cases where update-based
+protocol actually
+wins As if you have many readers and one
+writer.
+So let's say you have five processors
+which are reading the output of
+one processor via memory.
+So you have some sort of producer consumer
+relationship.
+In an update base protocol, you can have
+that one processor just write And it will
+broadcast and push the data to the five
+processors that are trying to do the read.
+In the invalidation protocol what's
+going to happen is
+you're basically going to have to have
+invalidates bouncing the
+data back and forth and back and forth
+every time you do a read or a write.
+So there's actually could be more bus
+communication in the validation protocol.
+For, one reader or excuse me, one writer,
+multi-reader cases.
+But for the rest of today, we're going to
+focus on
+invalidation or right invalidate, right
+invalidate protocols on a snoopy bus.
+Okay.
+So let's take a look at the extra
+information you need to add into a cache
+in order to
+go implement something like a write and
+validate
+protocol.
+And we're going to look at a base
+case here which is called a MSI protocol.
+This is one of the more, the basic ones
+that you'll see.
+and there's some extra bits that are added
+here.
+So let's look at the tag information.
+So, we have a tag for your processor and
+typically you have a valid bit.
+When you talk about having valid bits or
+dirty bits.
+Valid and dirty bits in something like a
+processor.
+as I was on the cache, excuse me.
+So, each cache line has this
+information on a per cache line basis.
+And instead of having,
+let's say, one valid bit and one dirty
+bit, we're going
+to use these two bits to encode a state in
+a state machine.
+And we're going to add, so, so we have two
+bits so we can code four things.
+We can definitely encode three things
+in two bits.
+So we're going to actually look at a
+protocol here that we're going to
+call the MSI protocol for this, that's
+named for the state names.
+So we have M, which is modified, S, which
+is shared and I, which is invalid.
+And we're going to say that invalid is
+basically whether the data is valid or
+not.
+If you're
+in the invalid state it is, it is invalid
+if you are in
+any of the outer states here, the data is
+valid in your cache.
+But now instead of having just a dirty
+bit, which tells
+you whether the data is dirty or not in
+your cache.
+Instead we're going to have two other
+states here, modified and shared.
+And what we're going to see is by adding
+these states We can guarantee some
+level of cache coherence.
+And we're going to implement a cache
+coherence protocol on top of this.
+And, we're going to remove some of the
+communication across
+the bus by remembering whether the date is
+widely
+shared or whether we have the sole copy.
+So, what are these three states.
+I is invalid, that's pretty self
+explanatory there, the data
+in your cache is invalid, you're not
+allowed to read it.
+If you try to access somebody who has an
+invalid bit
+set in your state bits, you are going to
+take a cache miss.
+And then your going to have to transition
+to one of these other two states.
+M is modified.
+So modified means that the data in the
+cache has
+been modified relative to what is in main,
+main memory.
+So, this is dirty data.
+And then, we're going to have this other
+state here, called shared or S for shared.
+Well, what is, what is shared?
+Well, S or shared state here is going
+to mean that you only have a read copy of
+the data.
+And someone else may also have a read-only
+copy of the data,
+hence the term shared.
+So it's shared amongst multiple people.
+But, we're going to say that when you're
+in the shared state you are not allowed to
+do a write.
+And one of the things I wanted to point
+out about this is that each cache line In
+each cache has this state machine there.
+So, different caches have their own copies
+of this state information.
+And the state information only relates to
+that particular cache or that particular
+processor.
+And the state diagram we're going to build
+up
+here is only in relationship to processor
+1.
+And we'll see that because it's a snoopy
+cache, you might
+be in a state and then you might see a
+transaction
+go across the bus.
+And you might have to take some action to
+keep memory coherent.
+So, let's walk through this basic state
+diagram here.
+We'll see that when we're done we'll
+actually have the
+data be coherent when we go to implement
+something like this.
+So what's our first arc here?
+Well, let's say we have a read miss.
+You are,
+we are, in the invalidate state and we do
+a read miss.
+And, this arc here is basically is from
+invalid or it is from invalid, I
+just didn't draw it looping around because
+other wise the, the diagram gets too
+complex.
+So, you do a read miss.
+You shout onto the, onto the bus, I want
+to read some address or processor one here
+shouts onto
+the bus and says, I want to read an
+address.
+Okay.
+So, something happens on the bus.
+The other processors might have to do
+transitions.
+But ultimately, you're going to get the
+data
+or get the cache line from main memory.
+And your bringing into the shared state.
+So, you now have a read only copy.
+You can read this from your cache as much
+as you want.
+And you don't have to communicate on the
+bus anymore then.
+Because you just have to do a cache hit.
+Now, if you're right though, things get a
+little more complex.
+So, so this is, let's, let's take a look
+at
+the case here, that you have the data in
+shared state.
+But some other processor tries to do a
+read.
+So they shot on to the bus, I want to do
+a read of the address that is in the
+shared state.
+Well, if we go look at the state diagram
+here, that's okay.
+It's shared.
+We can have a read only copy and someone
+else
+can also have a read only copy at the same
+time.
+So, we just transition from S to S, we
+stay in the S state.
+We don't have to do anything when someone
+else reads out, some other processor reads
+the data.
+Now, let's say we're in the shared state
+and some other processor yells
+out onto the bus, saying I have an intent
+to do a write.
+I want to do a write to address that you
+have in your cache
+in the shared state or processor one has
+the cache in the shared state.
+Well, we said that stale data causes the
+incoherence of, of data and
+that's what we were trying to prevent.
+So, if you see some
+other processor trying to do a write, you
+just drop the data from your cache.
+Now, because you'll only have a read-only
+copy, you don't have to write this back.
+You don't even have to tell anybody about
+this.
+You just have to guarantee when they say,
+I want
+to do it right, that you transition from S
+to I.
+Now what this means, though, is if
+processor one
+wants to go read that data in the future,
+it's going to have to get a copy of it
+again, because the copy it had is now
+invalid.
+Okay.
+let's say you have the data in the shared
+state
+but now you want to do a write to that
+data.
+Can you write to it while it's in the
+shared state?
+No.
+Why?
+because someone else may have a copy of
+it.
+But you're in the shared state, that means
+it's shared
+and someone else could have a stale copy
+of that data.
+So you go to do a, a write, what you have
+to do before you
+transition your state is you need to
+broadcast your intent to write to that
+line.
+Or processor one has to broadcast
+onto the Snoopy bus that it wants to write
+to that line.
+Okay.
+So it says, I want to do a write, I want
+to do a write!
+And before transitions it needs to wait or
+give all the
+other processors time to invalidate and
+potentially write back the data.
+And different processors implement this in
+different ways.
+Some processors just wait a certain amount
+of time.
+There's a waiting period so you broadcast
+saying.
+I have an intent
+to write, but I'm not going to do the
+write until I
+some period of time in the future, it's
+like a waiting period.
+That gives enough time for the imposters
+to snoop the transaction, invalidate
+the data, and write it back to main
+memory, if they have copied.
+Or, let's say everyone else only has
+read-only copies of the data.
+They need a transition from S to I.
+So I want to point out here that,
+you know, all different, the different
+caches in
+the system don't have to have the data in
+the same state at the same time.
+This is a per-cache state.
+So, when you have an intent to write, you
+broadcast this
+information, and everyone else has to
+invalidate it from their cache.
+So whether they have it in S or I, they
+need to somehow or, or S or M, they need
+to
+transition to I.
+And only then can you transition to M and
+actually do it right.
+Now, I said there's other ways that you
+can go about doing this besides a waiting
+period.
+one potential thing that people do is
+they'll actually.
+broadcast their intents to write but
+instead of
+actually doing the write instead of having
+waiting period.
+They wait for an acknowledgement from all
+of the other
+caches somehow.
+that, that's functionally the same.
+you can either wait and sort of have a
+proof knowing that you've waited long
+enough or you can wait until everyone has
+responded back saying, yep I'm, I'm done.
+Okay.
+So what's this modified state?
+What does this give you?
+Well, if you're in the modified state, you
+can
+write the data And you can read the data.
+So, let's say processor 1 does a read or
+write.
+We just stay in the modified state.
+And you can do as many reads and writes as
+you want.
+And you never have to communicate on the
+bus.
+You have the sole copy.
+You have the, the, the token if you will.
+You can, you can read it,
+you can write it, no one, you're
+guaranteed that no one else has a copy.
+Okay.
+Let's say you're in the m state and
+some other processor broadcasts their
+intent to write.
+You're in the modified state, you have
+dirty data.
+You've done a write to this data.
+Main memory is out of date.
+So, the most basic thing you can do is
+invalidate
+your copy and give that copy back to main
+memory.
+You'll write back that date to main
+memory.
+And then the other processor will go and
+read that data
+from main memory and pull it in in their
+modified state.
+So you will transition from M to I.
+And they will transition, let's say from I
+to M.
+Okay.
+one more arc in this diagram here.
+What happens if you're in the modified
+state and some other processor tries
+to do a read or broadcast an intent to
+read across the bus?
+Well, what's nice here is you don't
+actually have to transition to the
+invalidation state.
+And the reason is you have the most
+up-to-date copy of the data.
+They need to see the most up-to-date copy
+of the data so that
+they don't get any stale data and you
+don't have any stale data.
+But you don't have to transition down to
+the invalidation state.
+You, you, you potentially could try to go
+down to the state.
+But it's going to, require you to actually
+go pull the data
+back in if you if you wanted to read in
+the future.
+So instead, in the MSI protocol, if
+another
+processor tries to do a read, you do the
+write back first.
+After you've done the write back, you
+transition to the shared state.
+And they pull it in in a read-only copy
+and you have a read-only
+copy so you both will transition to the
+shared state or the S state here.
+Okay.
+So, let's look at this in a little bit
+more detail here.
+yes, one more, one more arc
+I missed.
+Write miss so if you're in the
+modified state or sorry, you're in the
+invalid
+state.
+And you want to do it right
+to align.
+We didn't draw this arc but there's an arc
+that goes from invalid all the way around
+to here.
+And on this write miss, you broadcast your
+intent to write, you
+have to wait for everyone to do their
+invalidations up to main memory.
+And in the base case you pull that data in
+from main memory and you enter into the
+modified state.
+Okay.
+So, let's take a look at a basic two
+processor example here.
+Walking through a set of reads and a set
+of writes.
+And watch everything that happens here.
+So we're going to have processor 1 on the
+top, processor 2 on the bottom.
+And we're going to walk through different
+arc here as processor 1 does read and
+processor 2 does read and processor 1 does
+write and processor 2 does write.
+So, let's say the first thing
+that happen is processor 1 does a read.
+This is all to the same address or all to
+the same cache line or addresses within a
+cache line.
+So processor 1 does a read.
+We'll assume that all the data starts out
+invalid in all the caches.
+So usually when you reset your computer
+system,
+everyone's caches are invalid, how could
+they not be?
+So you're going to do a read miss, it's
+going to go up to main
+memory and you're going to bring the data
+into the shared state in processor one.
+Processor 2 is going to leave this data
+invalid for right now.
+Okay.
+Now processor one does it right.
+Well, it broadcasts its intent to write
+Processor 2 doesn't have this data and no
+one else in the system has the data.
+So no one, no one screams
+back I have the data on the bus.
+please wait.
+So instead processor one just goes ahead
+and transitions into the modified state.
+And it, in this case her it even has the
+most up to date date.
+So, it won't even have to go out to main
+memory potential.
+Okay.
+Then processor 1 does let's say Processor
+1 can do reason writes past this point.
+now processor 2 does a read.
+Well, if processor 2 does a read now
+we're going to have two different state
+transitions happening.
+We're going to see processor one do a
+state
+transition and processor two do a state
+transition.
+So processor 2 is in the invalid state
+right now.
+It's going to transition to the shared
+state on the read miss.
+At the same time because processor 1 has
+it in the modified state.
+It's going to have to in write back the
+data and transition to the shared state.
+So, both these processors are now in the
+shared state, so they both have read
+[INAUDIBLE]
+copies.
+And the most up to date copy has been
+pushed back or ridden back.
+Okay.
+So now let's say processor 2 does it
+right.
+It has in the shared state, this has the
+shared state.
+Well, when you go to do this right, the
+we're going to see an intent
+to write coming out of processor 2.
+And this is actually going to cause
+processor
+1 here to transition from shared to
+invalid.
+So, you know, this is kind of odd here,
+processor 2
+is doing something that's causing
+processor 1 states machine to transition.
+And it's because they're on the shared bus
+processor
+2 shouts, I'm going to do a write soon.
+Processor 1 sees this and it transitions.
+Once you know that processor
+1 has finished the transition, processor 2
+now can transition to the modified state.
+And actually continue to do reads or
+writes to that line.
+Okay.
+So, let's say processor 1 wants to do a
+read
+to this line, this line's getting a lot of
+traffic
+to it.
+Processor 2 just wrote it and it's in the
+modified state.
+Processor 1's in the invalid state, all of
+a sudden what's going to
+happen is, it's going to want to try to
+transition to the shared state.
+But this modified state is going to cause
+a problem.
+So we're going to have to wait for the,
+we're going to have to wait
+for the right back to a curve here from
+modified to shared.
+So it's going to, invalidate that data
+and then finally, processor 1 is going to
+be able to bring into the shared state.
+Okay.
+So let's say processor one now does a
+read.
+So, it's in the shared state.
+This is in the shared state.
+We see the intent to write coming out of
+processor 1.
+So processor 2 is going to transition from
+shared to invalid and
+only then are you allowed to transition
+from shared to modified.
+And then as we get close to the end here
+let's say
+processor 2 tries to do a write to round
+everything out here.
+So we have processor 1 in the modified
+state.
+Processor 2 is invalid and it's going to
+try to go
+this way for the arc will probably come
+like this.
+at the same time processor 1 is going to
+have to invalidate this data, somehow.
+So we see the, the right try to happen and
+what's going to happen is, when it sees
+the intent to write.
+Processor 1's going to have to transition
+from
+modify to invalidate and write back that
+data.
+And only then can the rightness occur and
+processor 2 bring
+it into the write state or the modified
+state, excuse me.
+And finally, processor 1 can try to do a
+write.
+Now, why, why are we doing this?
+Well, it's to get this last
+arc in here so we want to transition over
+all the arcs in this diagram.
+So processor 1 tries to do a write to this
+address.
+It has it invalid.
+Processor 2 has it in modified and you'll
+see that it will broadcast its intent to
+write.
+And while it's doing this broadcast it
+needs to
+move from modified to invalidate, write
+back the data.
+And then processor 1
+[COUGH]
+brings in the background data and can do a
+write to that line.
+Okay.
+So a little bit of an observation here.
+So we've gone through the basic MSI
+protocol.
+But one of the big ideas here is that
+If a line is in the modified state in one
+cache, there can only
+be one copy of that data.
+And this is the important
+invariant that allows the MSI Snoopy based
+invalidation
+protocol for work.
+So this allows memory to stay
+coherent because there's only one copy of
+writable
+data anywhere.
+And if you, sort of, work through this and
+I recommend you do work through this this
+case a little bit more carefully.
+You'll see that you might have multiple
+people in the shared state.
+Or multiple processors, multiple
+processors caches that can
+share data but those are only read-only
+copies.
+So they can read it, they can read it,
+they can read it.
+Well, when someone tries to do a write,
+you invalidate all of the shares first.
+Then you can do the write.
+And if someone else tries to go read the
+data, you need to transition from modified
+to shared.
+Now, why do we do that?
+Why can't we leave someone in modified and
+someone else in shared?
+Well, it's because by virtue of being in
+the
+modified state, that processor can
+continue to do further writes.
+So if you continue further right, the
+cache, which brought it in let's
+say the shared state, the read state
+wouldn't be able to see those updates.
+So we guarantee the invariant for this
+whole system
+is that if a line is in the modified
+state.
+Then no other cache has a copy of the data
+or
+no other entity in the system has a copy
+of the data.
+That's really important.
+Okay.
+So let's try to enhance this MSI protocol.
+Why do we want to enhance the MSI
+protocol?
+Well, as you might imagine MSI protocol
+actually
+you have to communicate across the buzz
+relatively often.
+We're going to look at a couple from
+scheme
+that reduce the communication traffic
+across the bus.
+So you can either have a, a bus that
+clocks at a slower speed.
+Or you could have more processors on this
+bus
+as you think about better ways to actually
+implement
+a validation base protocol.
+And the first one we're going to look at
+is called MESI.
+And sometimes people call this the
+Illinois protocol because
+this, as, comes from University of
+Illinois Jack Patel.
+His research group.
+And this dates back to, to 1984.
+And there's actually, four states so
+instead
+of having three states in the, as we
+saw inside the MSI protocol, the insight
+here was.
+If we're using two steep bits to implement
+three
+states well, we have a fourth state we
+could use.
+You know, two to the two is four so we
+could even do four states.
+Instead of three states, for the same
+number of bets.
+Now, the question is, what states do you
+want to add, you know?
+Just because you have four states doesn't
+mean your protocol is going to be better.
+Well, we're going to have an invalid
+state, a shared state.
+Okay.
+Those look similar as what we had before.
+And now, we're going
+to have a new state called the exclusive
+state or exclusive
+but unmodified.
+And this is very similar to modified and
+exclusive state, the M state.
+And in fact, the
+insight here is we're going to take the
+state diagram from MSI
+and take the modified state and split it
+into two states.
+M and E.
+Well, modified and exclusive.
+Now why do we want to do this?
+Well, what we're going to see is that
+we're going to be able to reduce the
+communication on the bus, in the case
+where a processor reads a piece of data.
+And no one else reads or rights that data.
+And then that same processor later goes to
+write that data.
+So if you look at MSI when you go into
+a read, you always brought it into the
+shared state.
+In MESI or MESI protocol, when you go to
+do a read but
+no one else has a copy, you're going to
+bring it into the exclusive state.
+And this allows you to, you're not allowed
+to
+do a write when it's in the exclusive
+state.
+But, you can upgrade from exclusive to
+modified without having to communicate
+across the bus.
+But, you can upgrade from exclusive to
+modified without having to communicate
+across the bus.
+And this is an important difference
+than in the MSI protocol because here in
+the
+MSI protocol if you had something in the
+shared
+state And you want to go to a write to
+it, you need to broadcast your intent to
+write.
+And everyone needs to have a Snoop
+transaction occur on this.
+But in the MESI protocol, you don't need
+that extra work there.
+You know that you have the exclusive read
+only copy of the data so
+when you go to do a right you can, you can
+just go do
+the rights.
+And we're going to go walk through this.
+the state diagram now.
+And it's going to look pretty similar to
+the MSI protocol.
+And all of the arcs in this diagram of are
+in relationship to processor 1.
+And like I said before, different
+processors can
+have the same cache line in different
+states.
+Okay.
+So, let's take a look at this.
+Step one, you have a read miss.
+It's a, a, a read miss but note I have a
+little word next to here.
+So this is going from invalidate out of
+read miss.
+And we're going to see that there's
+going to
+be two arcs coming out of invalidate.
+On a read miss.
+One that goes into the shared state and
+that's actually going to go into the
+exclusive state.
+Now, what does this mean?
+Well, on a read miss, processor 1 here is
+going to
+shout out onto the bus, I want to do a
+read.
+On the bus, if someone responds back
+saying, I have a read or I have a
+shared copy of that data or I have a copy
+of that data, which is read only.
+What's going to happen is your gong to
+transition to the shared
+state here, because you don't want to
+invalidate the other caches data.
+And this is actually going to be in
+contrast to,
+if you tried to read miss, but no one else
+has a copy right now.
+Because if no one has a copy, we're
+actually going to transition straight to
+this exclusive state.
+we'll get there in a second.
+So, let's say some other processor tries
+to do a read and you have it in the
+shared state.
+Well, you just stay in the shared state.
+But you might need to respond back saying
+that yes you you
+have a copy of that that data.
+this is, this is important so that the
+other processor knows where to
+enter into the shared state or exclusive
+state when the're going to do read miss.
+Okay.
+let's say you're in the shared state and
+you
+want to do a write to this piece of data.
+Well, this looks similar, the exact same
+thing as what happens in the MSI protocol.
+You try to do the write, you broadcast
+your intent to write, you
+have to give everyone a chance to either
+respond to say that they
+Have a copy and they have to invalidate
+their copies and write back
+to main memory and then after that you
+transposition from the modified state.
+And now you can do your write.
+And just like as before, if you're in the
+modified state you can
+do a read or write to the line and you
+stay in the modified state.
+Okay, so finally now we come to this
+interesting case that you,
+you read miss.
+But instead of the data being already
+shared in other caches or already being in
+somebody else' s cache.
+You do a remiss, you're in invalid you
+come
+into here, but the date is not shared
+anywhere.
+So the data's not shared.
+Well, what does this mean?
+Well, you do the read miss here and you
+can come into the exclusive state.
+Now why
+is this good?
+Well, you have the only readable copy in
+the system.
+And why this is useful is if you try to do
+a
+write, you don't have to go communicate at
+on the bus anymore.
+So you're in the exclusive state, let's
+say proster
+one tries to read, that's fine, you stay
+here.
+Now, as, before, sort of, the exclusive
+state
+functionally looks very similar to the
+shared state.
+You only have a read copy, readable copy
+of this data.
+If you try to do a write, you need to do
+something.
+But this is the big difference here, when
+you go to
+do this write, you don't have to tell
+anybody about it.
+As far as everyone else is concerned, you
+had
+an exclusive copy and now you have a
+modified copy.
+You just transitioned your state diagram.
+You transitioned
+the state bits here to being in the
+modified state and do the write.
+So, you transition and then do the write.
+Now, why is this good?
+As I said, you don't have to communicate
+on the bus to do this transition.
+Versus, if you were in the MSI protocol
+where you only have shared.
+You need to go to first broadcaster
+or intent to write, which takes bus
+bandwidth.
+It also takes time.
+And then new transition.
+So this is trying to save us in this one
+case here.
+okay.
+Let's fill in the rest of the arcs here.
+The rest of the arcs look somewhat similar
+except
+when we sort of come out of the exclusive
+state and you'll see why.
+The write-miss case from invalid.
+This looks the same as MSI.
+You take a write miss here.
+You're going to broadcast your intent to
+write, wait for everyone to write back
+all the data and validate and then you in
+turn to the modified state.
+[COUGH]
+Now, here's the little bit more
+interesting art here.
+Let's say processor 1 has the data in the
+exclusive state.
+And then some other processor wants to do
+a read.
+Well, processor 1 needs to say I, I have a
+copy of that so,
+the other processor can't enter into the
+exclusive state when it tries to read.
+Instead it's going to
+come in this arc here with some shared
+data.
+Into the shared state but at the same
+time, processor 1 needs to
+transition from being in the exclusive
+state to being in the shared state.
+And why is this?
+Well, if some other processor has it in
+the shared state and you were to
+stay in the exclusive state, you could
+potentially
+try to do a write to that data.
+While the other person has a read-only
+copy of that data and you'll
+get the data out of sync and you'll have
+stale values.
+So you need to, you need to somehow fix
+that.
+And how we fix that is when someone else
+tries to do a write.
+Or excuse me, when someone else tries to
+do a read to the
+data and another processor tries to read,
+we transition from exclusive to shared.
+And the other processor brings the data in
+as Shared into their cache.
+Okay.
+Let's flush out the rest of
+the, the arch's here.
+this is similar to what we see before here
+if you're in the shared state.
+Some you see in other processors intent to
+right
+go across the bus for the line that you
+have.
+You just have to invalidate it.
+Thankfully you don't have to write
+anything back here
+because you are only have read a link
+copy.
+Similar, sort of, thing here for the
+exclusive state.
+You're in the exclusive state.
+You only have a read a link copy.
+You know you have the only copy in the
+system, though.
+But if some other processor tries to do a
+write.
+You need to do an invalid.
+Okay.
+let's see, is there anything else There
+are few more arcs.
+Modified this looks similar to what we saw
+before, if you are in the modified
+state, then a another processor tries to
+do
+a read, you transition into the shared
+state.
+Now, and you have to write back the data.
+But what you'll notice here is you can't
+transition to the exclusive state in this
+case.
+And in fact, the only entry point into the
+exclusive state is this read
+miss case here when the data is not shared
+or in another cache already.
+So when another processor tries to do a
+read, you have to write back the data.
+You transition to the shared
+state but this is the same as what we did
+in the MSI protocol.
+a couple of other things here.
+Another processor tries to do a write,
+you'll see their
+broadcast of their intent to write if
+you're in modified state.
+We need to clearly do an invalidate
+because only one cache can have dirty
+data.
+And so you see it, you write it back and
+you transition to the invalidation state.
+And that's, that's, that's the sum of this
+protocol here.
+Now what invariance do we have?
+What we said in
+the MSI protocol that you can only
+have one cache or one cache line for an
+[INAUDIBLE].
+Or one line only in the modified state in
+one cache at a time for a
+particular cache slide.
+So there's something similar here.
+Well, yes, but it's a little bit
+different.
+Because we took the modified state and we
+split it into two similar, sort of,
+invariant here.
+Except now we say that only a, a given
+cache line can only be
+in either modified or exclusive in one
+cache at any given time.
+And, this guarantees that we never have
+stale data.
+And guarantees that we have a useful cache
+coherence protocol.
+Okay.
+next class we're going to expand this and
+talk about a few other cache coherence
+protocols.
+One we're going to talk about is what they
+used in the original AMD Opteron.
+Processors where they actually had more
+states.
+They added another state here called the
+own state.
+And they went from MESI to MOESI.
+And this own state is a optimization which
+allows you to
+do cache to cache transfers and
+effectively track who has the most
+up to date written data versus having to
+always write everything out
+to main memory and do memory based out to
+main memory transfers.
+And, we'll also talk a little bit about
+MESIF, which is something they use in some
+of
+the Intel processors, where they will also
+split
+the shared state into another state beyond
+MESIF.
+So let's stop here for today.
+

@@ -1,0 +1,7 @@
+L19S3:
+
+In Lecture Quiz 1:
+Time: 26:53
+
+Question:
+In a Message Passing model, is memory shared by default between all of the communicating processes?

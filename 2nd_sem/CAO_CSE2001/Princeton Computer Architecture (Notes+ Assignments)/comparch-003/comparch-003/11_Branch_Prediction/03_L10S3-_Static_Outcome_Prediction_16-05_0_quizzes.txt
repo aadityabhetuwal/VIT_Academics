@@ -1,0 +1,7 @@
+﻿L10S3:
+
+In Lecture Quiz 1:
+Time: 4:27
+
+Question:
+Why is it that backward branches have a higher probability of being taken than forward branches in typical code?

@@ -1,0 +1,530 @@
+Okay, so one, one technique to do this is
+to,
+Let's say, take the TLB, and instead of,
+having the TLB in front of our cache.
+But our TLB,, let's say, in parallel or
+after, after our cache.
+So what this means is the addresses that
+go into our cache are virtual addresses.
+And this has some pretty big implications.
+Lots of processors are doing this, these
+days,
+Where they'll actually put, the TLB in
+parallel with the cache.
+And this picture is a little bit
+confusing, because it looks like this is
+after the cache.
+To some extent, that is and it isn't,
+depending on how you sort of squint and
+look at this.
+If the cache is completely virtually
+indexed and virtually tagged, it would
+look something like this, because you only
+go fire up the TLB when you take cache
+miss, and you have to go out to well,
+farther out layers of memory.
+Now if you have a, a virtually indexed but
+physically tagged cache, what that means,
+is the address that goes into the index of
+a cache array is a virtual address.
+But then you do TLB access in parallel and
+outcomes a physical address, and they need
+you to compare the tag match on the
+physical addresses.
+That makes a lot of, lot of things a lot
+easier in life and we'll look at that in a
+second.
+So,
+One of the major, major challenges that
+you end up with here of virtually indexed
+caches that I wanted to point out is you
+start to get some aliasing problems.
+What do I mean by this?
+Well, before, when you were to go put
+something in the cache, it could only be
+basically one place in a direct-mapped
+cache.
+In a n way associative cache.
+It could be in, in different places.
+So a two way set associative cache could
+be in the two ways.
+But you knew where to look for it, at
+least.
+But all of a sudden, if you start to have,
+Bits above the minimum page size in the
+address feed in to where it is in the
+cache, it can actually be in multiple
+places in the cache. So, brief example
+here.
+We have a 32 bit address..
+We have our cache offset here.
+We have, let's say, a page size of four
+kilobytes.
+So, that's going to be what, twelve
+bits?..
+And, let's say our cache index.
+Or our cache rather has, I don't know more
+than four kilobytes in it.
+So all of a sudden we got a direct match
+cache which has eight kilobytes.
+Uh-oh.
+So, this, this bit here.
+So this, this is our index.
+Sorry, our index into our cache has one
+bit here above the page boundary.
+And the OS could elect to have this bit
+here, be a zero Or a
+One.
+So what that means is, all of the sudden
+when we go to index into our cache.
+The same physical piece of memory might be
+in two different locations or depending on
+how the operating system sort of lays out
+memory, you might look in the wrong spot
+or you might need to check both places.
+So, we just started thinking about this,
+that the bits above the minimum page size,
+if our cache is bigger than our minimum
+page side, minimum page size, the bits are
+not gonna match.
+And, we're going to we'll walk through an
+example of that in a second.
+Also, virtually address caches has some
+other, other challenges here, Because two
+applications can have the same virtual
+addresses.
+And let's say you're trying multiplexing
+between application one and application
+two.
+All of the sudden, these two applications
+are going to go into your cache and you
+might have one application hitting on the
+data of another application.
+So if two applications are trying to go
+access, address five, and they have
+different values stored in address five,
+in our virtually indexed cache, all of the
+sudden, you might start get something
+weird here, you might actually end up
+where,
+If, if you don't protect against this, one
+process is reading another process's data
+out of the cache.
+So you need to protect against this.
+There's a couple different approaches.
+One approach is actually just to flush the
+cache on every context swap.
+So every time you change processes, flush
+the whole cache.
+That's sounds really expensive, but
+believe it or not, that's actually done
+with, non, non trivial, probability.
+And, er, it actually is done in some
+actual real, systems out there.
+A little bit, nicer way to do this is to
+have address space identifiers.
+So you actually tag the cache with an
+address space ID as per the tag
+information.
+So it's not just the virtual dress that
+matters but its also which process ID, or
+which dress space ID.
+So it is another sort of thing.
+But then it increases your tag bits.
+So you've got to be little bit careful
+about that.
+So this is mostly about having a virtually
+indexed, virtually addressed cache.
+Or virtually, is going to be virtually
+indexed, virtually tag cache.
+And if we look at this, how this fits into
+the, the pipeline,
+Life actually gets a lot, lot better from
+a hardware perspective.
+This is sort of summing up what we saw
+before.
+You really only have to do, only have to
+do translate on cache miss.
+So your, your mating processor pipeline
+looks the same as what we've been drawing
+up to this point.
+But on cache miss, you have to go through
+either your instruction translation look
+aside buffer, or your data look aside
+buffer.
+Er, data translation look aside buffer.
+So, to sort of this, little bit more
+pictorially here, what's happening with
+virtually addressed cache's.
+Let's take a, take little bit of a gander
+at this example here.
+So we have two virtually addresses,
+virtual address one, virtual address two.
+And, the operating system elects to map
+those to the same physical page, in
+memory.
+This is something that virtual memory
+systems do many times, sometimes you wanna
+have a memory whole, we have memory now
+twice you wanna have memory map between
+two of your applications share data,
+pretty common thing to have happened.
+So we want to share some physical memory.
+Unfortunately, if you go look at our
+virtual adressed cache here, we actually
+end up with, and in two different
+locations, this is going back to that
+first example there.
+We have a first copy here and a first copy
+there and it depends on where it actually
+was located in the virtual address space,
+which has no mapping to where it actually
+should be located in the physical address
+space, so the bits don't match.
+The bit of the virtual address here and
+the bit of the physical address in this
+bit here does not match.
+And that causes a, a world of problems,
+because all of a sudden you can have well
+say even the same application right to
+address lets say.
+Ten and right to address 4096 plus ten and
+there's supposed to be mapping to the same
+location. It's supposed to be the same
+address, but you couldn't write five and
+then the other using the other name for
+that same location you know read lets say
+a 1000 or some random number out of there.
+So there are, there's a couple of
+techniques to, to deal with this and I
+don't want to go into too much detail.
+Your ah,, book goes into some more detail,
+but just to give you a little but of an
+insight on how to, how to, how to go about
+solving this.
+There are some systems out there which
+actually require that the virtual indexed
+piece of memory, or the resides in the
+same location as another page of that same
+address in the cache.
+Now,
+You sit there and you scratch your head,
+And you might say, well, is this
+effectively decreasing our associativity
+of our cache, or, or moving things around
+our cache.
+Well,
+A little bit [laugh] is the answer, but
+these are sort of the trade-offs.
+The OS can, to some extent, manage this,
+this different layout.
+And that's what I was saying here er,
+early sparks actually used a system like
+this were ensures that the virtual
+addresses acessing
+The address in the P A will not conflict
+in the direct map cache in a, in a bad
+way.
+So, so your, your guarantee you will
+always go to the same location.
+So,
+That's sort of the beginning point, if you
+have virtually indexed and virtually
+tagged.
+But you can have other, other mixes of
+these things.
+Not all of them make sense.
+You can have physically indexed,
+physically tagged, that what we've been
+talking about at the beginning of, of last
+lecture.
+That was the sort of the simple case.
+Virtually indexed, virtually tagged, that
+has lots of, challenges we'll say.
+Virtually indexed physical tags.
+Now this is actually a really good trade
+off here.
+So you do the translation parallel with
+the cache axis,
+And then you do the tag check.
+You don't actually need to have ascides in
+this case.
+Address base identifiers, because you're
+guaranteed to have the correct physical
+match.
+You might be accessing, let's say, the
+wrong location in the cache, or, or you
+might be accessing the wrong location, so
+we don't get around this, virtual physical
+problem in being in two locations.
+We'll talk about that in a second.
+You still need to handle that, sort of, in
+the sparkway.
+But at least you don't have to have
+address space identifiers, and at least
+you don't have to flush your cache on
+every process swap.
+Because you're guaranteed that the, the
+check that you do on the cache miss or hit
+is exact, cuz you're doing a physically
+indexed.
+Excuse me, physically tagged cache.
+And then you can have something, well, we
+call it both index and physically tagged.
+This is a cute little trick that a lot of
+architectures play, is they just want to
+ignore all these problems.
+And they want to make something that looks
+like a physically indexed, physically
+tagged cache.
+But they still want to have a cache that's
+bigger then their minimum page size.
+So you have a four-key page size and you
+want to have a it in eight kilobyte cache.
+You have a direct mapped cache.
+This bit here, the one above the, the, the
+page size, is going to be part of your tag
+index.
+But it's not, It doesn't fall into.
+So it's part of your tag index, but you're
+not going to be able to control it.
+But what you can do, is, let's say you
+take eight kilobyte cache and you make it
+two way set associative.
+So all of a sudden, it's eight kilobytes,
+but it reduces the number of index bits
+you have.
+And it fits within your index into the
+cache.
+So it's a cute little trick that you have.
+It's virtual and physical.
+The virtual and the physical dresses below
+the page line is the same.
+So the index,
+Into the cache.
+It doesn't get changed after you go
+through address translation.
+So, you'll see this where people actually
+add associativity to their L1 caches, just
+to avoid having to do address translation.
+And then you do address translation in
+parallel and you do physically tagged.
+And you do the, the, the tag check
+physically.
+There is this other down here that I kinda
+have X through.
+I haven't, I, don't think I've ever seen
+one of these built.
+You can, cause it kind of doesn't make
+sense.
+I mean a physically indexed virtually
+tagged cache.
+Yeah, not sure why you'd want to do that
+because, usually the hard part is coming
+generating the address that takes into the
+cache.
+So, I have, I've never seen one of this
+but it's always possible to go, go, go
+something like that.
+But it's something that I think about that
+having, if, if all of the sudden your
+cache size, or the amount of index bits
+that go into your cache is more than the
+amount of bits in your minimum page size,
+your address is going to show up in
+multiple places.
+And you have to, either deal with that or
+at least understand what's going on there.
+And it's usually done by the operating
+system.
+One, one final note,- we've mostly been
+talking about multi-level page tables for
+user index, and then you have a tree of
+pages that come out of it. This is only
+one approach.
+People have built stranger things out
+there, and still implemented paging.
+That's only one structure to hold all the
+pages in.
+So one thing you could think about is if
+you have lots and lots of page tables.
+And they're all mapping, let's say to the
+same they all look similar.
+You could try share different portions of
+the page table and many times the
+operating system does that.
+But another way to look at it, is you can
+try to have a table which takes a physical
+page and maps it backwards to a virtual
+address.
+These are actually, usually called
+inverted page tables.
+And on first appearance, this sounds
+weird, cuz it's the map in the direction
+you don't want, you would think.
+But to wake up for it, what.
+Usually the architectures do to solve this
+problem, the people, those architectures
+that have had inverted page tables do to
+solve this problem, is they have a fast
+hashing, function and a really small hash
+map, which does the correct direction.
+And then, if they have the, slow
+direction, they basically sort of walk
+the, page table and say, complicated
+hashing scheme, but basically it's kind of
+one of those linked list hash functions.
+So you, you check one location in the,
+physical to virtual table, and if it's not
+there, there's a link to another location,
+another location, then if it's, It
+actually ends up working out not too, not
+too bad but that's not very common today.
+We just want to put out that you just have
+the idea or you can have different
+arrangements of pages and canonical page
+that we talked about today or in class
+last time, there's only one way to go
+about doing it.
+Okay, so the questions on virtual memory
+caches, before, yep.
+That's a good question.
+[laugh] So, we said page relocation is
+when the operating system, takes a page,
+and, decides to, move it in physical
+memory someplace else.
+Are they going to be as predicted as them,
+25N, that location? So, You're saying
+because, yes, You're saying the cache tree
+gets stale.
+Yes, so, so the problem is that.
+Let's take the draws.
+Here, we have a, a linear page table.
+We put in address, 5000 hexadecimal.
+And that, maps to, some location in our
+physical memory.
+Let's say, to make life easy, it maps to
+address, 8000 hexadecimal.
+Now, the OS comes along and swaps this
+page out to disk.
+Sometime in the future, decides to pull it
+back in.
+And it pulls it back in down here at a00
+hexadecimal, a000 hexadecimal and it
+updates the page table points there.
+Now what Obama was trying to say is.
+In our cache, we had some data that point
+to this physical memory that was in, in
+the cache.
+Now all of the sudden we, we go and we
+move everything around.
+Is this, is this a problem?
+Because we're basically going to, do a
+index, and the physical address that comes
+out is not going to match what was in
+there for that data.
+That's actually okay.
+We're just going to get a miss on that,
+that location.
+So we're just going to get a miss, and
+then it's basically going to evict it and
+then go pull that exact same piece of
+data.
+That's actually not so bad.
+Now, there are [laugh] other subtle,
+subtle, more subtle challenges with these
+virtually indexed, virtually tagged.
+Sorts of things that will many times
+require you, when you go to use remapping,
+to actually invalidate all the memory that
+you take out.
+Because you actually might get a hit .
+Even though its though its pointing to the
+wrong location.
+So lets say the other, the other case is
+your in a virtual index, virtually tagged
+cache.
+And, we did this remapping, this is exact
+same remapping here.
+Well, there's different physical memory
+underlaying, underlying address 5000
+virtual now.
+And we wanna make sure we don't take a hit
+on old data, which is still in our cache.
+So typically the scheme to go handle this,
+is you actually invalidate all that memory
+out of your actually it's typically flush
+and validate operation out of your cache.
+And depending on what architecture you're
+on, some architectures actually have
+instructions that flush the entire cache.
+So X86 has something called write back and
+invalidate which will actually flush the
+entire, it'll, it'll write back all of the
+data and it'll flush the entire cache.
+Other architectures, or something more
+like mips, does it on a line by line
+basis.
+And it's a, basically an operating system
+only instruction.
+Where you can actually access address.
+And given that address or excuse me, you,
+you present an index into the cash.
+And given that index it'll flush that data
+cleanly.
+Now and then there's something sort of in
+the middle if you want actually have the
+user be able to, be able to do the sort of
+flushing, you need to think a lot harder
+about this because you want some way for
+the user to be able to present a virtual
+address but have that name something about
+the cash.
+So there are some ways to do that but it's
+kind of, the, the corner cases there get
+pretty tricky.
+But, so yeah, does that answer your
+question?
+So you, you, you get a miss when you go to
+access it someplace else and that's
+actually okay.
+Now.
+Trickier thing, it let's say the OS
+decides to.
+Point to this, some other way.
+And let's say DMA or user of a processor
+or something to go write this piece of
+memory.
+Now your cash is stale, but this is sort
+of a more involved question going to if
+you have multiple processors, how do you
+keep memory from multiple processors
+coherent, which we're going to be talking
+about in two lectures, about cash
+coherence between different processors.
+If it's on the same processor and it's
+accessed the same way, the cash is going
+to pick up that change.
+If it's accessed, let's say.
+.
+Some other ways that same address, the
+operating system's gonna have to, be very
+careful.
+And this is why these virtually indexed,
+physically tagged, address, caches usually
+require some way for the operating system
+not to have those bits differ.
+If the bits match, you know you'll kick it
+out.
+So, and because it's physically tagged,
+even if you have a, let's say, four way
+accociative cache.
+You're going to get a hit on the physical
+address bits, after the translations.
+So it's now that you can actually have,
+let's say, way zero and way one having the
+same piece of physical address data in it.
+That just can't happen in the cache
+because, on a, on a, physic lead tag cache
+because the physical tag information could
+be the same.

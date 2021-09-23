@@ -1,0 +1,328 @@
+Welcome to the encore offering of Computer
+Architecture.
+I'm David Wentzlaff, I'm a professor
+at the Princeton Department of Electrical
+Engineering.
+And my background is building mini core
+and
+multi core microprocessors both in
+academia and in industry.
+And for example, this is one of the
+microprocessors that I built while I was
+in industry.
+And this is actually a 64 core multi-core
+microprocessor.
+And that's actually put onto something
+like this board here.
+And you can see actually that that chip is
+under this heat sink on this board here.
+And in this course, you're going to be
+learning how to
+build processors with, sort of complexity
+on the order of this.
+We're not, in this course, trying to teach
+you how to build basic processors.
+We will overview basic processors and
+basic in order pipeline processors,
+but instead, in this course, we'll go into
+much more detail about how to build
+out of order sequential processors, how do
+you build more advanced things, like
+advanced caches?
+How do you go about building vector
+processors?
+How do you exploit different
+types of parallelism, like instructional
+parallelism?
+Thread level parallelism?
+Process level parallelism?
+Vector parallelism, etc.?
+We'll also be going into detail about how
+to build cache coherent systems.
+And at the end of the course, we'll be
+talking about how to build multi-core and
+many-core microprocessors.
+And I wanted to point out that this course
+is an advanced computer architecture
+course, so we'll be going into much more
+detail, and we're going to be learning
+how to build the inner working components,
+for instance all the different structures
+and
+all the different algorithms you need in
+order to build these advanced modern-day
+microprocessors.
+And we won't be spending as much time
+looking at
+how to build processors let's say from 20
+or 30
+years ago.
+So in this on core offering, we're
+going to
+be extending where we were for our first
+offering.
+And in our first offering we had over
+100,000 students registered.
+And this was really successful.
+We were very encouraged by this.
+And we want this offering to be just as
+successful.
+So please, tell your friends.
+If you're sitting here at the beginning of
+this class, watching this video, and
+saying I know of a friend who might
+actually be helped by this course.
+Let them know.
+If they're interested in the field, let
+them know.
+Also if you're taking a computer
+architecture
+course at another university, and you
+want to
+use a supplemental materials, please sign
+up and tell your friends to sign up.
+We try to make this course also useful for
+people who are currently taking a course
+at other Universities.
+So let's stop and take a look at the
+philosophy of this course.
+So in this course we're trying to have a
+high quality course
+similar to what we have at Princeton.
+And this course is going to be rigorous,
+so we're going to use good
+text books, have hard problems, have a
+hard mid-term and a hard final.
+Now the trade-off here is that because
+this course is going to be
+so rigorous you're going to learn a lot
+and it's going to be very rewarding.
+But unlike, you know, other courses where
+it
+might just be a survey level course, this
+is going to go into the details, and the
+trade off there is you're going to learn
+and
+be able to apply this information in the
+future of your life.
+I wanted to, while we were talking about
+rigor and sort of what goes about
+into a course, I want to talk about the
+two recommended textbooks for this course.
+So the first recommended textbook is this
+one here.
+It's called Patterson and Hennessy.
+you see that the two authors are Patterson
+and Hennessey and
+the title of the book is Computer
+Architecture A Quantitative Approach.
+We're going to be using the fifth edition
+of this book, but
+for those of you who, and I highly
+recommend the fifth edition.
+But for those of you who are not able to
+acquire the
+fifth edition or it's too expensive you're
+going, you can also go
+about and try to get the fourth edition of
+the book, which
+has we'll, we'll be posting equivalent
+pages out of the fourth edition.
+If they are valuable.
+So there's some topics which are covered
+only in
+the fifth edition, but not in the fourth
+edition.
+also I wanted to say we will also be
+posting
+if there's a particular question that we
+assign from a textbook.
+We'll be paraphrasing or, or copying the
+entire question on there.
+We've had permission from the publisher to
+do that.
+The second book for this course we're
+going to be
+using is called Modern Processor Design
+Fundamentals of Super-scalar Processors.
+And we'll be talking about this as or
+we'll be mentioning this and we coined
+this Shennon-Leposty
+book because these are the two authors of
+this textbook.
+I did want to point out that this version
+here
+which has a blue cover and is hardcover
+has recently fallen
+out of print as McGraw-Hill, who is the
+publisher, but it
+is being reissued by Wyvern Press in a
+cheaper, paperback edition.
+the paperback edition is going to have the
+white cover and will be released very
+soon and we'll post more details about
+that
+on the course website when it becomes
+available.
+For those of you who are joining in the
+middle of
+this course, we want to encourage you to,
+to jump right in.
+the mid term and the final we will have
+open for
+long periods to take the exams and also to
+grade the exams.
+But if you are just coming in the middle
+and
+you're like say joining like a week before
+the midterm or
+after the midterm we'll be posting the
+answers to those
+but we unfortunately can't have like
+infinite numbers of midterms and
+finals with full grading turned on.
+So you're more than welcome to come join
+the course.
+Use it as a self study.
+And we'll also be including after the
+course
+completes, we'll be leaving it open for
+self study.
+And for instance if you missed the midterm
+but you make it
+to this course for the final feel free to
+take the final.
+so, while this is the encore offering of
+the course, I
+wanted to talk a little bit about how
+we've improved this course
+since the first offering.
+So, we'll actually we've re-taped several
+of the lectures,
+and we've fixed many different errata in
+the slides.
+And while I was speaking about errata, I
+wanted to encourage you if you find
+an error, somewhere in the course
+material,
+please log in and use the course forums.
+Go to the course material errors forum,
+and look through and
+see, make sure that the error has not
+already been posted.
+But if it hasn't, please let
+us know.
+We really want to try to make this as best
+as possible, this course.
+So please go in there and post the
+problems, and
+we'll try to get 'em fixed as soon as
+possible.
+while I'm on the topic of forums, I also
+wanted to
+talk about, language and region specific
+meet up groups, or study groups.
+We have a location on our forums where
+people can meet up and try
+to post in there if they are from a
+specific region or specific language.
+I unfortunately
+only speak English.
+So I'm not going to be able to answer your
+questions in another language.
+But, your fellow students might be able to
+help.
+And it might actually help if you will,
+you know, are able
+to discuss the different problems in the
+course, in a different, language.
+So, look onto that website.
+and look under the forum in that specific,
+sub portion of
+the forum to post and try to form meet up
+groups.
+In our first offering, we actually had.
+Several, actually,
+physical meet up groups in different
+countries.
+And we had language specific discussions
+that were
+quite in depth about problems, of this
+course.
+And it, from what we've heard, it
+really help different, students from
+around the world.
+Also, one of the things I wanted to talk
+about is surveys.
+And this is a difference from our first
+time, offering this course.
+This time around, we're actually going to
+be sending you surveys.
+and at a regular basis.
+So we want to be in the course we want to
+probably work for
+the mid term one right after the mid term
+and a couple at the end.
+And these of course are optional you don't
+have to go and fill these out.
+But what we're trying to do is we're
+trying to understand
+where the students who are taking our
+course are coming from.
+Both in location but also background and
+preparation.
+And one of the reasons we're doing this is
+to better tune the course for the future.
+And make the course much better in the
+future.
+But also,
+we're trying to research, and actively
+figure out
+how to better teach computer architecture
+in the future.
+And also just about how to teach in a
+massively open online course environment
+better in the future.
+Finally, I wanted to talk about.
+Princeton Electrical Engineering
+Department.
+And all the very strong computer
+engineering and
+computer architecture faculty members at
+Princeton electrical engineering.
+So if you're going and taking this course,
+and you're really enjoying the course.
+And you're learning.
+And you're, you say, I want to continue
+doing this in the future.
+And if you're, for instance, a senior in
+undergraduate.
+Please apply to Princeton Electrical
+Engineering.
+Come and, learn.
+And figure out how to build better and
+better microprocessors in the future.
+We currently have, five faculty member.
+Both in the electrical engineering
+department, and the computer science
+department.
+Who focus on, computer architecture.
+So we have.
+Tens of graduate students and
+also, as I said, five computer
+architecture
+faculties and computer engineering is
+located in
+the electrical engineering department, so
+please come
+and apply to the electrical engineering
+department.
+We also have circuits professors and a
+bunch of software professors over
+in the computer science department, and we
+are a top ranked school.
+Our submission deadline for application
+process is December 15th.
+Thank you, and I look forward to having a
+very successful course with you.
+

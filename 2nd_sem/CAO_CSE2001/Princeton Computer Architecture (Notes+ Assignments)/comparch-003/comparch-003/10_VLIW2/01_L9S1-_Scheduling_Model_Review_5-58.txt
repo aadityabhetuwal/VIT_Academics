@@ -1,0 +1,136 @@
+So today we're going to continue our
+discussion of very long instruction word
+processors.
+And we're going to start talking about how
+they.
+Change via a classical VLIW processor,
+into a processor which can actually get a
+lot of the parallelism and the
+instructional parallelism, you can get
+inside of out-of-order superscalars.
+And to do this, we are gonna have to add a
+lot of extra features to our traditional
+or classical VLIW.
+We're gonna solely work through that, and
+we're gonna, basically, list out or
+enumerate all of the possible different
+types of instructional parallelism, and
+where that comes from in something like an
+out of order superscalar.
+And then we're gonna systematically add
+features into a very long instructional
+word processor, or VLIW processor.
+To, to get us, to that point.
+But I'll give you a hint that not all the
+things out of order superscalar can get
+are easy to get in VLIW processors.
+Or even possible in the realm of things
+that people have built up to this point.
+So before we do that, I wanted to take a
+step back and review something from last
+class and also review something from I
+wanted to clarify something that I said
+about how a, the EQ model and the LEQ
+model are the equals model or the LEQ
+model from a scheduling perspective.
+So let's back up to slides way, way, way
+back.
+At the beginning.
+And more of what, I was just gonna comment
+that the equals model of VLIW scheduling
+and the less than or equal to less than or
+equals scheduling model, are just
+scheduling models.
+That's all they are.
+They're not actually something that's in
+the hardware.
+They may influence what the hardware has
+to do or what the hardware has to provide.
+So, for instance, if you have an equals
+model and, you have an instruction
+followed by another instruction in your
+very long instruction word processor.
+And, let's say the instruction reads the
+value of some register in sort of the
+shadow of while the value's being
+computed.
+You're gonna get the old value in the EG
+model.
+So, as a, as a quick code example here.
+We can take a look at a bundle of
+instructions here.
+Let's say you have something like
+Multiply.
+R1, R3, R4.
+And in the same bundle or in the same VLIW
+instruction, we have some other random
+thing here.
+We are going to use the curly braces here
+to denote that it's one, instruction or
+one bundle.
+Then this multiply we'll say has a latency
+of four cycles.
+So you can't actually go read the result
+and if we look at something like a EQ
+model.
+We're gonna end up with, let's say we just
+have some other instructions in here, but
+this one here is important.
+We have an add.
+Which reads R1.
+Note: this multiply writes R1 but as we
+said the multiply has a latency of four
+cycles so this in the EQ model is going to
+get the value before the multiply.
+So it's not gonna pick up this result.
+And then, let's say we just have some
+other random stuff maybe some
+non-dependent adds and subtracts.
+And I'm not going to write the registers
+here, because they don't read anything or
+write anything which is read or written in
+these two bundles.
+Maybe you have a NOP.
+And then finally down here, we have
+something.
+Which does a load.
+Of R1 and gets the result of this
+mulitply.
+So all, all I'm trying to get across here
+is, this is a scheduling model of what the
+compiler needs to do and where it needs to
+place code that we're talking about in
+these schedular models.
+It's not a hardware roblem.
+If we were to try and take this same piece
+of code and run it in a LEQ model, the
+main difference is, this add here which
+reads R1, would not be able, would not be
+allowed in the shadow here.
+So what would the shadow of this multiply
+or the delay of the multiply.
+Because if you were for instance take an
+interrupter or something like that and
+this add were to get moved later, moved
+later than this load or moved more than
+four cycles later or three cycles later
+you'll actually pick up the new value.
+You'll basically change the semantics of
+your program.
+So if you were to do this in something
+like a LEQ model this add would have to be
+above the multiply and you would have to
+replace NOP.
+More of what I'm trying to get across here
+is these are just scheduling models and
+not actually scheduling models the
+compiler wants to use and not models, or,
+or not hardware models.
+The hardware has to implement something,
+which makes sense for the scheduler model,
+but when we talk about these different
+concepts, they really are just a software
+scheduler model.
+Okay, so now we're gonna go back forward
+here, and move on to.
+New contents today.

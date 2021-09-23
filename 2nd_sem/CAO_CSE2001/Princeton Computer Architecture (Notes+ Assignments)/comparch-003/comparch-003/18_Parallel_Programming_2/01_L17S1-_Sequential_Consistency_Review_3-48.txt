@@ -1,0 +1,103 @@
+Okay. So let's continue our exploration 
+of multiprocessor systems or small 
+multiprocessor systems. 
+And we left off talking about concurrency 
+and one of the things we talked about the 
+end of class or, or just a recap actually 
+before we go there that let's, let's talk 
+about Sequential Consistency again as a 
+model. 
+So Sequential Consistency as a model 
+basically says that you have lots of 
+different threads executing. 
+And the ordering of the memory references 
+from the different threads to be inner 
+leave but everyone has to agree on what 
+ordering is. 
+And all the threads have to agree and see 
+the same ordering and the ordering of the 
+loads in the stores in the respective 
+memory references have to be some valid 
+ordering from the thread. 
+So you can't reorder within the thread. 
+So if you have two threads and you have 
+let's say try four fingers here and each 
+of your hand are for familiar references 
+you can have some inter leaving. 
+You can have some other inter leaving. 
+You can have that inter leaving. 
+You can have all these possible 
+combinations leaving so what's not valid 
+is to have my two fingers sort of change 
+order there and that is that's 
+sequentially consistent. Having said 
+that, we talked about building processors 
+up to this point which are not do not 
+maintain that order, so we talked about 
+out of order processors and out of order 
+memory systems, which by definition are 
+not doing this sequentially consistent 
+notion here. 
+And if you want performance, as we talked 
+about, sometimes you want to move loads 
+around, you want to push the load up so 
+you can get the, the operation out to the 
+memory system early. 
+You try to push the store down because, 
+you haven't computed the result yet, and 
+you want to be able to, sort of, compute 
+the result before you go push it out to 
+the memory system. 
+So these things fight against each other. 
+Having a strict memory model, something 
+like sequential consistency, and having 
+good performance. 
+And in fact, 
+you're probably not going to find any 
+processor which actually implements, true 
+sequential consistency. 
+or. 
+I'm trying to think. 
+Maybe the, one of the, I, I, I, I don't 
+want to say no because I'm, I, I have a 
+hunch that the original, one of the 
+original shared memory processes, the RP3 
+by IBM I believe might have had a very 
+strict memory model. 
+But, besides that I don't think it had 
+caches. 
+most, most things do not come even close 
+to this. 
+But we talk about sequencially 
+consistent, or sequencial consistency as 
+a good model, because a programmer likes 
+to think about this. 
+They like to think that when they write a 
+piece of code what they execute happens 
+in order, and it happens in order 
+relative to every other piece of code 
+happening on, on other threads. 
+So, just to recap, what this ends up 
+happening, what this ends up doing is, 
+sequencial consistency, we, we had talked 
+about having sort of ordering between 
+loads in stores on the same processor 
+before, and you might, you can break that 
+maybe if they're two different addresses. 
+But Sequential Consistency adds 
+additional arcs in our dependency graph 
+where every memory instruction in one 
+thread is dependence on all the previous 
+memory instructions. 
+That's one way to reason about not 
+reordering anything so if you introduce 
+all those arcs you are not going to 
+accidentally break Sequential 
+Consistency. 
+But sequential consistency says nothing 
+about dependence from one thread to 
+another thread so there is no arc 
+crossing between these two threads. 
+So hence you have all valid inter leaving 
+there. 
+

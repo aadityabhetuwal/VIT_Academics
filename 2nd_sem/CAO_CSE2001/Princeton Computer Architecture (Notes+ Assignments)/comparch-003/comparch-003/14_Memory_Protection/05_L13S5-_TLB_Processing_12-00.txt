@@ -1,0 +1,301 @@
+So if you hit in the TLB, life is good.
+You get the address you need.
+If you miss, there's two major approaches
+to figuring out where to go look for the
+data, or go, where to go look for the page
+tables.
+The approach that something like x86 uses
+is to use a hardware page table walker.
+So there's a little state machine in the
+main processor, which says oh page table
+mishappened.
+It stalls the whole processor, and then
+what it does is it, in physical memory
+will walk, that multi-level page table for
+you.
+And it will do index into it, and another
+index, and another index of its multiple
+page table, and finally come up with an
+address.
+It will refill the TLB, and this is like
+the miss case of your cache.
+Another common approach, which is what
+Nips and Alpha do, is though actually use
+software to do that walk.
+And effectively what this is,
+This is similar to having the miss case of
+your cache be done in software, or it's
+done in the operating system here.
+And why this can work out and not be too
+horrible, is because TLB misses are
+relatively infrequent.
+So because the TLB, TLB misses relatively
+infrequent, you can try to do it in
+software.
+Something I, I did want to say is, you can
+also, because it's being done in software,
+you can have different layouts of your
+page tables.
+You don't have to have one very rigid page
+table layout.
+Cuz in, if you do it in hardware, that
+means the layout of your page table has to
+be known between the hardware and the
+software and they have to be agreed on.
+And that can cause, cause challenges.
+Let's see.
+One other thing I wanted to say.
+Powerpc is actually a little bit
+interesting here.
+We, we haven't put under hardware.
+But it, to some extent, can sort of
+straddle these two a little bit.
+Some implementations of PowerPC do this
+completely in hardware.
+And some actually have some software
+assist for the harder, harder cases.
+And you can also think of the, the
+software ones sometimes having a little
+bit of hardware to assist.
+So, for instance, in MIPS, there's a
+special hardware register that gets loaded
+with the address of the first level page
+table index.
+If you're doing a multi-level page table
+and the software can elect to use that
+register or not.
+So, it's like a little bit of harder
+boost, but it doesn't do the actual
+cycling of the page table in hardware
+instead it's done in software.
+Just wanted to briefly show an example
+here of real page table structures.
+This is the spark table structure for
+their 32 bit spark.
+They actually have three levels of page
+tables.
+Something, something to think about.
+You can have in a, in a memory management
+unit will do the walk in hardware.
+So it will all index and then index into
+it again and index into it again based on
+these different indexes to come up with
+the physical page number if you have a TLB
+mess.
+Okay now we have to put it in the pipe
+line.
+So here's our 5-stage pipe.
+We want to build the axis or caches.
+And axis or caches with virtual,
+addresses, could be problematic.
+We'll talk about that in a second.
+But, it'ld be nice to be able to access
+them with physical addresses.
+So we want to go through our TLB to be
+able to access these caches.
+Well, all of a sudden we've added
+something to our miss path.
+Or excuse me, to our hit path actually of
+our cache.
+We put something in series with it.
+This can slow down our cache access.
+Ugh, that's not great.
+I wanted to show something else being
+drawn here, here's the hardware page table
+walker.
+So if have a miss it stalls the whole
+processor and fires up and it'll actually
+use the page table base register to walk
+around in main memory and figure
+everything out.
+And usually the page tables are held in
+untranslated physical memory.
+Cuz if, if you have to go through virtual
+memory to go touch your page tables to go
+manage your page tables,
+It's a real big headache.
+But this makes life a little bit easier.
+cuz the, the data, the caches and the
+instruction caches, the memories, all
+physical addresses, we don't have to worry
+about any of this virtual memory stuff.
+That's not so bad, except for, I don't
+like how this slows down my processor.
+Okay, so let's look at a big, putting it
+all together here perspective.
+You have a virtual dress that comes in.
+Goes to your TLB.
+If you get a hit, you check to make sure
+you can read it or write it or you have
+access to it.
+If you do, you just access the cache and
+life is great.
+If you don't you trap into the operating
+system.
+And you, for protection, violation, or
+some sort of segmentation fault.
+Your TLB look up here, let's say you take
+a miss, you end up with the page table
+walker.
+Now this might be a hardware page table
+walker or a software page table walker.
+And, this is where we start to see virtual
+memory showing up.
+So I said we were going back to memory on
+disk.
+Well, this is where it shows up.
+In the page table, the data could be in
+secondary storage.
+It could be on disk.
+And we can figure that out right at this
+point.
+And the operating system will be notified
+if it's not in the page table.
+So if the page table entry is invalid, you
+end up in the page fault handler.
+If it is valid, if you have a hardware
+page table walker, the hardware page table
+walker will update the TLB and you go to
+reexecute the exact same instruction that
+you just faulted on or if your hardware
+page table walker not even going to take a
+fault here on this path.
+It'll just stall the pipe for a bit.
+If you have a software page table walker,
+you'll actually have software doing this,
+this little part here.
+Now let's say, the page exists but is on
+disk.
+We, we somehow moved it onto a disk.
+Well the page fault handler will actually
+load the page, in the memory, read it off
+a disk, patch the page table, such that it
+now points at the correct place in memory
+and then re-execute the same instructions.
+So return from interrupt at the
+instruction that took the original page
+fault.
+So this turns into if we put this all
+together, we end up with our, modern
+virtual memory system here.
+And the modern virtual memory system
+allows.
+Either memory to be in memory or memory to
+be on disk.
+And one of the, the cool ideas that people
+came up with is some fancier ways to
+manage this.
+So we end up with what's called demand
+paging.
+So in demand paging, we don't load
+anything when we start a program.
+If you go run a program on Linux.
+Believe it or not, all it does it maps the
+first page of your executable and just
+starts you executing.
+Doesn't pull in the entire executable.
+If your executable's five megabytes, it
+pulls in four kilobytes' worth of that on
+x86 and starts you going and just, you,
+starts executing.
+Now what happens is, when you go to, run,
+let's say you're executing, you execute
+off that four kilobytes, you end up in
+this page fault handler.
+Now the OS has a, a table,
+It might store it inside of the page
+table, or it might store it in a side
+structure.
+It knows, oh, well, the rest of the
+executable's still on disk.
+So it goes and it grabs that bit off disk,
+and puts in the memory, maps the page and
+restarts the load, the mist, we'll say.
+And this works not only for portions of
+the executables that are on disk but this
+can also work for things like your heap.
+So if you go and try to access off the end
+of your heap and the OS knows that you
+actually allocated that space it can just
+actually create new space for you and go
+find some page in memory for that space.
+So, believe it or not, on a modern day x86
+processor running Linux, when you go to
+call Mallock and you allocate a bunch of
+space, that space does not get created for
+you.
+Nothing happens.
+This is why Mallock happens really, really
+fast.
+The page does not get created until you
+first touch that page.
+So it's just smoke and mirrors in the
+meantime.
+And this is called demand paging.
+So during that, that first time when you
+call Mallock, it just does nothing.
+It just, the OS keeps track that, oh, it
+should have given you some memory, but it
+didn't.
+And then, when you go to actually go touch
+the piece of memory that it was supposed
+to give you.
+At that point, it goes, creates memory for
+you.
+And the reason it does this is because it
+decreases the memory pressure.
+You can actually run more programs if the
+programs are not executing the memory.
+So let's say that you have a program which
+is, allocates Mallocks a lot of space.
+But the does not go to access it.
+Well,
+It didn't have to go allocate memory for
+you.
+This causes some challenges on the flip
+side though of all the sudden let's say
+you have a, a hundred programs running and
+they all Mallock,
+I don't know,
+A gigabyte of space that I'll call Mallock
+of a gigabyte.
+The OS would just say yes, yes, yes, yes,
+to everybody.
+And then everyone goes and tries and
+access that gigabyte of space, but your
+machine only has let's say, mm,
+Four gigabytes of memory.
+But all of a sudden, it promised a
+thousand gigabytes of memory.
+Well, when that goes to, when your
+programs go to actually go access that
+thousand gigabytes or that terabyte of
+memory which it doesn't actually have,
+At that point, one of them's going to
+crash, basically, and you'll get an
+out-of-memory error.
+So this is the flip side of this demand
+paging scheme is that your OS has to be
+very careful not to run out of memory.
+But sometimes it does.
+So we're going to lets stop here for today
+and next time we're going to finish up
+this lecture and move, move on to some
+other topics.
+But I just wanted to.
+I think we're running a little bit late
+today.
+But I next time we're going to talk about
+how to integrate translation lookaside
+buffers with caches, and how to integrate
+them into the pipeline.
+So there's a lot of complexities in doing
+that.
+It's very possible that you don't want to
+actually access the TLB first before you
+go to access the cache.
+And we're going to talk about how to do
+that and the main reason you don't want to
+do that is it increases your time through
+here.
+Okay let's stop here for today.

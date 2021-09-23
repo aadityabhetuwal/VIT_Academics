@@ -1,0 +1,15 @@
+﻿L6S3:
+
+In Lecture Quiz 1:
+Time: 16:24
+
+Question:
+
+Can the Commit stage of an instruction overlap with the commit stage of an earlier instruction in an I2OI single issue pipeline?
+
+
+Choices:
+
+A. Yes
+
+B. No

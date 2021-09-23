@@ -1,0 +1,714 @@
+Okay, so now we get to move on to even
+more complicated processors.
+In order issue.
+Or excuse me, in order front end.
+In order issue.
+Out of order right back.
+And in order commit.
+Okay so this is going to some problems
+that we have.
+The biggest problem it's going to solve,
+is it's going to solve a problem of
+precise exceptions.
+We can now have exceptions are all the way
+at the end, because we're, we're
+committing data in order.
+So let's, let's take a look that should
+probably a line there scribble that on
+your, your own drawings.
+Okay, so let's, let's, let's take a look
+at some other structures we've added to
+this diagram to, to make life a little bit
+more interesting.
+Okay, the front end looks pretty much the
+same.
+We, we split the load and the store apart
+into two separate pites, pipes here.
+A load pipe and a store pipe.
+And the store pipe is shorter because it
+just has to basically use to store, we'll
+say.
+Maybe it's two stages, doesn't, doesn't
+matter that much.
+It's not that material in this, in this
+drawing.
+But something interesting to look at here
+is we added a bunch of extra boxes over
+here on the, on the right side of this
+foil.
+So let's, let's, let's define these
+things.
+So we had our architectural register file,
+which is our committed state to the
+processor.
+And we added a second register file,
+typically called a physical register file,
+or prf.
+Sometimes people call this a future file
+and you'll see that in the literature
+there are some papers published about
+future files and the reason it's called
+future file is, it's basically executive
+speculatively in the future.
+The values in here have not been committed
+to the processor.
+They can be thrown it out if you take an
+exception, if a branch happens for a
+variety of reasons.
+These are speculative, you're not
+guaranteed to actually have to keep those.
+The architecture register filed though is
+committed state.
+Okay, we added, we added two other
+structures here, something we call ROB or
+Re-Order Buffer.
+And we added a finished store buffer.
+So let's, let's talk about the reorder
+buffer first.
+So in this pipeline, we actually want
+instructions to basically execute and
+write the physical register file out of
+order.
+This is an out of order processor.
+We'd that to happen.
+We're basically making the execution and
+the write back out of order.
+But, we want the commit to be in order.
+So we need some structure that is going to
+guarantee that the write back, the write
+to the architecture register file happens
+in order.
+And that's what the ROB is going to do.
+So it's going to keep it's going to keep
+completed instructions.
+And that could come in out of order and
+are going to leave in order.
+So, things come into this out of order,
+and they go out of it in order.
+And this is a reordering structure.
+It's typically a table that is sort of
+ridden well, we'll talk about that in a
+second it's ridden in different places in
+the pipe for a variety, for a couple
+different reasons, but you, you typically
+want to keep track of the instructions in
+order somehow.
+And then when you go to pull out of the
+reorder buffer, you want to pull in order
+out of it.
+But the rights in the tracking of the
+information that happens to it can be out
+of order.
+And the other thing here is this finish
+store buffer.
+The reason we have this finish store
+buffer is if we have a store operation, we
+don't want to have to have the commit
+point like here so early in the pipe.
+Because once you store in the main memory,
+it's really hard to go get that back,
+possibly even impossible, probably is
+impossible.
+You wrote to the main if you, if you had
+the old value and you write, overwrite it
+with the new value, the old value's
+forever gone in your main memory.
+You can't get it back.
+So, the solution that is, instead of doing
+the store here, you have the store happen
+later in the pipe.
+And if you sort of remember what you're
+supposed to do, the address and the data
+that's supposed to be happening.
+And, for anybody who, who cares that,
+that, that store has happened if it hits
+this future store buffer.
+So you probably need to have your loads
+check that future store buffer with higher
+priority than your cache.
+Because there could be a store living in
+that location.
+Okay, so that's the, that's the sort of,
+structures here.
+Let's talk about where things get read and
+written.
+This one is really interesting our
+architectural register file isn't read
+anywhere.
+What's up with that?
+Well, we're going to use the physical
+register file for all the intermediate
+values in our pipeline and the
+architecture register file is only there
+if we take some sort of let's say branch
+or interrupt.
+That's the only time we actually need to
+go take this information and we probably
+gonna dump it into a psychical register
+file or dump it into the future file when
+an interrupt happens or when a branch miss
+predict happens.
+But otherwise, it doesn't have to be red.
+Scoreboard is the same as usual.
+Read and writes in your register fetch
+stage, written at the right backstage and
+that's no longer tracking architectural
+register file registers.
+It's now tracking physical register file
+registers.
+Re-order Buffer.
+This one hell, a whole bunch of different
+places, it gets read and written.
+Primarily, what's going to happen is when
+the instruction is issued, so goes from
+the decode stage to the issue stage,
+that's going to allocate a location in the
+Re-Order Buffer for the entry in the
+Re-Order Buffer.
+And then at the end of the pipe, once the
+value completes we have to change some
+state information in the Re-Order Buffer,
+saying, oh, that's, output register for a
+particular instruction is now ready.
+And then, once we actually go to do the
+commit, we have to basically clean that
+instruction out of the reorder buffer.
+The feature store buffer is written, just
+sort of at the end of the pike here and
+clean when the, actually posting to
+memory.
+It's a, it's a little hard to draw this,
+but you, that information.
+Somehow from the memory system if you have
+a, a load that reads from that, it will
+probably read it either L-0 or L-1 in a
+sort of bypassing mode if you will.
+It'll go check that structure.
+We'll talk more about that next class.
+Okay so here is sort of a basic reorder
+buffer.
+If you go looking some books they have a
+lot more data stored in reorder buffer cuz
+it's kind of minimal reorder buffer you
+need for an out of work pipe.
+And this reorder buffer is used to keep
+track of in order committing instructions,
+but things will be put into it out of
+order.
+So just, let's first talk about sort of
+the information here.
+We keep track of state.
+So what do we mean by state?
+So this is the state of an instruction.
+So each one of these entries here is a
+different in flight instruction in the
+pipeline.
+And we're actually going to store in order
+into the reorder buffer and we're going to
+keep it sort of as a, as a queue.
+So this picture here, this state is we'll
+say -,, - means free, and P means pending
+and F means finished probably should not
+have chose two F words there.
+That's a little confusing.
+But the newest instruction, is if we have
+a new instruction execute, it's going to
+end up here in this entry.
+And when an instruction commits, or
+retires, it's going to remove this entry,
+the bottom entry.
+So we basically have a, sort of circular
+buffer running around, with a head and a
+tail pointer, sort of chasing each other
+in this data structure.
+So, tail, head.
+What's interesting about this and why does
+this cool, is because, let's take a look
+at this instruction right here.
+This instruction has a F, which means
+it's, it's finished.
+That it's not pending in the pipe.
+It's hit the reorder buffer, the data is
+stored in the physical register file, and,
+but, instructions that are older than it
+with it these two instructions are still
+pending in the pipe.
+Let's say these two are multiplies and
+this is add.
+So this add is basically already done.
+These two instructions, which are these
+long laying instructions, are still
+pending in the pipe.
+In this cycle, we cannot commit anything.
+So we only commit instructions when the
+oldest instruction becomes finished.
+And that's when we can commit and remove
+something from the reorder buffer.
+Some other things we need to keep track of
+here.
+We have a bit here S for speculative.
+So what this means is if you have
+something like a branch.
+You mark instructions that are newer in
+the branch with a peck, of a speck little
+bit.
+So what this is saying is if that branch
+mispredicts, it just gives you a
+convenient place to go find all the
+dependence instructions on it to go flush
+and kill.
+So if you have a, if you have, let's say,
+one branch is allowed in the pipe at a
+time and the branch misdpredicts, what you
+can do is basically look for all the
+entries in here that have ones, and just
+invalidate them ad hoc, and just flush the
+entire pipe.
+You don't have to worry about there being
+some value you need to, to worry about.
+So it's just a commute way to figure out
+which instruction is speculative.
+And if the branch mispredicted what you
+have to kill.
+Stores.
+We'll be talking about this in a few more
+slides later.
+But store bit, what we're really going to
+do is this is going to say.
+If this instruction is a store it knows
+that we need to do something else with it.
+We need to do something with the future
+store buffer when it gets to the end of
+the pipe sort of a meeting place to put
+it.
+And here is the actual business the
+business part of the reorder buffer.
+V, which says that the instruction
+actually writes a register and then
+finally once the instruction goes to the
+end of the pipe, it is going to fill in a
+location in here which is the physical
+register file entry that is the
+destination of that value.
+So this basically allows the pipeline to
+know where to go find the actual value.
+We don't actually store the actual values
+in here.
+We just store a pointer in the physical
+register file, because it's fewer bits.
+And this can tell us, oh, well go, go
+look, let's say, when this when this
+instruction here which is already finished
+is ready to go retire or it's ready to go
+commit, go look in physical register file
+number seven or something like that.
+And it goes and pulls that value out from
+there.
+So, so a good discussion of this is in the
+Shin Lapousky book that is sort of
+supplementary for this class.
+Okay.
+So, let's, let's talk about the anyone
+actually have questions first before we
+move on, 'cuz reorder buffer is, is a key
+data structure here, and it's a
+complicated one.
+Okay great.
+Next, next structure we added was the
+finished store buffer.
+And this could actually be multiple
+entries but for this pipe let's say
+there's only one.
+So we are only allowed to have one store
+pending in this pipeline cuz it makes life
+a little bit easier.
+Things you sort of need to actually have
+here is you need to have both the address
+and the data whether it's valid.
+Probably the op code the op code will tell
+you if it's store byte store word sort of
+data width types of things.
+And that's most of what I wanted to say
+here if we, this, this is what I was
+saying before if you allow multiple loads
+and stores in the pipe at the same time,
+you're going to have to bypass from the
+finished store buffer to the loads.
+And possibly in stores, if they has to be
+right combined.
+So, if the user stored a different parts
+of a word, you may have to bypass that,
+depending on how the pipe works.
+Or, you can assume that there is only one
+memory instruction valid in the pipe at a
+time, you'll have one of these entries,
+and no loads can happen while a store
+happens.
+That's not very good performance.
+People probably would not have actually
+built that, but that's, that's something
+to think about.
+Okay.
+So, now we get some more pipe line
+diagrams or on those pipeline diagrams.
+And we're going to see how this is
+different, and, and what happens in the
+reorder buffer.
+First thing I wanted to say here is this
+little, little r, that you see show up in
+these diagrams.
+That means that we've written the reorder
+buffer, but we're not ready to commit.
+So from here to there, we basically have
+this add has written the reorder buffer,
+we're waiting for it to commit at the end
+of the pipe.
+But we can only commit in order, so you
+can sort of see these Cs are all lined up
+in time.
+So we're only able to commit from left to
+right and we can't reorder those, those Cs
+relative to another, another C.
+Let's see, what did I want to say here.
+That was the main thing The dependency is
+the same, it's the same code we've looked
+at before.
+That's what I wanted to say.
+Which one is that?
+Yes, it's this one.
+Okay, so here we have this ad writes
+register twelve.
+Right there.
+This add goes in read's register twelve so
+we have a read after write happening.
+What's interesting here, is this read
+after write that's happening.
+The write happens there.
+The read happens, let's say here.
+That data's in a bypass anywhere, or it's
+not in the forwarding logic of the, of the
+processor.
+That value is actually in the physical
+register file.
+So this is kinda showing an example here
+that data, when you're doing the bypass,
+can come from bypass network locations, it
+can come from the physical register file,
+and that, those are sort of two places it
+can come from.
+But you don't, you can, you can,
+everything else actually in here,
+surprisingly, is basically coming from
+bypass, except for that one location.
+So bypasses end up being really important.
+But you can have data coming from the
+physical register file.
+So could the C be here, could this C move
+over one.
+So let's come in, in order.
+And we only have to, we can only commit
+one thing at a time in, in this basic
+pipe.
+More complex pipes, we're going to allow
+multiple commits at the same time.
+When we start to mix super scalars with
+out of order, at the end of today's talk,
+we're going to be able to think about
+trying to commit multiple things at the
+same time.
+But we can't really do out of order.
+So this has to be monotonically going that
+way.
+Brief example here.
+This is kinda, kinda fun.
+This is trying to show different entries
+into the order buffer and when those
+things get allocated.
+And largely what's going to happen is for
+a destination, so let's say instruction
+zero here allocates the reorder buffer and
+R1 becomes active.
+And it's a long a long way to multiply.
+It doesn't show up at, the, the circles
+here mean that they instruction is
+finished.
+It's gone to the end of the pipe, and it's
+ready to go.
+You could have other things, like this is
+an add that happens to register eleven.
+It allocates, it finishes early, but it
+doesn't commit till late.
+So it has to stay in the reorder buffer.
+So it takes up space in the reorder
+buffer.
+And, you can sort of see other examples
+that these, these adds here finish
+relatively quickly.
+But they can't, they have to wait to
+commit in order.
+And they're basically dependent on this
+instruction here, committing before they
+can go commit.
+So it's a nice little structure that can
+track all those things.
+Okay let's look at commit points and if
+exceptions occur.
+We are going have the serve, same example
+we had before.
+The mall here is going along and it write
+backs to the physical register file.
+Now, you'll say, woah, it wrote the
+register file.
+How can it take an exception at this
+point.
+If I was to make an exception it wasn't
+supposed to write the register file, but
+we have two register files.
+So, it writes the speculative state
+register file or the future file or the
+physical register file.
+And this slash here means we don't
+actually commit that instruction.
+So, commit doesn't, it doesn't happen.
+Now we get to go look at, sort of other
+in-flight instructions to see what's
+going, what's going on here.
+Can these other in-flight instructions
+potentially write information out of order
+where current commit point be?
+Well, here's this add that before, in the
+previous example, wrote to the register
+file, and now it writes to the physical
+register file, but does not write the
+architectural register file.
+Instead, it enters the reorder buffer
+here, denoted by the little r, and just
+sits there until it actually gets the
+chance to commit an order.
+But, that doesn't get a chance to commit
+because a previous instruction kills,
+kills it.
+And kill because it takes an exception and
+kills everything.
+And then you can go and start some new
+instruction here.
+Let's say that is the exception handler.
+And fetch, fetch that, you know out here.
+One, one interesting about this example
+actually that I want to say is, sort of in
+this transition, lots of stuff, lots of
+state has to change in the machine.
+You've take an exception, the
+architectural register file is correct,
+the physical register file potentially has
+many incorrect information, er, many
+incorrect values in it.
+So, on this transition, what's really
+going to happen is you're going to copy
+all of the state of the architectural
+register, all registers, over on top of
+the physical register file.
+So you basically roll back all of your
+speculative state in machine, in one fell
+swoop.
+Obviously that can maybe be a little
+expensive.
+But you don't take off that often.
+You do take, take branches relatively
+often.
+We'll talk about that in a second.
+But what's nice that's, that's logically
+what's happening.
+Sometimes people will actually co-mingle
+the architecture register file or the
+physical register file.
+And they just sort of keep pointers to
+different pieces of information.
+So you don't actually have to sort of roll
+back information, you just sort of change
+the pointers.
+But for right now, let's model it as two
+complete separate register files where you
+copy all the state from the architecture
+register file to the physical register
+file on some form of roll back on an
+exception or a branch.
+Branches.
+So, what do, how do, how we make the
+branch latency better?
+What, what do we do out of branch first of
+all?
+So, sort of ignore these bottom examples
+here.
+This is a different code sequence that we
+have looked at, its not the multiply, add
+multiply, add code sequence.
+Instead this is a branch.
+So, we have a branch.
+The branch commits.
+We know the branch is good.
+But these instructions here, are the fall
+through case for the branch.
+This instruction here is the target for
+the branch.
+So, we need to squash all these
+instructions in the reorder buffer.
+Conveniently we have a bit in the reorder
+buffer that says all the things that were
+dependent on the branch, if the branch is
+misspeculated, just remove them from the
+reorder buffer and basically throw
+everything out of our reorder, or throw
+those entries out of the reorder buffer,
+invalidate them in the reorder buffer.
+What gets a little interesting here is
+when do we start to execute target?
+Well, let's say we compute the branch
+information here in the execute stage, and
+we can sort of re-direct the fetch stage,
+That's okay, but the squash is a little
+bit odd.
+Because what this really says, from a
+pipeline perspective, is that you have to
+invalidate multiple entries in the reorder
+buffer in one cycle.
+And this, to some extent, is a structural
+hazard on the reorder buffer.
+You might need, you know, many, many ports
+into that register, into that, reorder
+buffer, or you need to at least keep the
+valid bits in some other extremely highly
+ported structure.
+You could think about doing something even
+more interesting where you kill
+instructions early.
+So the difference between this picture and
+this picture is once we compute and figure
+out that the branch is taken, we just
+instantaneously squash all these
+instructions, and we change the re-order
+buffer.
+Or we, we write to the reorder buffer,
+killing all the speculative instructions.
+Now if you note, this doesn't actually
+help performance in this case.
+Places where this can help performance is
+if you have an out of order processor
+with, that's a super scalar processor?
+You could think they could try to put
+other instructions in these locations in
+the pipe or try to restart earlier or have
+other things go on in the pipe and you're
+just using less resources in the pipe.
+So this is gonna be the highest
+performance case, this is, sort of, going
+to be medium performance.
+Low performance, you can have a way that
+you don't actually have to add extra ports
+to your reorder buffer.
+And way you can do that is you let the
+inflate instructions that are dead
+continue going down the pipe until they
+get to the commit stage and only then you
+clean them out of the pipe.
+And you clean out the reorder buffer.
+So, you, sort of, are waiting for these
+special instructions to reach the commit
+stage and squash them there.
+In this example the performance of all
+three of these are the same, but I will
+say, this is going to be the lowest
+performance if you have a more complicated
+code sequence, cuz you are basically using
+up a lot of pipeline resources, you're
+using entries in the reorder buffer,
+you're using locations in the pipes that
+you could try to reuse for something else.
+Okay.
+So as we said, we sort of have these three
+different cases, in increasing complexity
+but you get some performance.
+I'm sorry, in decreasing complexity but
+increasing performance.
+So, so, I think one thing that definitely
+comes up.
+And this is probably going to make this
+multi-ported issue come up, is if you have
+multiple branches in the pipe at the same
+time.
+Then, the simple case of just moving, the
+top pointer's not really going to work
+because you might miss-predict one of the
+branches but not the other branch, that's
+going to, mess you up a little bit.
+Okay.
+So, lets keep moving on here avoiding
+stalls due to store misses.
+Okay, so you've got a store in the pipe.
+It takes a cache miss, and now it's
+clogging up the commit point of the
+processor.
+Because, depending on how you want to look
+at this, maybe you don't want to commit
+until that store has actually reached main
+memory, cuz that's where you're going to
+call commit for that store.
+So you can actually pull it out of the
+future store buffer, cuz it's able to
+actually to sort of commit that you, you
+try to pull it out of the future store
+buffer and write it to main memory.
+Or you write it to your cache it doesn't,
+it misses your cache and takes a couple of
+extra cycles.
+So we'll see like this, here's a store
+word and let's say it takes a few extra
+cycles here, three extra cycles stalling
+to actually to go and write the level two
+cache we'll say.
+Or pull in the data from the level two
+cache into the L1 cache and merge there.
+So there's, there's a way to solve that.
+And, and what, what's bad about this, is
+because we're doing in or commit, it
+pushes out the rest of these instructions
+later.
+And that, that's kind of bad.
+So, what you can think about doing is
+adding an extra stage in the pipe and just
+allowing the store to miss and basically
+moving past the commit station this store
+has committed.
+You, sort of, mark it down and say, well
+it's committed, I don't have to worry
+about this anymore.
+And you basically can decouple the ends of
+the pipe here or the store actually
+happening to memory until later.
+And all you do is, you just have commit in
+order.
+You can pull back these things earlier.
+This looks like a typo this should
+probably be back one and then you can, you
+can commit in order, and have that store
+sort of still outstanding out to main
+memory.
+One important thing you need to do here,
+as I, as I've said before, if you let
+another load into the pipe, or a store
+into the pipe, you're going to have to
+bypass out of this data structure, and
+that data structure now, back to the load
+stage of the pipe or the store stage of
+the pipe.
+And that, that adds extra wires into your,
+out of your processor.
+But we basically decoupled store committal
+from or it's technically committed once it
+gets past this point.
+But it's not in main memory.
+But it's, to everyone else and to the,
+the, the processor it looks like it's been
+committed.
+Cuz you can, you try to go read the value
+and it's it looks like it's committed.

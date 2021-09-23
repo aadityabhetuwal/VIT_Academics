@@ -1,0 +1,184 @@
+Okay.
+So let's.
+We're, we're almost to the end here le,
+of, of control, hazards.
+Let's talk about why an instruction may
+not be dispatched every cycle.
+Well.
+Let's, let's think about forwarding and
+full bypassing.
+This is sometimes really expensive to add.
+If you are gonna bypass every location in
+your pipe, that may be expensive.
+So, we may still want to stop in certain
+cases.
+A good example of this is, if you go look
+at a modern day, something like your core
+I7 machine, they actually don't bypass
+between all the different functional
+units, from all the different locations,
+because they have, can execute about six
+instructions per cycle.
+And there, they have many stages in the
+depth of their pipe, so they'd have to
+basically be bypassing at a hundred
+different places for every new source off
+branch.
+So, what you typically will do, is you'll
+figure out, what are the common bypasses
+that are needed, are the common forwarding
+paths that are needed and you'll have
+those.
+And then some of the infrequently used
+ones, you just won't build.
+This will help with your cycle time, but
+hurt with your CPI.
+Loads, Can have a, or, typically have a
+2-cycle latency.
+So we talked about this when we were
+talking about, load to use, and the
+instruction after the load.
+Cannot necessarily use the result,
+definitely cannot use the result because
+the in our five stage mix pipeline the
+result is not computed into the memory
+stage, so if you are in the SQ stage you
+would not have been able to get that even
+if you had bypassing out of the ends of
+the load end of, end of the load pipe or
+to the end of the memory stage.
+And one interesting thing is that the MIPS
+I Architecture.
+Actually defines low delay slots, very
+similar to what we have in What, what,
+what is what we had discussed with branch
+delay slots.
+So MIPS I had load delay slots, which were
+software visible, Slots that you had to
+fill and could solve, basically, this
+pipelining hazard.
+And the compiler would have to schedule
+some non-dependent instruction.
+So it was instruction which was not
+dependent on the load into that, that,
+that spot.
+This was ultimately removed out of the ISA
+and stalling was put back in cause as you
+went to different pipeline lanes and
+different micro-architectures this, this
+started to, to be onerous.
+And this is really one of the big problems
+with both load delay slots and branch
+delay slots is it's not very
+micro-architecture independent.
+So as you change to different micro
+architectures if you have let's say a
+pipeline length of five and it went to
+four, all of sudden maybe you didn't need
+that branch to lay slot or something,
+something like that.
+And.
+I wanted to sort of point out here is,
+this idea here, really is encapcilated in
+the name MIPS.
+It stands for microprocessor without
+interlocked pipeline stages.
+So, they really did not want to have
+interlocking here on something like the
+load to use of that, and later in MIPS two
+that, that was removed in pipeline
+interlocks were reintroduced.
+So, they, you know, we can all find
+mistakes that we have done and, and have
+changed it, but in the original MIPS 1ISA
+they had load delay slots.
+Another good reason why CPI might be
+greater than one is we have conditional
+branches which can cause bubbles.
+So this was all the control hazards we've
+been talking about up to this point, and
+you may have to kill the instructions if
+you don't have some sort of delay slots.
+Now, I wanted to point out here when we
+talk about cpi, and this is this note at
+the bottom of the slide, is that you
+really wanna think about Cpi from the
+perspective of a useable CPI, instead of
+How many instructions are executing.
+So if you are adding no-ops to your
+program, and the no-ops are not doing
+anything useful, that does not go into,
+that should not go into your useful CPI,
+calculation.
+Your machine might count that as valid
+instructions going down the pipe because
+you, it was software-invisible
+instructions, but that's not a good
+solution.
+What you should be computing in CPI, you
+should always be thinking about useful
+CPI, or CPI that's actually towards the
+end-goal of the program.
+Couple other control hazards That we need
+to talk about in this course are other
+things that can change your control flow
+of your program.
+And, those largely can fall into two
+different cases here.
+Exceptions and interrupts.
+And they're both related.
+And let's talk about what an exception is.
+So an exception is something where you
+have an instruction And the instruction
+does some operation, which is invalid or
+against what the intended use of
+machining.
+So, a good example of this, a couple good
+examples, is divide by zero.
+You take some value and divide it by zero.
+Well, on most computer architectures this
+is ill-defined or undefined.
+So you'll actually get an exception, which
+is a divide by zero error.
+And you can go try this out.
+You can go log in to your computers, and
+go run a little C program.
+Take some number, divide it by zero,
+you're going to get a div by zero error if
+you're running on Linux.
+And get something similar if you're
+running on Windows.
+And, Another good example of exceptions
+is, things like a, memory fault.
+Your trying to access your not allowed to
+go access.
+Some underflow and overflow exceptions in
+certain architectures.
+If like number precision goes out of, out
+of wack.
+If you have a, a, floating point number
+becomes too large or too small, and the
+floating point arithmetic can't handle the
+precision you'll sometimes get overflow
+and underflow exceptions.
+And then it interrupts our external things
+happening.
+And what's, So, something like a timer
+tick going off, or an IO device trying to
+wake up your processor, or do something to
+your processor.
+And why these are important, why these are
+control hazards, is these are unexpected
+things, sort of, coming into the, the
+instruction stream, and it's going to
+change.
+The subsequent instructions that are
+executing so, but it really is a control
+hazard flow.
+It's changing the program control flow.
+And we're going to be talking a lot more
+about exceptions and interrupts, later in
+this course, but I just wanted to get this
+idea across in this review so far that
+exceptions and interrupts are different
+types of control flow hazards.

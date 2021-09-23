@@ -1,0 +1,283 @@
+So looking at our dynamic address
+translation slide here.
+Well, what was the motivation for this?
+Well, we wanted to start running multiple
+programs We want to be able to overlap
+computation with Io And this really leads
+us to, some form of multi,
+multiprogramming here.
+So we're going to run around two programs
+at the same time.
+Now, note these two programs might be run
+by the same user at this point.
+We're not really talking about multi-user,
+multiprogramming.
+That's well you probably want protection
+to do that, but right now we're just
+talking about translation.
+And one of the big challenges here is so
+you want two programs to run.
+What happens if those two programs, were
+linked at the same location.
+So they both want to run at the same
+location in memory or the data they want
+to access when you statically link these
+things are is at the same location in
+memory.
+Well, that's kind of inconvenient.
+So, one, one thing you can start think
+about is actually have some notion of
+relocation.
+You may not do this on a, sort of chunk by
+chunk basis but instead you do it on a
+program by program basis.
+So what we can do is you can have a base
+register, so that all addresses that come
+out of, let's say program one, get added a
+certain offset to it.
+All addresses out of program two get added
+a certain offset to it.
+And the all addresses that come out of the
+operating system have a zero added to
+them.
+Okay, well then we can just change this
+base register and it will effectively move
+where our programs are.
+And we're gonna call the address that we,
+when we start out that comes from the
+program the virtual address.
+And the physical address is where it
+actually is in physical memory.
+You can extend this a little bit and even
+actually add some notion of protection.
+So you can add something which says,
+program two here is only allowed to access
+up to this location, or this offset in
+itself.
+And past that point, it should, is not
+allowed to go access anything.
+Well that's actually a pretty easy go-do,
+and we're going to call that a bound
+register.
+Now, these base and these bound registers,
+we're going to look at in more detail in a
+second.
+But it's, you don't want the user program
+to go be able to change the base and the
+bound register.'Cuz if the user program
+goes and changes the base and bound
+register, it can basically re-map itself,
+or it can possibly make its bound big
+enough to go look at the other program.
+So what is, let's look at a, the hardware
+of a basic base and bound translation.
+So we have a, a program here.
+And it's going to do a untranslated
+address.
+That address is going to get added to it
+some base,
+And that's going to be the address you go
+to access your caches and your memory
+with.
+This address is compared to a bound
+register.
+And if it's bigger than some bound.
+It gets slapped on the hand, or it gets
+killed.
+You get some sort of violation.
+This actually still shows up in modern-day
+architecture.
+Yet it's not super-widely used, but in
+x-86, you actually have segments, which
+have base and bound registers.
+So there's some problems with base and
+bound registers,
+Which we'll talk about in a second.
+But otherwise, you know, this works okay.
+You can have different segments.
+You can have programs that are basically
+relocatable by the operating system.
+By setting this base register.
+You can protect memory by setting the
+bound register.
+And if the op, if the application tries to
+do anything outside of those parameters,
+it'll get killed.
+Questions so far?
+Sounds, sounds pretty, pretty good One of
+the cool things that you can do, is you
+can have not only one set of base and
+found registers, but you can actually
+think about having,
+Actually, before we start,
+Before we move off slide, I wanted to say
+something, something interesting here.
+What happens if you have two programs that
+want to share some data?
+Can we do that here?
+That's definitely an option, you might
+want to share data and not code.
+Or you might want to go the other way,
+which is actually more common, is you want
+to share code but not the data.
+So, for instance if you, modern UNIX
+systems do this.
+They, they don't necessarily use this,
+they use a more of a page based approach.
+But, if you launch 100 copies of LS at the
+same time, the code for LS will be the
+same between all 100 different versions.
+So what you can do is you can actually
+point the, the base register at the same
+location and same the, use the same piece
+of physical memory.
+So, that's a, that's a, that's a nice
+little trick here, is you can basically
+share the same code segments between all
+your programs and modern day systems
+actually do, do this.
+They, they share the code segments between
+all the same versions of the, the program
+Obviously if you have someone who's
+running version 1.2.7 of something, let's
+say LS, and someone else is running
+version 2.3.9 of LS, you can't share the,
+the code segment.
+But your OS will know that those are
+different codes.
+But if it is the exact same code, you can
+save a lot of memory by just only having
+one copy of it in RAM, and not, I don't
+know, a thousand copies of it in RAM.
+So that's, that's the big advantage of
+this separation, and in fact, this is
+actually used, pretty, recently, this is
+still used to send vestiges of those as I
+said as in x86 but the old Cray Vector
+super computers actually did not have a
+more advanced memory system but they more
+advanced memory system but instead just
+had base and bound registers.
+And this was actually to some extent okay
+for something like a supercomputer cause
+supercomputers don't typically run lots of
+programs at the same time.
+They typically run one really big program.
+So it's a little bit easier in that
+setting than using an architecture like
+this for something like general purpose,
+operating systems like, you know, your
+Linux desktop or something like that or
+Windows desktop.
+Okay, so let's take a look at how this
+fits into the pipeline here.
+So here's, here's the pipe line we wanna
+add, base and bound register.
+It's actually not so bad.
+We have to add our adder here to add in
+the base into the program counter.
+We need to add an adder for the database
+register, into all of our loads and
+stores.
+And then we need to add a comparator,
+here, a comparator there to check to make
+sure we, we don't fall outside of our
+balance.
+Now one of the interesting things about
+this though, is we're adding a extra
+adder.
+So you think this would slow down our
+clock frequency a lot, we're adding a
+whole another, let's say 32 bit wide
+adder.
+But conveniently, we can, we already have
+an adder in this path.
+We already have an adder in this path.
+So the adder in this path is basically our
+PC plus four calculation.
+So while we do the PC plus four, we can
+overlap that with the next edition.
+And you can actually have the, the carries
+basically happening at the same time and
+the cost of it is only one extra carry
+delay out of a full ladder.
+Similar sort of thing over here.
+It's kind of the same way that you would
+build a Multiplier or something like that.
+Where you actually overlap respective,
+additions in the multiplier concurrent.
+So it's kind of nice that, you know, you
+can do this relatively low cost.
+To some extent, you know, it just sort of
+melts away.
+You could even go faster.
+I think this node here.
+We talk about carry, carry save adders.
+You can always do carry select adders,
+which are even faster where you just have
+basically one bit that tells whether the
+last bit carries or not.
+But you, you can go quite fast here.
+Okay, so let's, let's talk about the
+challenges of base and bound.
+So let's say we have memory here,
+And we start off with three processes,
+User one, user two, user three.
+User one is sixteen kilobytes.
+User two is 24 kilobytes.
+User three is 32 kilobytes.
+And this sort of some open space.
+Free space here and here.
+So all of sudden, more users show up, and
+they start to run some processes.
+User four goes here and fills in this
+space here.
+User five goes down there because it can't
+fit in this eight kilobytes segment, so
+eight kilobytes segment or eight kilobytes
+free space here and it has to go down
+here.
+Okay.
+That's all well and good.
+Two and three kill their programs.
+They stop running their programs, so all
+of a sudden, this goes away.
+Oh, excuse me, two and five goes away.
+And, and this one goes away.
+So we start to get some holes showing up
+here, and some small holes.
+And if you repeat this, sort of, thousands
+and thousands of times, at some point,
+relatively high probability, you end up
+with lots of little chunks of memory,
+which are hard to go reclaim.
+And this is, this is, memory
+fragmentation.
+If, this is a, if you go look at something
+like a modern-day garbage collector,
+you'll actually try to re-squish all this
+data together.
+But that's hard to do when a program is
+running.
+It's, it's hard to go take these other
+programs and go re-squish them It's also
+possible that, depending on how the
+addresses are laid out, you just may not
+be able to do that.
+If you have base and bound, it's possible
+you might actually be able to go move the
+data.
+But you have to go copy all of the data.
+That, that takes time if you have to copy
+your entire memory system.
+This is why something like garbage
+collectors can be pretty inconvenient, cuz
+some of the garbage collectors actually
+require you to go copy everything.
+There're a couple different techniques you
+probably talked about in your Data
+Structures class about how to go do
+efficient garbage collector.
+But, let's say you want to avoid this
+completely.
+So can, can we go avoid this?

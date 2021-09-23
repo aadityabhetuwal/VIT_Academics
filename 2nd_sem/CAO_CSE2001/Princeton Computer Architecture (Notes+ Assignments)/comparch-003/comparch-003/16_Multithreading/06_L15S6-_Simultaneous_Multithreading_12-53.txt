@@ -1,0 +1,300 @@
+Okay so, 
+those core screen multi-turning. 
+We're going to move onto figuring out how 
+to mix instructions of different threads 
+in the pipeline at the same time, and mix 
+them in the same, and issue two different 
+threads instructions at the same time to 
+different pipelines. 
+So, the idea here, this is called 
+simultaneous multi-threading, and 
+actually, let me start of with a, a, a 
+picture of what this looks like. 
+Let's work backwards in the slide deck 
+here for a second. 
+So we have a four issue processor. 
+This is our issue with. 
+And this is time increasing going down. 
+Each of the different patterns represents 
+a different thread. 
+And the idea here, in simultaneous 
+multi-threading is you can execute 
+instructions from different threads into 
+different pipelines simultaneously. 
+Now, this gets quite a bit harder. 
+Then this basic design here, because now 
+we actually have to read from the 
+register file four different threads 
+simultaneously, and we have to fetch 
+different code from different program 
+counters simultaneously in this 
+processor. 
+So simultaneous multi-threading where it 
+came out of was, people were building 
+complex out of order superscalars. 
+And these complex out-of-order 
+superscalars had all this logic, 
+to be able to track different 
+dependencies between different 
+instructions, and to basically restart 
+sub portions of instruction sequences. 
+So this is like, you take a branch of 
+mispredict. 
+You had to kill all the instructions that 
+were dependent on the branch mispredict 
+and leave other ones that were not there 
+alone. 
+And, when you have this out of order 
+mechanism you have all this extra logic 
+there to figure that out. 
+Dean Tolson, Susan Eggers, Jim Levy, came 
+up with this idea that, 
+well, 
+what if we try to utilize all the dead 
+slots in our out of order superscalar, 
+but intermix different threads in there 
+simultaneously to fill the time? 
+So they did this study back from ISCA in 
+95,' and read a bunch of different 
+applications, and this right most bar 
+here, is our composite or our, our 
+average here. 
+And what you should figure out from this 
+is this black bar on the bottom here is 
+how long the processor is busy, actually 
+doing work and the rest of this is 
+different reasons the processor was 
+stalled. 
+So we were stalled on instruction task 
+misses, branch mispredictions, load 
+delays, just pipeline interlocking, 
+memory conflicts, other, other sorts of 
+things, and we're only using this 
+processor less than 20% of the time. 
+So, to show this a different way. 
+We have our multi issue processor. 
+And we have time here. 
+We have all these purple boxes which are 
+just dead, dead time. 
+And we might be able to use subsets, 
+you know. 
+This is very good. 
+We actually issued four instructions in 
+this cycle. 
+But here, we only issued two. 
+Here, we issued one. 
+Here, we issued two to these two 
+pipelines in the middle. 
+Maybe these are the two ALU pipes. 
+And there's, like, a load pipe here and a 
+branch pipe there, or something like 
+that. 
+This is, 
+this is a kind of a disaster from an IPC 
+perspective. 
+Can we try to re-use that hardware? 
+And we talked about our core screen 
+multithreading, which was effectively 
+temporally slicing up the cycles here. 
+So you run one thread, switch to a 
+different thread, run a different thread, 
+and you can temporally switch between the 
+threads. 
+But what would happen in, in another 
+approach, and this is actually done in 
+the failed Sun Millenium processor, what 
+was going to be Ultra Spark 5. 
+The, they have this idea that they 
+actually had a clustered VLIW, or excuse 
+me, a clustered superscalar, 
+and they had a mode that you could flip a 
+bit, and you could basically cut the two 
+clusters separately and run them as two 
+separate processors, or two different 
+threads. 
+So you can actually decrease, let's say 
+you had this width four processor, and 
+instead you split it in half, and you 
+have two functional units running one 
+thread, 
+two functional units running another 
+thread. 
+Well, this has, this has some good 
+effects. 
+You don't actually have to have really 
+high IPC, 
+or really high instructions per clock. 
+You don't ever have to reach four in this 
+design because we've narrowed the two 
+pipeline widths. 
+And you could think about trying to put 
+them together. 
+This is what the Millennium processor, 
+the UUltra-Spark 5 tried to do, is you 
+can actually switch between this mode and 
+this mode. 
+But you still have a lot of open slots 
+here that you can't go use. 
+So, it still leaves some vertical waste. 
+Another downside to this was you can't 
+have one thread using all of the 
+resources very easily here in this mode. 
+You can't have, let's say, thread one use 
+this functional unit over here in this 
+very static design. 
+So, this brings us to full simultaneous 
+multithreading, or SMT. 
+And in SMT we were able to mix and match 
+all these different instructions, but 
+this is going to change our proster 
+pipeline quite a bit. 
+Okay, so let's, let's look at what this 
+does to a processor pipeline. 
+Well. 
+All of a sudden we need to be fetching 
+multiple instructions at a time. 
+That's, that's definitely, a hard, harder 
+thing to do here from different threads. 
+Conveniently, we can actually use our 
+instruction queue, or our reservation 
+stations, if you will, to go find 
+different instructions to go execute at 
+the issue stage of our out of order 
+processor. 
+So what we can do is we can tag the 
+different threads independently, and have 
+that be part of the instruction, 
+issue logic, such that you can't issue 
+or, or, you know that thread one, 
+register one is different than thread 
+two, register one. 
+And then you use the same logic that 
+we've had in our out of order 
+superscalars, in our issue queue or our 
+to go find different instructions from 
+multiple threads to go stick down the 
+pipe, or the respective multiple pipes. 
+And conveniently we have most of this 
+logic already. 
+And what's also nice about this is, if 
+you're only running one thread at a time. 
+When you go to look in your instruction 
+queue, or your issue window, 
+that only that one thread will show up. 
+So you can know that you don't need to go 
+and look around the other threads, and 
+you can use the full machine. 
+And this allows you to use the same 
+machine such that if you have lots of 
+parallelism, 
+you can different threads and fill all 
+different slots. 
+And then, if you don't have the 
+parallelism, and you want to exploit 
+instructionable parallelism, you can use 
+the slots in different allocation and 
+just have the dead slots, the purple 
+slots. 
+And you can see here, here we are issuing 
+three instructions from the checkered 
+board blue, and here we are issuing four. 
+Well, let's say it's the exact same 
+program, executing on the same cycle. 
+You could actually have the machine such 
+that it'll issue different amounts of 
+parallelism, of instructionable 
+parallelism, from a thread, 
+depending on if there's multiple threads 
+running. 
+And this is what these truly 
+multi-threading machines, simultaneous 
+multi-threading machines, attempt to do. 
+. 
+See, there's one other point I want to 
+make here. 
+you have to worry when you're doing this 
+simultaneous multi-threading here, about 
+priorities between threads, 
+because you want to make sure they, you 
+have some sort of equal progress 
+guarantee, or some, 
+and round robin's probably not good 
+enough. 
+So you need to somehow figure out how to 
+not have one thread hog the machine, and 
+have some, some, fairness between 
+different threads. 
+So I wanted to show a few examples here. 
+So here we have on the top, we have the 
+Power 4 IBM Power 4 processor pipeline. 
+And this was a non-multi-thread machine. 
+And the Power 5 architecture actually 
+looks very similar to the Power 4 
+architecture, except they added a second 
+hardware thread. 
+So what they had to do here is they 
+actually had to add more fetch bandwidth, 
+and then they had it, this notion of 
+group formation. 
+And this group formation was the picking, 
+out of the two threads. 
+So they could figure out what they could 
+actually execute simultaneously at the 
+same time, 
+and they, effectively had extra pipe 
+stages out in front to go do that. 
+And at the end here you have to commit to 
+a, different program counters at the same 
+time. 
+You can see there is definitely 
+complexity in building this. 
+That all of the sudden, you have to 
+basically into reorder buffer or kill a 
+subthread when it branch mispredicts, but 
+not the rest of it. 
+And we already talked about how to do 
+that in a super scale where we can kill a 
+subsequent a subsection of instructions, 
+and not have to kill the whole 
+instruction sequence. 
+. 
+Here's a different view of the, the Power 
+4 in a, in a, physical chip view, here. 
+And one of the interesting things to, to 
+see is that they went with two threads, 
+because if they went to four threads, 
+they figured out that they would actually 
+be using the resources too much and be 
+bottlenecking in different locations in 
+the pipe. 
+It was basically, 
+they didn't have enough resources, sort 
+of, over here to have it be filled. 
+it would be filled if you had more than 
+two threads executing on this anyway, 
+so there was no, 
+so sort of diminishing returns past that 
+point. 
+We're almost done, but I think we're out 
+of time. 
+Let's, 
+actually, before we do that, let me skip 
+forward here and just summarize, with all 
+the different types of multi-threading. 
+You have your superscalar processor. 
+You have your, 
+very, very fine-grain multi-threading, 
+where you're doing it on each cycle, you 
+have coarse grain, coarser grain where 
+you sort of do it every few cycles. 
+You can think about cutting the processor 
+in half, and using some of the function 
+units for one thread, and some of it for 
+another thread, and then we have our full 
+simultaneous multi-threading. 
+So we'll pick up on this next time and, 
+and, finish up about some of the 
+implementations of the Pentium 4, and how 
+they did multi-threading. 
+But we'll stop here for today. 
+

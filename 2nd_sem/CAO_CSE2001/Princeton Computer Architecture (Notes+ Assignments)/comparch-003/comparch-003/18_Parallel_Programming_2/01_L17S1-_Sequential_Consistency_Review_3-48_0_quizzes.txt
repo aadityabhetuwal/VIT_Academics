@@ -1,0 +1,21 @@
+﻿L17S1:
+
+In Lecture Quiz 1:
+Time: 3:42
+
+Question:
+Assuming you have two threads, A and B with access patterns for A: LW R1, 0(R5); SW R3, 8(R0) and access patterns for B: SW R7, 8(R0); SW R8, 0(R9); LW R9, 12(R0), which of the following is a sequentially consistant execution order? 
+
+Choices:
+
+A. LW R1, 0(R5); SW R3, 8(R0); LW R9, 12(R0); SW R7, 8(R0); SW R8, 0(R9)
+
+B. LW R1, 0(R5); SW R7, 8(R0); SW R8, 0(R9); SW R3, 8(R0); LW R9, 12(R0)
+
+C. SW R7, 8(R0); SW R8, 0(R9); LW R9, 12(R0); SW R3, 8(R0); LW R1, 0(R5)
+
+D. SW R3, 8(R0); SW R7, 8(R0); SW R8, 0(R9); LW R9, 12(R0); LW R1, 0(R5)
+
+
+
+

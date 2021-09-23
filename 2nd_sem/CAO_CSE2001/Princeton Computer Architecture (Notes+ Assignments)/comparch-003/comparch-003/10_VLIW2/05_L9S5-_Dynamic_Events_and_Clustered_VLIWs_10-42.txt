@@ -1,0 +1,284 @@
+Okay.
+So let's, let's talk about some of the
+other things that were on our list of
+limiters to instruction level parallelism.
+And ask ourselves, are these things which
+we can solve very easily?
+Well, things start to get harder pretty,
+pretty fast here.
+Like I said, dynamic events.
+They're basically things the compiler has
+no way of reacting to.
+Now, the instruction set might not be,
+might be able to react to it.
+You can add things into the instruction
+set.
+You may take a branch dependent on a
+dynamic event.
+But let's look at some dynamic events.
+First negative event here, cache miss.
+Well, it's really for compiler, just, all
+things being equal, knowing whether a load
+is going to take a cache miss or not.
+You might have some guesses, that could
+influence the code, but, you know,
+actually doing something about it.
+If you think about what an out-of-order
+super scalar does, is if you take a cache
+miss, it'll reschedule the code.
+Around the cache miss.
+It'll take the non dependent instructions
+that, the instructions that are not
+dependent on load, and pull those up and
+try to execute those.
+But, if the load hits in the cache, you
+want a totally different schedule.
+You want to actually try to start
+executing the instructions that are
+dependent on that load as soon as
+possible.
+So an out of order superscalar has dynamic
+means to be able to do this, has dynamic,
+instruction execution.
+But our Wiehl IW processor, which is
+statically scheduled, can't really do
+this.
+So what's, what's some techniques to, to
+go about after this?
+One thing is something called informing
+loads.
+As far as I know, this actually has not
+been built in any hardware, but it's been
+proposed, at least in the computer
+architecture, Academic circles or in, in
+the computer architecture literature.
+And informing loads is actually come up
+the, the original paper about this by one
+of our faculty member or one of our
+faculty members here at Princeton Margaret
+Martonosi wrote a, a, she's one of the
+authors of this paper.
+But the basic idea is that if you have a,
+a load that misses in the cache you can
+not execute subsequent instructions.
+L seeking next actually no.
+If there, the load is missing the cache
+you just don't execute the subsequent
+instructions, you basically nullify those
+instructions.
+And this allows you to change the code
+sequence dependent on whether the load
+hits in the cache or whether it misses the
+cache.
+And this was done with Todd Maury
+[unknown] Professor [unkown], and
+professor Todd Maury I think both when
+they were graduate students, and Mark
+Horwitz from Stanford was on his paper, I
+think a couple, trying to remember who was
+the last author, the, the professor on
+this.
+On this work.
+Another option is something that the
+Elbrus, Elbrus processor people did.
+So you probably never heard of this
+processor.
+It was something that was built.
+In the, well, actually don't know who's
+ever finished so you get a prototype of it
+sort of in the Soviet Russia Day right
+when the Soviet Union was kind of
+breaking, breaking down.
+This was the design house in Soviet Russia
+which made all of these sort of military
+processors.
+They later went off and that same design
+team was gonna go build some commercial
+processors after the fall of the Soviet
+Union.
+So, [laugh], they went to, you know, they
+went to go to build this processor, and
+it's a VLIW processor, it's some very long
+instruction word processor, and they had
+an instruction in there which tried to
+solve this dynamic event, probable around
+cache misses.
+So, what it said is if the instruction
+misses in the cache.
+Go execute a different piece of code with
+a different schedule than if the
+instructions if a load hit in the cache.
+So you could effectively have two
+difference codes here because the compiler
+could actually generate two different code
+sequences and it can get back while the
+performance and get back to almost exactly
+what [inaudible] could do.
+This processor never really made it
+commercially.
+And later, they, the company went under.
+It was bought, I actually don't know if
+the assets were bought by Intel but at
+least all the, the people who worked at
+this company now work at Intel,
+effectively.
+So they still live in Russia.
+So, that's a funny story there, that,
+Yeah, it didn't work out from a, a
+commercial perspective, but they had some
+cool ideas in there.
+That you could actually try to schedule
+around branch or, schedule around cache
+misses.
+Okay, so some other things.
+Branch mispredicts.
+Well, we already talked about one
+technique here.
+We can talk about you can add predication.
+But that doesn't help if you have big
+pieces of code, big code sequences and big
+code hammocks, you can't necessarily
+predicate your entire program.
+So what do you, what do you do instead?
+Well.
+One, one solution that people have come up
+with for this.
+And this is, this is the hard one, hard
+one to deal with here.
+Is you can add branch delay slots.
+So you have a VWA processor, let's say
+it's three wide.
+And you add branch delay slots in your
+instruction set and you use predication in
+the branch delay slots.
+And what this allows you to do is, it
+effectively lets you mask some of the
+branch mis-predict penalty and change the
+code schedule, a little bit, dependent on
+the prediction.
+Or change is actually completely based on
+where the branch is, and the way this
+works is, in the, in the delay slots, you
+use the same predicate that the branch is
+branching on.
+So the branch is branching on let's say if
+A equals B.
+We'll use that same thing in the
+predication and effectively you can
+reschedule the code differently, depending
+on whether the branch is taken or not
+taken.
+And because you're putting in the delay
+slot.
+You can sort of get around some of the
+problems here of whether it's, taking the
+one direction or taking the other
+direction.
+No matter of which way the pred, which way
+the mis-predict happens or, whether the
+branches can be predicted correctly or
+not.
+And, and what we're doing is basically
+putting code in the delay slots that will
+always execute, but it can be predicated.
+And, if you can actually pull code up from
+the two destinations of the two branches.
+So it's sort of a way to get around,
+branch mis-predict [inaudible] here.
+This is actually done in a research
+process that was built at MIT.
+And I think it's probably also done in
+some of the other HP processor.
+But the MIT processor at least was called
+the M machine out of Bill Dali's group.
+He's now at Stanford but I think the ATM
+machine was built right when he was moving
+from MIT to Stanford.
+But they had I think three delay slots and
+they were three wide.
+And they could predicate the instructions
+in the delay slots.
+So last thing is exceptions.
+So you take a exception.
+You want to schedule different code.
+And these are, like, impossible to
+predict, you, the compiler has no way to
+try to predict this.
+But this is hard on a super-scalar also.
+You know, when you have a traditional
+super-scalar, and an exception happens,
+they usually end up flushing the pipe
+anyway.
+So, and, and it doesn't happen that often.
+It probably doesn't hurt your performance
+that much.
+So you, no one's gonna lose, lose too much
+sleep over this one.
+So briefly I wanted to say something about
+how, how to build really wide VLIWs.
+As we start to go to wider and wider,
+VLIWs lots of instructions execute at the
+same time.
+You have to start thinking about what does
+the register file and the by-pass number
+look like.
+So in this drawing here we actually have a
+figure of the C64000 Series Processors.
+So these are TIDSPs sort of the flagship
+of DSPs processors.
+And this is a sort of block level diagram
+of what they, what they have.
+What they actually have is, they have,
+they have divided the machine into local
+register files.
+When they bypass with inside of what's
+called the clusters.
+So is the clusterd VIWS similar to how we
+have clustered superscalars which also
+divide the register file but this is a
+architectural, big architectural or isale
+of architecture splitting or dividing
+going on here.
+So in something like the C6400, they
+actually have four instructions per
+cluster, so they are executing eight
+instructions at the same time.
+And you can bypass values between these
+four ALUs.
+Within, within them, or you can, bypass
+within these, but if you wanna sort of
+take a value from here and move it to
+there, you have a very low bandwidth, sort
+of, bypass path here and it takes an
+instruction.
+You effectively have to have a move
+instruction to move between the two
+different clusters.
+So there's a, there's a lower bandwidth
+between the clusters and a higher latency
+between the clusters, but inside of a
+cluster, it's very fast.
+And what's important to know here is these
+are not two processors.
+These are all executing one instruction at
+the same time, so it's a eight wide
+instruction executing under this eight
+different L use.
+And this is used in the sort of TI.
+High end DSPs also is its used in HPs and
+STMicro's LX processor.
+This a probably a processor you never
+heard about, but this was actually what
+Josh Fisher went on to go do at HP Labs
+after multi-flow.
+So, this is after sort of some of the
+original VLIW work same, same person went
+and built this LX processor.
+And this is sort of joint collaboration
+between ST micro and HP.
+And this shows up in printers today.
+So, it's not something you're gonna highly
+have.
+The LX processor is probablty something
+you're not gonna have on your desktop,
+machine.

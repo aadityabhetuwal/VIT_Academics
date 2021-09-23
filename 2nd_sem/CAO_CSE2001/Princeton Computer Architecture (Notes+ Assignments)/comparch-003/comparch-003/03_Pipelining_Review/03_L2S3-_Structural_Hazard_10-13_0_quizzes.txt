@@ -1,0 +1,9 @@
+﻿L2S3:
+
+In Lecture Quiz 1:
+Time: 7:24
+
+Question:
+In a modified pipeline where the memory stage is split into two pipeline stages (M0 and M1), where two memory operations are not able to be in stages M0 and M1 simultaneously, draw the pipeline diagram for the four instruction executing in order, ADD, ADD, LW, LW.
+
+

@@ -1,0 +1,225 @@
+Let's move on to memory disambiguation.
+So, this is kind of the analog of read
+after write hazards through the memory
+system.
+Whoops.
+Okay.
+We have a basic instruction sequence here.
+We have a store, followed by a load.
+When can we execute the load?
+Well, that's a tough one.
+If the load's not dependent on the store,
+we can just go execute out of order.
+We can potentially even execute the load
+before the store, in an out of order
+machine.
+If the load's dependend on the store, so
+if let's say, register two is equal to
+register four, then we're going to have a
+problem.
+So, what's, how do, how do we go about
+trying to solve this?
+Up, up until this point we, in our pipes
+we've said, okay, loads in stores are in
+order cuz that, that can solve these
+problems.
+So, we, let's say, we just execute all
+those in stores in order and we can still
+allow other instructions to move around
+it.
+So, it's out of order relative to other
+instructions, but we have in-order memory
+instructions.
+And, that's going to guarantee that we're
+not going to have any problems.
+Well, we're leaving performance on the
+table here.
+We could go faster.
+We could actually execute loads and stores
+out of order if R2 and R4 are different.
+But, we're probably going to need some
+extra structure to do that.
+Okay.
+So, say, we look at a conservative
+out-of-order load example.
+So, our, our conservative one, let's split
+the store into two sort of sub-parts.
+An address computation, and the actual
+data write.
+By doing this, we can guarantee that the
+store, because we do the address
+computation early, we can know that, that
+subsequent load is not going to alias, or
+we know the R4 is not going to be equal to
+R2.
+And, we can go execute the load before the
+store in this case.
+By splitting the store into two different
+parts, the actual store portion and the
+address computation.
+And, we still need to, unfortunately,
+check every single load against all
+previous uncommitted stores or need some
+structures to go do that.
+So, instead of a, instead of a kind of
+problem, cuz it's a bummer.
+And, we're not able to execute any load if
+we don't know the store address of any of
+the stores before us because we're not,
+we're just not going to know whether we
+can go execute that or not.
+Okay, well, can we do one better?
+Let's start speculating because let's,
+let's guess that these are not equal.
+Let's execute the load before the store.
+And then, we hold off committing the loads
+and store instructions, and we do that in
+order.
+And, if something bad happens, so if the
+registers do equal each other, we have to
+replay all of these instructions.
+And what's, what's annoying is we also
+have to kill all of the subsequent
+instructions.
+So, anything that was after that load and
+store which could have picked up a value
+from loading the store, or, well, rather,
+from the load.
+Any dependent instructions the load, we're
+going to have to go kill all that.
+And, depending on how precise we want to
+be, we can either try to kill just
+everything after it, or we can try to kill
+just the selectively, the things which are
+dependent on it.
+I think it's really hard to track.
+And, and we have a pretty high penalty
+here for inaccurate address speculation.
+So, if we go and we just execute these two
+instructions, we put them into the pipe
+and they were dependent on each other, we
+have to rollback a lot of state.
+So, one, one, one sort of heuristic on
+this is, was, was done in the Alpha 21264,
+is called Memory Dependence Prediction.
+So, what you do is you're still going to
+guess that the loads in the stores do not
+alias.
+But, then later, if you find that the two
+registers do equal each other, you're
+going to squash all the instructions.
+But then, you're going to do something
+special to that load.
+You basically going to say, that's a,
+that's a, wait, wait for the store, you
+sort of put barrier in.
+So, you're not going to get multiple roll
+backs over and over again.
+So, this is kind of a conservative way
+that when you see you're rolling back a
+lot, there's a lot of thrown away work
+that you're doing there.
+So instead, you can just say, well, this
+load, I think is dependent on that store.
+You can potentially, even remember that
+across instruction sequences.
+So, if it's always the case, let's say,
+this load is dependent on the store, you
+could potentially keep it into your
+instruction cache or something like that.
+And then, you know, when you go to execute
+that same load at a different time, it's
+going to wait for all the stores to
+complete and it's going to barrier.
+This is kind of a prediction.
+It's just heuristic, but it's one way you
+could potentially not cause that load to
+always replay.
+And, if you have sort of multiple
+dependent loads or, or, excuse me, it
+loads in one store you could potentially,
+cause those loads not to have to replay
+multiple times.
+But, the, but the big advantage here is
+when you go to re-execute that load some
+time in the future, you're not going to
+flush the entire pipe.
+So, this is kind of like a branch
+prediction, if you will.
+It's like, this branch I've, I've trained
+the predictor to say that, that load
+usually is dependent on the previous
+store.
+So, just wait for all the other stores to
+clear out of the pipe.
+So, it's a cute little trick.
+Okay.
+So, we're almost out of time.
+All right.
+So, speculative loads and stores.
+We're going to introduce a store buffer to
+hold the speculative state.
+So, let's take a look very briefly here,
+I'll flash up what a store buffer looks
+like.
+And then, we'll think about it for a
+second here.
+So, here you have your cache, your L1 data
+cache we'll say.
+We're going to send all the addresses to
+go to the L1 cache, also to this other
+structure here which is the speculative
+store buffer.
+Inside of the speculative store buffer,
+there is going to be bits basically saying
+whether it's valid or not.
+And, the load is going to check against
+here.
+And, let's say, the data hasn't actually
+gone into the cache, it can go pick up the
+new value here.
+And, the S bit is basically, it's going to
+tell us whether it's in flight or not.
+So, it's possible that we allocate into
+here, but the store isn't, at the end of
+the pipe yet or we're still calculating
+the data.
+So, we need to know that we're going to
+get a hit if we get a load out of order,
+and we need to go check for that.
+And that's, that's really why we have two
+bits here.
+And then, sometime in the future, we have
+to eventually move the data into the data
+cache cuz this structure will get full.
+If we sort of fire enough stores against
+it, it's going to get full.
+So, it's probably a good idea to go move
+the data into the data cache at some
+point.
+We can do that at our convenience, though.
+And, if the store aborts, this is
+important here, so if the store let's say,
+was speculative of itself, and, and some
+of the wrong side of the branch or
+something like that, we just remove it
+from this table.
+One interesting thing you hear is, if the
+data is in both this buffer and in the
+cache, which one takes precedence?
+So, the store buffer has the new, new
+values, so we have to look there.
+And then, finally, it's possible to get
+multiple stores in here which have the
+same tag, the same address.
+Is this how you're storing to the same
+address over and over again?
+And when you go to read, you don't need to
+go read the youngest value out of there
+cuz that's the most up to date one.
+So, this, look up through here is a little
+complicated.
+You actually need to do it in the program
+order.
+Okay.
+So, we'll, we'll stop here for today.

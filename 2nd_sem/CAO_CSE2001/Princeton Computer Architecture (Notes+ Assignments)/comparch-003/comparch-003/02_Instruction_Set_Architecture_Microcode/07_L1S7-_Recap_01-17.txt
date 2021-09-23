@@ -1,0 +1,27 @@
+So, to recap this is ELE 475 or Computer
+Architecture class.
+We're going to be focusing on abstraction
+layers and talking about instruction set
+architecture and microarchitecture,
+register transfer language.
+Little bit into operating systems and
+little bit down into gates but we're
+really trying to harness technology and
+bring it to applications, or bring it into
+what humans want to accomplish.
+Today, we talked about ISA, or instruction
+set architecture, versus
+microarchitecture, or Big-A architecture
+versus microarchitecture.
+And we talked about some ISA
+characteristics including machine models,
+encoding, data types, what sort of
+instructions you can have, addressing
+modes, and encoding.
+Next lecture, we're going to start off by
+talking about microcode.
+And then, move into our first review
+lecture, which is review on how to build
+pipeline processors, review on pipeline.
+So with that, I'll end here and thank you
+all for listening.

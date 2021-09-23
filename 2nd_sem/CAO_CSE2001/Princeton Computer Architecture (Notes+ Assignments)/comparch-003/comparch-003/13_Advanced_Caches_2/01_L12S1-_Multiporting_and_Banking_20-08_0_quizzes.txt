@@ -1,0 +1,18 @@
+L12S1:
+
+In Lecture Quiz 1:
+Time: 11:04
+
+Question:
+
+Which is better to use high-order bits or low-ordered bits to determine which cache bank a memory access should go to?
+
+Choices:
+
+A. Low-order bits
+
+B. High-order bits
+
+C. Not too high not too low
+
+D. It makes no difference

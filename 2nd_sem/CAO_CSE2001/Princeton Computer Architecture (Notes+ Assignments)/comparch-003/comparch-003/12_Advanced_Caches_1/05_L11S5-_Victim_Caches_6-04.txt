@@ -1,0 +1,135 @@
+Okay.
+This brings us to our next optimization,
+which is the amount of [inaudible]
+optimizations and this is one that
+actually is no longer talked about in your
+textbook.
+The old versions of your textbook did talk
+about this optimization.
+I, I think it's still an important,
+interesting optimization to think about
+and this is something called a victim
+cache.
+The victim cache, let's take a look at the
+picture first. Here,
+Cpu, L1 cache, L2 cache,
+It's a multilevel cache.
+But now.,
+If you're missing your L1, you put another
+little spot check.
+We put something we call a victim cache
+and a victim cache is a fully associative
+cache but it's usually very small.
+So, let's say, one, two, three, four
+entries, something like that.
+Seems very small cache structure here, but
+it's fully associative.
+But what's nice about this is sometimes in
+programs you have a problem where, I don't
+know, let's say, you have a two-way set
+associative L1, which you have three
+things that want to be in that one
+location that has one index to cache.
+This keep fighting and knocking each other
+out over and over and over again.
+Just actually one extra fully associative
+entry would solve this.
+And then you have the edit here in the way
+zero, way, way one, and now it's victim
+cache.
+So this is actually the, the first
+processor that showed up in was an HP
+PA-risc processor.
+Probably HP 7,000 per [inaudible] 7,000
+series processor.
+But, you can actually have this, this
+little extra cache here.
+A couple extra little things you need to,
+to think about though, is, whether you
+check this cache in series or in parallel
+with the L1.
+If you're checking in parallel it's going
+to hurt your hit time.
+We've checked with the series, checked
+this first, then checked this, and then
+checked the L2.
+You know, checking these together so we'd
+have a worst hit time, like we need your
+L1 to sort of pass it along the way it
+was, so you don't have to put multiplexer
+and, after your L1 checked.
+It's a trade off. People, well,
+Well, checking both in parallel and in
+serial.
+Let's look at the mechanics of how this
+works.
+So on a this inner L1 we're we generate
+the victim,
+Gets your transition the victim to here
+and then we bring in the new data from
+here into the L1.
+Unless, the data is in the victim cache
+already and then all we do is basically
+swap the two,
+Take the lines in the victim and lines in
+the data, and swa, but you usually have
+sort of separate data paths in that.
+You can have going on simultaneously.
+So you could, after one big, we are one at
+the other, and vice versa.
+If you missing the victim cache, missing
+the L1, interesting question comes up here
+with your data that's in the victim cache.
+What happens to that?
+We put a victim in the victim cache.
+Do we need to do something with that
+victim first?question
+Mark here.
+Hm,,
+Unclear.
+It really depends on design.
+If the design is such that when we,, when
+we generate victim from the L1, we both
+put it in the victim cache and we flush it
+down to our L2.
+Then, when we have to, let's say,
+victimize from the victim cache, the
+victim cache would say only its two
+entries, and we need to put a new victim
+in the victim cache. We can just throw on
+to the ground.
+We don't actually need to deal with that
+victim because the data is [inaudible] If
+not, we'd actually have to take the upper
+victim cache that's possibly dirty and go
+over it out into the L2.
+But in reality what this is trying to do
+is it's trying to reduce our
+conflictnesses, by gaining us a pseudo
+higher associate cache with just a very
+small second.
+It's interesting to look sort of a
+[inaudible] and people that built on this,
+This victim cache, a very small victim
+cache, can go a long way.
+Because there's a lots of times in the
+program, there may be that one value, that
+one address which is what highly intended
+in your cache, or this L1 line of cache.
+But everything else in the cache is a sort
+of [inaudible] will say.
+And this can really help you with the
+[inaudible].
+Okay, so going, going back to our victim
+cache here,
+If we look at the sorta our victim cache
+just by itself shouldn't be L1.
+This kind of looks like a multiple cache.
+The answer is going to be the same as what
+we had for a multiple cache.
+If you look at it just through the L1,
+it's going to make the Miss Penalty go
+down as we [inaudible] If you look at the
+L1 with the victim cache, both the Miss
+Penalty will be more than we had to go out
+to the next level cache.

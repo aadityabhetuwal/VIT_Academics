@@ -1,0 +1,7 @@
+﻿L6S2:
+
+In Lecture Quiz 1:
+Time: 8:36
+
+Question:
+Why does the instruction ADDIU R14, R12, 2 not issue on the I2O2 pipeline?

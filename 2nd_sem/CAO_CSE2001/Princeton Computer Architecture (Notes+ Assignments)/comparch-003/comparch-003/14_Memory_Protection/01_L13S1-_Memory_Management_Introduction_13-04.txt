@@ -1,0 +1,343 @@
+Good afternoon.
+Let's get started.
+So today, we are going to be continuing
+our quest into Computer Architecture.
+And we're going to be talking about
+virtual memory and address translation.
+Together with how you do virtual memory
+protection, on top of that.
+So this is a crossover between
+architecture and operating systems topic.
+So, your operating systems, many times,
+has to worry about how to manage memory.
+Also, many times, you have to worry about
+how to manage who can access memory.
+You have to worry about how much memory
+different users could possibly have.
+But even in a uni-processor system, this
+becomes an important thing.
+That a uniprocessor system and a uniuser
+system,
+Not a multiprogram system and not a
+multiuser system,
+But just a single user system also has to
+worry about layout of memory.
+And worrying about running different
+libraries, different portions of programs,
+And how to lay that out effectively in
+memory.
+So, we're going to continue videotaping
+our lecture today, put online so you guys
+can go look at later.
+And so let's get off by starting to talk
+about memory management.
+And we're going to talk about a couple
+different schemes today which aren't very
+popular.
+[laugh] We're going to talk about some
+schemes that have some historical basis
+that are still important in, important to
+understand and there's some vestiges in
+today's architectures.
+So, for instance, one of the things we're
+going to be talking about today is called
+segmentation or base and bound registers
+which still shows up in X86 processors
+today,
+But is not very common as a memory
+protection system.
+But it was designed as a memory protection
+system when it first got started.
+And then, we're going to go, and at the
+end of today's lecture, we're going to
+talk about fancier virtual memory systems
+that are used in modern day computers, how
+your operating system goes about managing
+memory with that, how it pro, provides
+efficient use of memory, and how it
+protects different accesses.
+So, we can broadly separate memory
+management into three really important and
+orthogonal functions.
+First of all, translation.
+So, in translation, what we're doing is
+we're taking one address and we're turning
+it into some other address.
+So, we're able to remap addresses.
+Now, you might say,
+Why do we want to do that?
+Well,
+By doing that, we can have more flexible
+memory layouts and prevent things like
+fragmentation.
+So, fragmentation, we'll talk about that
+more later in today's lecture.
+But fragmentation basically is the problem
+that you have lots of little pieces of
+data or code that get loaded.
+And then some of them completes or go
+away.
+You're going to end up with holes in your
+memory space.
+And it's very hard to reclaim that unless
+you try to compress or re-layout the
+memory.
+And lots of program models don't allow you
+to go and recompress the memory.
+This is familiar if you've ever taken a, a
+basic data structures course, where you
+had to go deal with managing something
+like a heap.
+In a heap, you have pretty common to, it's
+pretty common to allocate different sized
+objects on your heap, and then you free up
+those different sized objects, and if you
+happen to free them in a bad order, you
+end up with little chunks of memory that
+are really hard to go use for something
+else.
+Especially if you want to go allocate
+something very large, you might have
+enough memory in your system, but it's
+just not contiguous.
+So, what approached to this is to have
+things like garbage collectors which is
+what Java and a lot of the managed
+programming languages do.
+But something like C or C+++ does not a
+notion of garbage collectors.
+So, we're going to look at more not from a
+heap perspective but from a perspective of
+the entire memory system.
+So, sort of one level out from a heap.
+So, interprogram fragmentation and
+interprogram garbage collection.
+The second important function of our
+memory management here is we want to
+restrict access or protect access to
+memory and allow only users who are
+supposed to be able to touch a certain
+piece of memory to be able to touch that
+certain piece of memory.
+And this is important if, for instance,
+you have one system which has someone's
+bank records on it.
+And on that same system, someone else can
+log in, they can telnet or SHS into it or
+remotely log into it.
+And you don't want one user to be able to
+go read some other user's bank records
+that just happen to be laying in memory.
+So, we need some way to protect that and
+memory protection gets us there.
+It allows us to have different users using
+the same system, different processes using
+the same system, and we can restrict the
+access to different locations in memory or
+protect the access to different locations
+in memory.
+Finally, memory management.
+One of the important sort of points in
+memory management is that you can actually
+think about having more memory than your
+machine has memory.
+Now, you might say, that doesn't make any
+sense.
+No, it doesn't make any sense.
+But if you have a flexible enough hardware
+system, you can think about using other
+things to look like memory.
+So, for instance, if you have a hard drive
+in your computer, you can use that hard
+drive which is very, very large to
+effectively increase your memory size by
+taking the data which is laying in memory
+and put it onto the disk.
+And sometime later in the future, take it
+off the disk, and put it back into memory
+and trick the user into thinking they have
+a larger memory space, and this is virtual
+memory so it allows us to have transparent
+extension of the memory space using
+something slower.
+I mean, could be disk, it could be in the
+older days some drum that spins where you
+sort of store things on the drum you could
+even, I could even, nowadays, you can even
+swap on flash.
+If you ever go look in or something like
+that, this is called your swap partition.
+Sometimes called a backing store, a couple
+different names it goes by, but it's a
+virtual manage virtual memory storage
+location.
+Nowadays,
+Most systems provide us with some sort of
+page based system, which we'll be talking
+about.
+But there, these ideas are all orthogonal,
+and you can have different mechanism is to
+solve all of them in different ways.
+And we'll be talking about some of the
+historical aspects of that.
+Okay, so, let's start off in the
+beginning.
+Well, in the beginning, we didn't have
+fancy memory management.
+Instead, we had addresses.
+You want to go access some piece of
+memory, you come up with an address.
+And that directly indexes into our memory,
+and you get back the data.
+Well, that's okay if you're running one
+program at a time.
+So if you go back and look at EDSAC, which
+is one of the original, probably the
+second computer, I think.
+Maybe the first computer.
+Oh, the first sort of, modernish looking
+computer.
+It only had physical memory addresses.
+So, what this really meant is only one
+program can run at a time.
+And, it had all of memory.
+And the addresses that were used,
+basically didn't move around because there
+was only one program running and it owned
+everything.
+An IO could directly touch memory.
+Main processor could directly touch
+memory.
+And life was simple and okay.
+But, unfortunately you couldn't really run
+multiple programs, you couldn't protect
+multiple programs.
+You could definitely not take memory off
+of disk and put it into memory, cuz you
+had no way to sort of remap things.
+So, it did not fulfill those sort of three
+requirements that we were talking about.
+We didn't, it didn't do any translation.
+It didn't do any ability to protect, and
+it didn't have any notion of virtual
+memory.
+One thing that did happen is that users
+still wanted to be able to write
+sub-routines that were location
+independent.
+So, what I mean by that is you write a
+subroutine, and this was back in the days
+when people were writing these subroutines
+in machine code or assembly code,
+And you still want to do the regular, one
+subroutine and use it and call it, and use
+it in different portions of your programs.
+So, one of the trick that people sort of
+thought about is, how can you still have
+location independence even when you only
+have one physical address space, so you
+can't remap things, there's no translation
+going on here.
+Well,
+In fact, you can actually use the linker
+or the loader to be able to go do this.
+So, actually, quick show of hands here who
+knows what a loader is?
+Who knows what a linker is?
+Okay, so we've got a little bit of
+coverage with linker. linker,
+What it does is it takes multiple
+different compilation objects or
+compilation units.
+So if you take a computer program that's
+made out of a bunch of little files, a
+bunch of different source files,
+You compile up each of those separately.
+And when you link it, you take them and
+you put them all together into one
+program, and you resolve all the
+addresses, all the jumps, and the data
+accesses across that one program.
+So, that's linking.
+That's static linking.
+Now, dynamic linking.
+You guys might have seen, DLLs.
+Did I make dynamically linkable loadable
+objects.
+So, what happens with DLLs is, you'll
+actually do that linking step of resolving
+the addresses at runtime. So, you could
+actually do either,
+You can either do it dynamically or
+statically.
+And the loader is the piece of code which
+actually takes a binary off a disc, and
+puts it into memory somewhere.
+And typically, the loader will go and do a
+last level linking step at the end.
+So, on a modern day Linux system, your
+linker,
+Or excuse me, your loader,
+When you type a when you go to execute a
+program and you type I don't know,
+You run LS or something like that on your
+Linux system.
+First thing it does is it goes and finds
+the LS bits on the disk and it takes that
+and copies it up into RAM,
+Somewhere.
+So, you could do this on this absolute
+addressing system.
+And then what it does is it goes and it
+figures out all of the dynamic vibrates
+that are needed.
+And it goes and takes those off disk and
+puts them into RAM somewhere.
+And then, it's going to, last step here is
+the original program had pointers to
+address that didn't actually exist yet.
+Cuz it didn't know where the respective
+loaders, respective libraries are going to
+be loaded.
+So, it has to patch the program up.
+It has to rewrite addresses to make sure
+that the newly load program points up the
+correct location.
+So, that's a runtime linker doing its job.
+The static linker can do that same sort of
+thing but at a compile time could be an
+assembly time or linking time in your
+program.
+Okay.
+So, that's absolute addresses and if you
+have the physical hardware for an absolute
+address machine, it's simple.
+It's kind of what we have been looking at,
+at this point.
+You have your program counter, you stick
+it in your cache, it gets, the instruction
+cache gets an instruction out.
+You take your address if you're doing
+memory access, you stick it into your data
+cache, and it gets some data out.
+If you take misses everything to physical
+address, it goes into the memory control
+and goes out to DRAM.
+Seems, seems simple.
+It is.
+But, like I said, it doesn't solve all the
+problems we want to solve.
+Okay, so now, let's start talking about
+stuff that's a little bit more, more
+complex if we actually want to do address
+translation.
+So, address translation, actually before
+we leave this, we're going to call
+addresses that touch main memory, physical
+addresses.
+And we're also going to talk about this
+notion of a virtual address.
+A virtual address is actually just an
+address that the main processor uses which
+might be translated somehow into an
+address which is out in main memory.

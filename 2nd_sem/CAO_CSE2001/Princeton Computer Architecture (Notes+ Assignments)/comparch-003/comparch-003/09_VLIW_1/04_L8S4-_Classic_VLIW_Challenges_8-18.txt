@@ -1,0 +1,215 @@
+This is a rich, rich field of, in the
+compiler research world, and there's been
+a lot of problems with VLIWs, or classical
+VLIWs, and people sort of built things
+that are somewhere between superscalars
+and classical VLIWs to solve some of these
+problems.
+People come up with fancy compiler
+optimizations to solve some of these
+problems and some of them are sort of
+still open.
+First one on my list here, object-code
+compatibility.
+In the superscalar, because we came up
+with one serialized instruction sequence,
+and the architecture came up with all the
+scheduling, you can change the number of
+functional units under the hood in your
+micro-architecture of your processor, and
+no one none was ever the wiser.
+It would still execute the piece of code.
+May not be optimal, but it would still
+execute.
+That's not necessarily the case for
+classical VLIWs.
+So, you know, you have to recompile the
+code when you change the
+microarchitecture.
+So it's a very tight coupling between the
+architecture and microarchitecture because
+our instruction encoding now says that
+exactly let's say two integer, two multip-
+or, two memory operations, and two
+floating point operations, or something
+like that.
+But all of a sudden if you build a machine
+which has a different mix, your schedule's
+completely wrong, so it's going to have
+bad performance, and it's just not going
+to execute because the, you probably
+changed the instruction encoding standard
+when you go and make that different VLIW.
+Another big problem is code size.
+As you can imagine, there's a fair number
+of no-, no operation instructions in, or
+no operation operations inside of a VLIW
+bundle.
+If you can't fill a slot on a superscalar,
+you just don't put the instruction.
+On a VLIW, if you can't fill the slot, you
+have to put a NOOP there, cuz you've got
+to put something there.
+So this, this, this causes some serious
+problems.
+Also, things that, hurt this even more is
+these fancy techniques that we talked
+about.
+Loop on rolling, software pipelining, that
+bloats the code size.
+We're replicating code.
+We've unrolled the code.
+We're using more space.
+This hurts our instruction cache size, and
+instruction cache footprint.
+We'll talk a little bit more about this in
+a few slides.
+But, variable-latency operations are very
+hard to deal with.
+So, if you have a load, you don't know
+whether it's gonna take cache miss or not.
+So your schedule may be wrong, if you
+guessed wrong.
+You could do it with some high
+probability, you can say, oh, I think this
+load usually takes a cache miss, or you
+can say, oh, I think this load usually
+doesn't take a cache miss.
+But we can guess wrong.
+This similar sorts of things with, with
+sort of branch mispredictions.
+Scheduling for statically unpredictable
+branches.
+This gets very hard.
+There are some techniques to solve this.
+There is something called predication,
+which we will talk about in a few slides,
+that helps to solve this.
+So you can add things back into the
+architecture, into your VLIW architecture,
+to deal with sort of short branches that
+are very hard to predict, predict or
+data-dependent branches.
+And as I said, depending on your design,
+precise interrupts can be challenging, to
+say the least.
+If you're actually using the EQ model, you
+probably have a hard time figuring out
+what to do on a single step, or if you
+actually had a branch serve in the middle
+while you have a pending operation going
+on.
+Sort of undefined, it's icky.
+It, it's sort of similar to having like,
+branch delay slots, and having a fault in
+your branch delay slot, what do you really
+do with that.
+Also, this is a interesting point here, is
+that, does the fault.
+If you have a fault on let's say, one
+operation in a bundle, does the entire
+bundle fault, or just the operation fault?
+Or take an interrupt.
+Typically, the way people implement this
+is You have the entire bundle, or the
+entire instruction be atomic.
+So if anything in the bundle takes a
+fault, you actually don't allow any of the
+sub operations to commit.
+That sounds like the most rational thing
+to do.
+People have done things in the middle.
+I, I probably don't recommend you building
+any of those machines.
+In the VLIWs that I've always built, an
+entire bundle is atomic.
+That makes traps a lot easier.
+The, cuz actually, well people have not
+always done that.
+One, one of the interesting cases, if you
+think about this, If you have let's say
+five instructions in a bundle, and only
+one of them faults, maybe you handled that
+one, but you let the other ones commit,
+and then when you come back you use some
+sort of mask to say which ones you need to
+re-execute.
+People have built things like that, they
+get tricky.
+Okay.
+So let's talk about the rest of today's
+lecture and next lecture, we're gonna talk
+about techniques to solve a lot of these
+problems or solve a lot of these
+challenges.
+Some of them are compiler, some of them
+are hardware, and some of them are both.
+First thing people try to do is they try
+to come up with compressed instruction
+encodings, or fancier instruction
+encodings, but when you go to do this, it
+makes the front end more complicated.
+So here we have, let's say some
+instruction, but inside of the
+instruction, we can, have different
+groups, which, inside of the group
+executes parallel, but between groups are,
+is not parallel.
+So something like the itanium processor,
+which was the, or the IA64 processor, from
+Intel, actually looks something like that.
+Other things you can do is you can have
+compressed instruction formats, and then
+when you go to actually execute it you
+uncompress the no ops into your
+instruction memory maybe.
+That's what multi-flow trace processor
+did.
+This marking parallel groups is what I was
+talking about before.
+Sideroom had an interesting solution to
+this.
+They actually had a single operation view
+like w instruction.
+So, to save space they sort of had their
+wide instructions but if you had a case
+where you were only going to execute one
+operation in an instruction, there was a
+special encoding format just for that
+case.
+And that saved a lot of encoding space, or
+a lot of instruction space, if you will.
+Another example of this actually is a
+processor I worked on called the Tilera 64
+processor.
+We review, 3Y VLIW.
+We had an encoding standard, or we have an
+encoding standard, which allows you to
+execute either two instructions at a time,
+or three instructions at a time.
+When you're executing two instructions at
+a time you have a richer pallet of
+instructions you can execute.
+So it's sort of a, something in the
+middle, it gives you some better code
+density benefits.
+But not with have, not without, not with
+the sort of complexity of having sort of
+compressed formats and things like that.
+Okay, so that's one way to have, to deal
+with the instruction encoding challenges.
+One thing you can think about though is,
+you just have a bigger I cache or, and a
+wider bust from your I cache onto your
+memory system.
+That does solve a lot of these problems.
+It costs hardware, but it's sort of a
+simple, stupid solution to the problem
+versus a smart solution.
+Is, these sort of things on this list here
+are, are complex, smart solutions.
+Simple solution just have a bigger
+instruction cache.
+And, if you have bigger code sequences,
+you won't feel as, the, the, the
+performance hit as, as much from that.

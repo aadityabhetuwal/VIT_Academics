@@ -1,0 +1,392 @@
+Okay, so that's high level programming 
+models. 
+Or our, our second high level programming 
+model, which is not, shared memory, 
+and the contrast with shared memory, of 
+messaging or message passing. 
+And today we're going to start talking a 
+little bit about the gory details on how 
+to build interesting interconnects. 
+Before we get started, I wanted to 
+introduce, sort of the agenda that we are 
+going to talk about. 
+We are not going to cover all of this 
+today. We're, this is, today's lecture 
+and next lecture we will be talking about 
+interconnect design. 
+So a couple of different, things that you 
+have to worry about in interconnect 
+design. 
+First one is what's called switching. 
+So when I say switching, what I'm trying 
+to say by that is, there's different ways 
+to organize the communication. 
+And you can think about his 
+probably the best example is the old 
+telephone system versus the modern day 
+Internet. 
+So in the old telephone system, there's 
+switching, the way it worked is, you try 
+to make a phone call and the first you 
+did is you picked up the, the receiver on 
+the phone, and you sort of turn the 
+crank, and there is some switch board 
+operator in your local town who would 
+hear the bell ring, and take the plug, 
+plug the wire in and pick up and say 
+hello, where, who you trying to call. 
+And you would say I'm trying to call such 
+and such in next town over. 
+Well the switchboard operator would say, 
+okay that's good, I'm going to take a 
+wire from, the wire that runs from your 
+house to this location, 
+plug one wire in there and then we'll go 
+and plug the other wire into a wire which 
+runs to the next town over. 
+So then you'd be connected to the next 
+town over, and the switchboard operator 
+in the next town over, and you'd say, oh 
+I'd like to talk to the same person 
+you're trying to talk to. 
+And they would say, okay that's great. 
+I'm going to patch a wire from, my patch 
+board from, the out of town wire, to the 
+destination location, and I'll turn a 
+little crank to ring the, the ringer on 
+the, on the destination phone. 
+Okay, so that's one idea. 
+And that is actually called circuit 
+switch networks, because you're building 
+a circuit. 
+You're building a wire all the way from 
+one location, all the way to another 
+location. 
+Alternatively we can do what we do in the 
+network internet today. 
+In the internet today there is, we don't 
+generate, we don't have a wire directly 
+from one location patched together the, 
+you'd actually patch wires from one place 
+to another place. 
+in contrast, in our switching systems 
+you'll actually packetize the data. 
+And then we'll hand the packets from 
+different locations, 
+and people and resources can be used for 
+other things. 
+So, it's much more akin to something like 
+a mail system. 
+So, in a mail system, you take the data 
+you want to send. 
+You fold it in half, 
+you put it in an envelope. 
+You put a stamp on it, 
+and you, you set it going. 
+The road that goes from your house to the 
+post office is not reserved, for that one 
+piece of mail, until it gets all the way 
+to the destination, like in a circuit 
+switched, to apology. 
+Instead in a packet switched, you are 
+going to some of the message, and you are 
+to put a stamp on the physical envelope, 
+and the, your postal carriers may come 
+pick it up. 
+They are going to take that, take it to 
+some place else, and then there is taken 
+to some place else, take to some place 
+else, but you can set another piece of 
+mail on that same link, or other people 
+can be using the same roads to send 
+another packets, or other messages. 
+So switching is the type of network we 
+have here, and how we connect together 
+the different networks and how we do the 
+switching. 
+And there's a couple other things in the 
+middle between circuit switched and 
+packet switched networks. 
+Okay, so next thing we are talking about 
+interconnect design is topology. 
+So this, how do we physically connect 
+things together, in our world. 
+How do we run wires between the different 
+nodes in the system? 
+Do we run wire between every person in 
+the classroom, I run a wire between 
+myself and every other person, and 
+everyone runs with a wire between 
+everyone else. 
+Or do we build a nod in the middle of 
+everything to, 
+or do we really connect to our nearest 
+neighbours, and then, we have to send it 
+to them in native sens of X people. 
+So there's a lot of different apologies 
+for given size graph. 
+[COUGH]. 
+Routing, routing is figuring out what 
+path to take through the network to get 
+from one point to another. 
+So, we can actually build a nearest 
+neighbor network in this classroom, or we 
+run wires between all of our neighbours, 
+but not lets say, we all, each, each of 
+us connects to three different people, 
+but not to four, and there's going to be 
+multiple paths from any one point to 
+another point. 
+So we need to come up with a routing 
+decision to figure out how to get from 
+that one point to another point, 
+and that affects our interconnect design. 
+And then finally flow control, and 
+there's two types of flow control. 
+There is local flow control, which is 
+communication from one node, to the next 
+the next node over, and making sure that 
+you don't lose data on that local link. 
+But its also, how do you rate limit, 
+round trip throughout the entire network. 
+and we are going to study that next time 
+in more depth. 
+Okay. 
+So let's move on to some fun pictures 
+here. 
+High quality pictures. 
+So first thing we're going to look at 
+here is the anatomy of a message. 
+. 
+A message is our fundamental primitive of 
+some piece of data we want to send. 
+At the top here, we show a message which 
+has, let's say, some number of bytes in 
+it. 
+These delimiting points here do not 
+delimit a byte, they delimit some chunk 
+of data. 
+And we're actually going to fragment this 
+message into smaller pieces which we're 
+going to call a packet. 
+Now I know that I want to make a big 
+difference between a message and a 
+packet. 
+A packet is a piece of data that we're 
+going to be sending through the network, 
+and the network natively understands this 
+packet and the packet is routable through 
+the network, so it has routing 
+information. 
+So, a good example of this is, if you are 
+trying to use MPI, 
+and you want to send 1000 words, and 
+let's say the maximum message you can 
+and, receive, or maximum package you can 
+send on a network is 100 bytes. 
+You're going to packetize the data, 
+packetize the message into 100 
+individually roundable packets. 
+So let's look inside of one of these 
+packets. 
+Typically, because the packet is 
+roundable, it needs to know where its 
+going. 
+It might need to know where its coming 
+from. 
+So at the beginning of a packet, you will 
+typically have something like a source. 
+You might have a destination, or its 
+going to be you definitely need to have a 
+destination, you might have a source. 
+You might have a length. 
+If your, network allows for variable 
+length packets. 
+[COUGH], and we call this the header. 
+And we call the rest of the packet the 
+payload. 
+[COUGH] And we're going to introduce an 
+interesting term here. 
+Flit Now this is a term actually that was 
+coined by, I believe Bill Dally, who is 
+now a Stanford professor who, he did a 
+lot of work in message passing and other 
+types of parallel computers. 
+A flit is a flow control digit. 
+It's kind of like a bit, but it's the, 
+the, flow control ball unit and. 
+The reason we bring this up, sometimes a 
+flit is actually equal to the whole 
+packet. 
+Sometimes it's a smaller piece of the 
+packet, depending on how you build your 
+network. 
+[COUGH]. 
+But a flow control digit is what you were 
+flow controlling on from one node to the 
+next node. 
+So this is what you track the flow 
+control on. 
+So, it's very possible that your, you 
+don't actually track, 
+sort of send and receiving of messages on 
+the byte level, or on every single cycle, 
+but instead you do it in bigger chunks. 
+So a good example of this is, you have a 
+network, which is one byte wide, the link 
+is one byte wide, but you are, so, the 
+minimum thing you can send is a 32 bit 
+word. 
+As the minimum piece of data that is full 
+control, 
+then you need to always send let's say, 
+four bytes. 
+The full control will be on the order of 
+the flit, which is the four byte unit. 
+But the link is narrower than that. 
+So you don't actually, you can't actually 
+stop in the middle of the message, and 
+say. 
+Oh, I only got 
+or you can't stop in the middle of a flit 
+and say stop. 
+you gave me three bytes, and I can't take 
+the fourth right now. 
+No. 
+It's not allowed. 
+It's, it's flow control based. 
+So the flow control says this is the 
+minimal unit for flow control. 
+So there's four bytes, that is what you 
+are allowed to send. 
+And you need to send in chunks of 
+basically four bytes. 
+And that's our flit size. 
+No we can split inside a flit, and we can 
+actually call this one a phit, 
+or a physical transfer digit. 
+And a phit is what I was talking about 
+with, you had, if you had for instance, 
+four bytes that you're trying to 
+transmit, and your flow control on those 
+four bytes. 
+Each of those bytes is a phit, 
+or the physical transfer that you 
+transfer in one cy-, in one clock. 
+cycle. 
+[COUGH]. 
+Many times the phit and the flit will be 
+the same, if you have what, if you have 
+wide networks, but if you have very 
+narrow networks, sometimes these will not 
+be matched. 
+Okay, it's just a nomenclature so far. 
+Our first topic we want to discuss is 
+switching, 
+how to get from point A to point B. 
+Oh, okay. 
+It's not routing, 
+it's it's rather the model of how to 
+connect different locations together, 
+and we're going to talk mostly about 
+three here. 
+We already talked about circuit switched. 
+Circuit switched is like the old 
+telephone network. 
+You pick up the phone and somehow there's 
+a wire patched all the way from where you 
+pick up the phone to the destination 
+location, 
+and you reserve that location the whole 
+time. 
+Packet switched networks, 
+or what is sometimes called store and 
+forward networks or probably more 
+commonly called store and forward 
+networks, 
+are things like the Internet, where 
+you'll actually generate a packet, 
+hand that to someone else, and they'll 
+store it. 
+And at some point, when the link is free, 
+they'll forward it onto the next hop. 
+And when the next link is free, they'll 
+store it on to the next hop, 
+and it'll continue until it gets to the 
+destination. 
+
+Thus in contrast to cut through networks, 
+which are sometimes called wormhole 
+networks. 
+Cut through networks still have 
+packetization, 
+but they'll actually worm through the 
+network. 
+So instead of having to send the data 
+from one location, 
+to the next hop over, 
+and it waits for the entire message to 
+receive before it sends it on to the next 
+node. 
+A wormhole network will actually allow, 
+or a, a cut-through network will actually 
+start to send the beginning portion of a 
+message from one node to the next node 
+along the hops before the tail has been 
+received. 
+Hence it's actually worms through the 
+network.. 
+You can actually have a message sort of 
+streamed through a multiple different 
+nodes, 
+and this is where we have as cut-through 
+networks. 
+So I just want to introduce those, those 
+three ideas, and think about them as we 
+go on to build networks. 
+we'll talk about cut-through networks, 
+when we get to, rounding. 
+So before we break for today 
+I want to just introduce a couple 
+different topology. 
+And just flash and come up with different 
+topologies, where we'll pick up next 
+time. 
+But in our networks, we talked about 
+buses. 
+Multiple entities on one shared medium. 
+You can think about building a segmented 
+bus, where you actually have flip flops 
+along the communication path here. 
+And this would allow, for instance, this 
+node, maybe, to communicate with that 
+node at the same time as three 
+communicating with four. 
+sometimes this is called pipeline bus. 
+You can have rings, 
+which are like the segmented bus, but 
+they connect the two ends together. 
+You could even implement rings in a way 
+that minimizes wire length. 
+We'll talk about that next time. 
+You could have crazier things like 2D 
+meshes, 2D toruses, 
+if you have cubes and hyper cubes. 
+You can have fully connected topologies. 
+You can have things called omega 
+networks, which are multi stage networks, 
+where you can basically communicate from 
+anyplace to any other little place in 
+multiple stages, in multiple clock 
+cycles. 
+You can build, trees, 
+or, things called fat trees, where the 
+lengths at the top of the tree get fatter 
+or wider. 
+And we'll talk about this next time, but 
+the generalized case of this meshes, you 
+end up with things that are called k-ary 
+n-cubes where you can very concisely with 
+two numbers, describe a network topology. 
+Okay, let's stop here for today. 
+

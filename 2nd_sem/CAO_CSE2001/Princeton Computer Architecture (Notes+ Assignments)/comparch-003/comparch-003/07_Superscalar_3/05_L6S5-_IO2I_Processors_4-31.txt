@@ -1,0 +1,114 @@
+In order issue.
+Out of order or excuse me.
+In order front end, out of order issue.
+Out of order write back.
+And in order commence.
+So, the middle portion of the pipe here is
+all out of order.
+And then finally, we commit an order and
+we fetch an order.
+So this has all of those structures that
+we had before.
+It's sort of the union of everything.
+We have, issue Q.
+We have future store buffer, reorder
+buffer, physical register file.
+The scoreboard, an architectural register
+file.
+This requires us to have everything.
+And we can start thinking about what this
+does to performance.
+So, I'm gonna, I'm gonna push through here
+because I only have two more slides and,
+the state.
+We get lost otherwise.
+Okay.
+So.
+Let's, let's see some interesting things
+happening here.
+So we have out of order issue.
+So we can see this add here issuing before
+this other before this multiply.
+That's pretty cool.
+Ignore this bottom for a second here.
+We have that same problem sort of showing
+up here.
+We have this right happening, but even an
+out-of-order issue processor.
+This, this should be able to get pulled
+back, as I said before.
+But it doesn't, because at this point
+you'd have a, right hazard, you'd have a
+hazard on, on the right back of the
+register file.
+Something similar if you try to issue
+here, you'd be issuing two instructions at
+the same time.
+So, so this starts to be a problem.
+So, it actually ends up being pulled out.
+Interestingly enough the performance of
+this, is, is not a whole better than what
+we had before If you sort of like cut it
+here at fifteen cycles, the commit gets
+pushed out far because you have to commit
+in order.
+But this fixes a lot of problems that we
+had in the in order fetch, out of order,
+out of order, out of order.
+Because we can have, precise exceptions at
+the end of a pipe.
+We can have out of order issue, out of
+order execute.
+We could still do in order fetch because,
+that's kind of symantics of programs.
+So, Let's, let's take a look at let's say
+we had the ability to do double issue but
+not double execute.
+How does this change?
+We actually, if I change this to this
+diagram.
+And as you can see here we actually have I
+here and I here in the same time period.
+So we pull that back one and that, that,
+you would think that would actually help.
+But, you know so we don't, we don't have a
+right conflict everything is still kind of
+okay here.
+But the commit still happens at the same
+time.
+So thats not always, always as good as you
+think.
+In reality what you want to start thinking
+about is having, out of order and with.
+So here we have a, out of order two wide
+superscalar.
+What we showed before in order fetch, out
+of order issue out of order right back and
+in order commit.
+And we can see is we are actually fetching
+two instructions at a time, decoding two
+instructions at a time.
+Issuing two instructions at a time and
+this, this can actually help a little bit
+but you still have problems.
+So here we're just going to have.
+We can only, we'll build an issue two but
+we're not going to have two ALU's, we're
+going to have the same sort of back end of
+the pipe, and what we start to get limited
+by, is we end up with sort of execution
+resource bottle necks here.
+So, next time were gonna start talking
+about how to sort of add multiple ALUs,
+and you can sort of pull this earlier.
+And, maybe you can have two multiplies or
+something like that and try to remove some
+of those complexities.
+But what's nice about this is, if you have
+double issue.
+Out of order right back.
+You know this ad instructions that are not
+dependent on these malls at all, can just
+happen.
+And that's really nice.
+Okay we're going to stop here for today.

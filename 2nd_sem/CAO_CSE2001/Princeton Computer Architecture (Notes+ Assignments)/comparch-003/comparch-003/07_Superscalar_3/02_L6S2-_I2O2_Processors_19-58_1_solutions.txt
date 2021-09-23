@@ -1,0 +1,3 @@
+﻿L6S2 Solutions:
+
+Quiz 1:There is a structure hazard on the write port of the register file.

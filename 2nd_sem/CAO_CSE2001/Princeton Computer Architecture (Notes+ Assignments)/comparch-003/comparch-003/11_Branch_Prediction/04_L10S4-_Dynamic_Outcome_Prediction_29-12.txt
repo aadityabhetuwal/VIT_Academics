@@ -1,0 +1,724 @@
+Okay, so that was.
+One way to figure out the outcome.
+Let's look at a little bit more dynamic
+way.
+Okay, so we can try to build, pieces of
+hardware which determine the outcome of a
+branch, dynamically.
+And this is by adding extra little pieces
+of hardware, somewhere in the front of the
+pipe.
+So, somewhere in our PC plus four
+calculation this is going to be this
+multiplexor here in the PC plus four
+calculation.
+And effectively, we're going to use some
+pieces of hardware to feed into that, and
+this is our taking and not taking
+prediction values.
+And we'll, we'll talk about this in a
+second but one of the questions here is,
+what things feed into this PC plus four
+hardware.
+Hmmn, , well one of them is gonna be PC
+plus four.
+One of them should be your branch target.
+Unfortunately, as we said we don't know
+the branch targets up here.
+So we can't have that come around in one
+cycle.
+So we need to hold off, that's how we
+that's, that's the target address
+question.
+But first thing is, how do we swing this
+multiplexer here of our next PC?
+Okay, so, some solutions to this, there's
+dynamic in hardware they're trying to
+increase the prediction accuracy, is,
+we're going to think about having
+something which exploits, the nature of
+programs.
+So what we're going to try to exploit
+first of all is temporal correlation of a
+branch, [inaudible] a branch outcome with
+previous outcomes of that same branch.
+So, if you're in a loop, and you fallen
+into a loop, and you have a branch that's
+predicted taken, or, or, let's say if you
+have a branch that is taken.
+You can use that in the future to predict
+the outcome of that same branch.
+So here we're actually gonna have a one
+bit predictor, as, denoted by this finite
+state machine, and what's gonna happen is
+let's say we start in the not taken state.
+If the outcome of a, a particular branch
+is not taken, we just stay here and we
+continually predict not taken.
+If we then take a branch, if we then end
+up taking a branch, we transition over to
+this other predict, predict taken state
+and we sit in there if we're not taken.
+And if we have alternating branches taken
+and not taken, we're basically gonna be
+predicting the wrong one, er, well, we
+might have been predicting the wrong one,
+every single time.
+But we can implement this with one bit,
+one extra bit to our control logic.
+It's not, a lot of logic here it's
+literally one extra bit and it just says,
+which of these two states you're in.
+Let's take a look at the performance of
+this.
+Does this, does this help?
+So let's say we have a loop here.
+That, iterates four times.
+So we're gonna graph, the iteration
+number.
+And then we're gonna show the prediction
+that's coming out of the predictor.
+This one big predictor and then we're
+gonna look at what actually happened and
+we're gonna see if we predicted right or
+wrong.
+Okay, so in the first, iteration, let's
+say, we train up the, the predictor, it
+says not taken.
+It starts off and it's not taken, that's
+the start state.
+We're to predict not taken, it was
+actually taken because we're gonna loop
+four times in this loop.
+So we mis-predicted it.
+Hm, that wasn't great.
+But then, it transitions from the not
+taking, or predict not taking the state,
+to the predict taking the state.
+So the next few times we iterate the loop,
+we're going to get it right.
+Now this is a relatively short loop, we
+only run it four times.
+But if you have a loop that executes, 100
+times.
+This might actually do okay.
+Okay, but then we look at the end here.
+And well, hm.
+The fall-through case at the end of the
+loop.
+We're gonna predict taken but we're
+actually fall through.
+This is the last, last little bit of our
+loop.
+That's, that's not great.
+So here, you know if you look at
+prediction accuracy, this is 50%.
+This was, this was not, not very good.
+Let's, let's try to execute the loop again
+and I want, just to kind of want to show
+here.
+The reason that I show a second execution
+in the exact same loop, is to show why the
+start prediction was not taken.
+The second time we come back to the same
+loop, we left this predictor trained up to
+be not taken.
+So now when we go to execute again we come
+in not taken.
+And we mispredict the first time.
+Correctly predict the second time,
+correctly predict the third time, and miss
+predict the fall through case.
+So that's why you need to sort of execute
+this loop twice here to see what the
+common case is which is sort of looped
+back to back.
+Otherwise, you know, if we were to change
+the start state.
+You might end up thinking that this
+predictor does better than it actually
+does.
+So that's, that's, that's not, not a whole
+magic there.
+It's simple.
+It does okay.
+Can we do better?
+Well we're nowhere near 99%, so the
+answer's going to be yes.
+Okay, so what'll happens if we start to
+have more bits, to do prediction.
+So here, instead of having one extra flip
+flop added to our computer architect, or,
+or, our processor pipeline.
+We add two bits to processor architecture.
+We add a two bit saturating predictor.
+So what do we mean by saturate?
+Well, what this means is, we start off,
+let's say in the strong not taken state.
+And then if you have a predict take and it
+moves here, if you have another predict
+take and it moves here, if you have
+another predict, predict take and it moves
+here.
+So we slowly can sort of, we have a range
+here if you will of taken.
+So what we have taken, strong taken,
+weakly not taken, strong not taken, and we
+can sort of move across the spectrum as we
+reinforce the taken or not takenness of
+this, of a, of a branch.
+So still, still not quite rocket science.
+There is some, some of these here.
+Effectively we're introducing hysteresis
+into the prediction.
+That we're trying to do here.
+Or our prediction algorithm.
+And that, that, that can helps.
+Let's, let's see how that helps.
+So let's execute the same loop here,
+another time here.
+We'll start off with strong not taken.
+Strong not taken, predicts not taken and
+the first time we execute this loop, well
+it was actually taken because loops like
+to be taken.
+And that's a mispredict.
+But we transition from strong not taken
+over here into the weak not taken state.
+So something actually happened, that, that
+mis-predict was not in vain.
+The second iteration happens, and we still
+are predicting not taking, because we're
+in this weak not taken state.
+And we did take it.
+So we mis-predict again.
+But now, we actually transition to the
+weak, taken state.
+This time things get a little bit better
+here we're actually going to have a
+prediction of taken.
+The actual thing that is taken we
+predicted it correctly, and then finally
+for here, prediction of taking it was
+actually not taken.
+I'm sorry this was actually a mis-predict
+here.
+This is, this is incorrect.
+So if you go this should, this should be
+yes.
+We can see that this is actually, doing
+worse or appears to be doing worse than
+our one bit predictor.
+Well, does, does life get better.
+Well we, we train this up a little bit at
+this point.
+So let's, let's take a look at now.
+Let's execute the loop, another time given
+that we started off in this strong taken
+state.
+So now we're gonna execute again and we
+see that we actually predict taken, taken,
+taken.
+It actually was taken, taken, taken.
+And we just mispredict the last one.
+And what's nice about this is now when we
+go to execute again, we're gonna start
+off, because we mispredict to the end
+state here, we're actually gonna start off
+in the weak taking state.
+I'm sorry so this is, this should probably
+be weak taken.
+Is that what you were going to say?
+Yeah, so.
+This is another bug in the slide here.
+I will fix this in what I, upload.
+This, this should actually say week, week
+taken.
+Because that's where we left off, at the
+end of this one here.
+But the, the prediction accuracy's the
+same.
+We're still gonna predict taken.
+So you can see that this, does not get
+tricked, if you will.
+It does not get untrained.
+By this one not taken case here at the
+end.
+But what's nice about this is you can
+train up, basically, and the historesis
+will not get foled by one branch at the
+end of the loop sort of falling through.
+And that's, that's positive.
+You can even think about this section
+being helpful, that the fall through case
+might even signal you to do something.
+People could actually have hist, you could
+even use that to sort of, trigger
+something in your finite state machine if
+you see lots and lots of takens, then one
+not taken on the exact same branch, that
+might mean something to you.
+And people in fact have done things like
+that.
+So, you start to get even with two bits,
+you can think about having different state
+machines for the same thing.
+So here we have something which jumps
+directly to strong from weak.
+So, instead here when we had strong.
+Or sorry weak not taken, and when we have
+a taken here.
+We actually jump to strong.
+So we train effectively very fast.
+So it's still hysteresis , but they're a
+faster acting hysteresis.
+So this, looks pretty similar to what you
+had before but now this weak not taken
+state, state will jump straight to strong
+taken, if you have one mispredict or
+something like that.
+But, this is only one example.
+If you go look and actually [inaudible]
+book, in the chapter that talks about
+this.
+They give like three other examples that
+look similar to this and are different
+heuristics to sort of try to get different
+of chances or different, different,
+behaviors that are common with programs.
+But, you know none of these are going to
+be, super, super great because they're
+only 2-bits.
+Did you actually start to think about
+having a table of these predictors.
+So you have local predictions.
+So it's not predicted globally.
+But instead we are predicting based on
+each different branch.
+And how we do this is we take bits out of
+the program counter and we index that into
+this big table.
+And then we can store, lets say two bits
+in this table, and then we can train each
+of these things separately.
+Now, we are not gonna wanna have an entry
+in this table equivalent to the number of
+branches in the program.
+Because, it will be huge.
+But you want to somehow have some number
+of bits.
+K bits, in fact.
+Maybe some sort of, , maybe just take the
+low, or the medium order bits of the, of
+the program counter, and we use that as a
+index.
+Similar to how we use, how we use indexes
+and caches.
+You could also think about having multi
+way associative versions of these.
+So instead of having, this is a, this is a
+direct mapped version.
+But you could have a multi way associative
+version of this.
+And If you, if you look let's say
+something which is a four kilo entry
+version of this.
+That's pretty big actually.
+But a four kilo entry branch history table
+with two bits per entry.
+Now we're starting to get somewhere, we
+can get sort of 80 to 90 percent
+prediction accuracy.
+So that's, that's starting to get us
+there, and then we had to build.
+I don't know, eight kilobits worth of
+storage.
+And we had to somehow pipe it into our
+next PC logic.
+Which is kind of a sensitive path on our
+processor.
+But, you know that's, that's can be
+helpful in performance.
+So let's actually before I move off.
+I want to make one, one point.
+There are other ways to organize this.
+Table.
+So what we're really doing here is, we're
+indexing into a table and we're, let's say
+running through some sort of finite state
+machine decoder here, which tells us taken
+or not taken.
+And that we're individually updating
+subentries of this table, for a particular
+branch.
+You could think about having other things
+to index into this table.
+So, either more complex cache functions,
+or maybe some other history information,
+or maybe previous states or just some
+other bits up here.
+So this is just a base cases.
+We're gonna show some more exam-, more
+complicated examples for spatial
+correlating predictors.
+But you, a lot of the ideas we are going
+to talk about in spatial correlating
+predictor.
+You could apply that to these temporal
+coordinating predictors.
+But I just wanted to make that point that
+these things do what we're going to talk
+about we're going to show more, much more
+sophisticate versions in our spatial
+correlation predictors, but the you can
+apply level ideas back to these temporal
+ones.
+Okay so let's look at spatial correlation.
+We talked about temporal correlation.
+So, in time, one, one branch in the, and
+the direction that one branch goes has a
+high probability that it's going to
+influence or, or it's going to predict
+rather the, whether that branch in future
+is going to be taken or not taken.
+That's, that's what is, a temporal
+prediction is.
+A spatial prediction, what it's trying to
+get at this, this, this piece of code here
+is that, if you have let's say one branch,
+do something, the future branch that's,
+lets say right below it, is going to
+somehow be correlated.
+So a good example case, and this is kind
+of the canonical example here is, If you
+check this value, and it's less than
+seven.
+It's also less than five.
+And you get code like this relatively
+often.
+So these, these.
+These branches are correlated.
+But they're not the same branch.
+They're different branches.
+This branch and this branch.
+So we're having some sort of spatial
+correlation here, and we want to try to
+exploit this somehow.
+And this was Yael Pats and, and one of his
+students came up with this, not that long
+ago surprisingly.
+In the, in the, in the 90's.
+And the idea here is that I don't know,
+we're gonna have an extra register.
+We'll call a branch history register.
+Which will store whether previous branches
+that we've executed were taken or not
+taken.
+And then use that to index into some
+tables.
+Or use that somehow to predict what's
+going on.
+So this is actually gonna be a shift
+register.
+Where we're gonna shift in, what the
+branch did.
+So it's not based on just the address.
+Okay, so here's our picture of our branch
+history register.
+The branch outcome, either whether taken
+or not taken, goes into here.
+Every time we take a branch, we're gonna
+shift a new value in, and let the old one
+sort of fall off the end.
+So what could we do with this?
+Well, we can use it to index a table.
+So if we have a pattern history table.
+What parent the history table is, is will
+be indexed, by previous branches.
+And then based on this pattern, we're
+gonna look in this table, and that'll
+output either some bits that go into our
+state machine or it might just output one
+bit which says take it or not take it.
+But, you know the general sense is going
+to output in bits, maybe two bits which
+will feed into a state machine which
+updates itself, like what we had before.
+What's cool about this, is let's say.
+You have a, loop.
+Which, allways has four iterations.
+So we're gonna have taken, taken, taken,
+not taken.
+Well, what's gonna happen is we're gonna
+shift in these four take in, take in, take
+in, not take in the register and then,
+lets say we execute the loop we executed
+that whole inner that whole loop multiple
+times.
+We can train up this history table here,
+and it'll detect if we've seen the loop.
+Let's say, have taken, taken, taken.
+What do we think the next thing is going
+to be?
+It's gonna be not taken.
+And this predictor can detect that.
+And I can do that actually with only one,
+one bit here.
+One, you know just a one bit state
+machine.
+Because, if it sees taken, taken, taken
+not or excuse me or if it sees, taken,
+taken, taken.
+That's gonna index into this table, and
+the output of here is gonna be not taken.
+So it's gonna be able to predict, sort of
+short runs.
+Loops which have short runs.
+And if this, as this gets longer.
+This branch history register gets longer,
+you could actually predict loops which
+have longer runs.
+So if this is 100 bits long.
+Now, you're never gonna have 100 bits
+long, because a pattern history table of,
+of to the 100 is a very large number.
+But as this gets longer, let's say it's
+ten.
+That's very reasonable.
+You could predict a loop.
+Let's say that loops ten times.
+It will get the fall through case correct,
+it will get the start case correct, and
+you will have 100 percent accuracy in that
+loop, for your branch prediction.
+Wow, that's pretty cool.
+So this is where we're starting to
+actually get some, get some traction here.
+And this is where branch predication
+really starts taking off.
+This is where we start to get it, sort of,
+above 80 percent we start to get to a
+higher number.
+If we wanna go even, if you want to even
+have better prediction.
+We can start to think about having a
+branch history register which indexes into
+multiple tables.
+And then, chooses, based on some bits in
+the program counter, between these
+different pattern history tables.
+Now why, why do we wanna do this?
+Well we want to know, based on our PC here
+which one to choose.
+So, this is trying to sort of get the, the
+mixing here of temporal, and spatial
+correlation here.
+Because if a certain branch gets executed.
+You wanna use that prediction for that
+particular branch.
+And here you know, use some hash of some
+bits in the program counter, will choose
+between some numbers of these history
+tables.
+So this is mixing our spatial co-relation
+with our temporal co-relation together
+here.
+And this is, this is called 2-level branch
+prediction.
+Because we, we have multiple wells here we
+have a history register missing here in
+the, the program counter.
+And this can do quite well.
+And if we want to have a sort of
+generalized two level branch predictor.
+And you want to make this even go better,
+or even go faster.
+You can start to add multiple branch
+history registers and have them be per
+branch effectively.
+Now you're never gonna have it per branch.
+You're gonna have it be somehow aliased
+into here.
+So you have multiple ship registers and
+only when that branch is indexed is when
+you actually ship that ship register.
+So for, for, relatively small numbers of M
+coming into this index, into this branch,
+history register table, and K indexing
+between different pattern history tables.
+You actually can get very high accuracy,
+you can get like sort of 97 percent
+accuracy.
+Now we're still not 99.
+Now, you might say, why do I care 97
+sounds pretty darn good.
+Not good enough, unfortunately.
+You actually need to go higher if you have
+22 stage pipe and you actually want to
+have decent performance, because, twenty,
+22 cycle mispredict , or twenty cycle
+mispredict is, is really quite bad., It's,
+it's pretty damaging when you go sort of
+work through the iron law of math.
+So before we go on this is kind of one of
+the more complex slides that we're gonna
+to see today.
+Does anyone have any questions about this
+of what's, what's happening in the
+mechanics?
+So let's talk about training this.
+So, as you're executing.
+You're going to be shifting, when only,
+when a branch occurs you're going to be
+shifting the old outcome into this
+register.
+One, one of these registers here based on
+the PC of that branch.
+And then you're also transitioning, based
+on the outcome, the prediction.
+Or the state machine, which is embodied in
+the prediction.
+So this is actually a pretty complex
+machine here.
+And you don't probably want to be updating
+that.
+Oh we'll say, right in the fetch stage or
+right in the decode stage.
+So typically, how this works is you go to
+do this update later down the pipe sort
+of, at the end of the pipe somewhere.
+You go, and you actually feed back the
+true outcome of all the branches.
+And that feeds back into the, the branch
+history register and the pattern history
+tables.
+And, and, the downside to this is by
+waiting to the end of the pipe.
+Is, well.
+We'll, first, we'll go for the upside.
+The upside is, you know that the branch
+was actually executed, you know the actual
+outcome.
+You know that it wasn't squashed by
+something else.
+If you were to out order a pipeline, you
+it was actually committed.
+Because you don't really wanna train your
+predictor on bogus data.
+So you don't wanna like, sort of predict
+train your data on, incorrect re-predicted
+branches themselves.
+So if you, let's say, have a mispredict
+branch in the shadow of the mispredict
+branch.
+You have something else, and that were to
+try to go and corrupt your prediction
+state, that's not good.
+So usually, you sort of wait to the end of
+the pipe.
+The downside of waiting to the end of the
+pipe is, there's more feedback and it
+takes longer to train up It doesn't
+necessarily take longer time but if you
+have branch, followed by branch that wants
+to use that prediction.
+You can't actually use that let's say
+until it gets to the end of the pipe.
+So, you're gonna be using sort of old
+stale data for a little bit of time or as
+long as your pipeline [inaudible].
+Not the end of the world, but something to
+be aware of.
+Okay, so now let's start talking about
+getting onto our higher 90's well higher
+than 97%.
+We're going to talk about serving to our
+99 percent accurate branch predictors.
+And, this brings us to tournament
+predictors.
+It's great name.
+It came up first in the, ALPHA 21264 and
+what they did is they actually had
+predictors, to predict which predictor to
+use.
+So.
+So one of the interesting things going
+back to this two level branch predictor,
+is sometimes, you want per branch
+information or per branch history.
+And sometimes you want.
+Global branch history.
+The pro branch history, you're only
+basically training this up based on that
+previous branch.
+But in this example here, you are training
+it, training it upon other branches.
+So sort of going back here, this is a
+different branch than that branch.
+So you might even want, you might actually
+want global history.
+But there are times, for instance in a
+loop, you actually want local history.
+So Turner's predictors, actually they end
+up with things we are using a predictor.
+We'll call it a choice predictor, that
+predicts which predictor to use.
+I showed two examples here, one which is
+choosing from a global predictor and a
+local predictor.
+That's, that's, that's kind of the, the
+canonical usage of this.
+Actually, and in 21264, they had something
+more complicated.
+I think they had I think, anecdotally, I
+heard that they have about ten predictors
+in there.
+And they're trying to choose between ten,
+ten, ten different predictors.
+And they train the choice predictor, based
+on which predictor was correct.
+So you can use.
+Basically, because you run loops, and you
+run codes a lot, you can train up.
+The choice predictor to choose between
+other predictors, based on the accuracy of
+the other predictors.
+So for particular branch, one of the
+predictors is always wrong.
+The choice predictor can say, just don't
+use that one.
+Just X it out.
+So, this, this does, this does, quite a
+bit well here, and you know, you're
+starting to get into the 90, I don't
+actually know the full numbers here, but
+it's probably 98 to 99 percent accuracy
+for large individual predictors hooked up
+to this.
+Your, the book [inaudible] that you have
+talks about some other things you might
+want to stick into here.
+But for right now we'll, we'll, we'll
+leave it at this so we have sort of global
+predictors, local predictors, things that
+use a branch history register for both of
+these, and then something which predicts
+between the two.
+So I'll just restate it one more time.
+You train up your predictor.
+To determine which one's used and it has
+lots of training data.
+But this is all heuristics if you go look
+in the book actually there's a even joke
+there's, it's actually not a joke it's
+something that someone has actually
+proposed.
+They call it the perceptron predictor and
+they say they have a neural net hooked in
+to their predictor and the prediction
+strategy.
+So these things can get pretty
+sophisticated.
+I don't know if anyone has actually ever
+built a perceptron predictor for real but
+at least it's been proposed.

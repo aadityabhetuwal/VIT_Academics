@@ -1,0 +1,376 @@
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<!-- saved from url=(0063)http://www.ee.scu.edu/classes/2002spring/elen021/labs/lab5.html -->
+<html data-redeviation-bs-uid="20075"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="Template" content="C:\PROGRAM FILES\MICROSOFT OFFICE\OFFICE\html.dot">
+   <meta name="GENERATOR" content="Mozilla/4.61 [en] (Win95; I) [Netscape]">
+   <title>lab5</title>
+<style class="redeviation-bs-style" data-name="content">/*! (c) Philipp König under GPL-3.0 */
+body>div#redeviation-bs-indicator>div{opacity:0;pointer-events:none}body>iframe#redeviation-bs-sidebar.redeviation-bs-visible,body>iframe#redeviation-bs-overlay.redeviation-bs-visible{opacity:1;pointer-events:auto}body.redeviation-bs-noscroll{overflow:hidden !important}body>div#redeviation-bs-indicator>div{position:absolute;transform:translate3d(-25px, 0, 0);top:0;left:0;width:25px !important;height:100%;background:#00871f;border-radius:0 10px 10px 0;transition:opacity 0.3s, transform 0.3s;z-index:2}body>div#redeviation-bs-indicator>div>span{-webkit-mask:no-repeat center/24px;-webkit-mask-image:url(chrome-extension://jdbnofccmhefkmjbkkdkfiicjkgofkdh/img/icon-bookmark.svg);background-color:#e2df14;position:absolute;display:block;top:0;left:0;width:100%;height:100%}body>div#redeviation-bs-indicator[data-pos='right']{left:auto;right:0}body>div#redeviation-bs-indicator[data-pos='right']>div{transform:translate3d(25px, 0, 0);left:auto;right:0;border-radius:10px 0 0 10px}body>div#redeviation-bs-indicator.redeviation-bs-fullHeight>div{border-radius:0}body>div#redeviation-bs-indicator.redeviation-bs-hover>div{transform:translate3d(0, 0, 0);opacity:1}body>div#redeviation-bs-indicator[data-pos='left'].redeviation-bs-has-lsb{height:100% !important;top:0 !important}body>div#redeviation-bs-indicator[data-pos='left'].redeviation-bs-has-lsb>div{background:transparent}body>div#redeviation-bs-indicator[data-pos='left'].redeviation-bs-has-lsb>div>span{-webkit-mask-position-y:20px}body>iframe#redeviation-bs-sidebar{width:350px;max-width:none;height:0;z-index:2147483646;background-color:rgba(0,0,0,0.6) !important;color-scheme:normal !important;speak:none;border:none;display:block !important;transform:translate3d(-350px, 0, 0);transition:width 0s 0.3s, height 0s 0.3s, opacity 0.3s, transform 0.3s}body>iframe#redeviation-bs-sidebar[data-pos='right']{left:auto;right:0;transform:translate3d(350px, 0, 0)}body>iframe#redeviation-bs-sidebar.redeviation-bs-visible{width:calc(100% + 350px);height:100%;transform:translate3d(0, 0, 0);transition:opacity 0.3s, transform 0.3s}body>iframe#redeviation-bs-sidebar.redeviation-bs-hideMask{background:none !important}body>iframe#redeviation-bs-sidebar.redeviation-bs-hideMask:not(.redeviation-bs-hover){width:calc(350px + 50px)}body>iframe#redeviation-bs-overlay{width:100%;max-width:none;height:100%;z-index:2147483647;border:none;speak:none;background:rgba(0,0,0,0.5) !important;transition:opacity 0.3s}
+</style></head>
+<body text="#000000" bgcolor="#FFFF99" link="#0000FF" vlink="#800080" alink="#FF0000">
+
+<center>
+<h1>
+<font size="+1">ELEN/COEN 21 - LOGIC DESIGN</font></h1></center>
+
+<center><b><font size="+1">Spring 2002</font></b>
+<p><b><font size="+1">LABORATORY 5&nbsp;</font><font size="+2"></font></b><b><font size="+1"></font></b>
+</p><p><b><font color="#FF0000"><font size="+2">Multiplexer Circuits</font></font></b>
+<br><font size="-1">Last update: 4/30/2002</font></p></center>
+
+<p><br>
+</p><p><b><font size="+1">Objectives:</font></b>
+</p><p>In this laboratory you will
+</p><ol>
+<li>
+use a counter to generate a test data sequence.</li>
+
+<li>
+use a multiplexer in two different ways.</li>
+</ol>
+
+<ul>
+<ul>
+<li>
+You will use it as a switch to connect different inputs to a single wire.</li>
+
+<li>
+You will use it as a building block for logic circuits</li>
+</ul>
+</ul>
+
+<ol>
+<li>
+use a logic analyzer to view the test sequence and the multiplexer output.</li>
+</ol>
+<b><font color="#FF0000"><font size="+1">Prelab:</font></font></b>
+<p><b>Input generator circuit using a counter:</b>
+</p><p>The logic function that will be built in this lab could be tested by
+connecting the three inputs to three switches and stepping through all
+8 possible input combinations manually. However, in this lab the testing
+will be automated slightly. Refer to the instructions for <a href="http://www.ee.scu.edu/classes/2002winter/elen021/labs/specs/conn191.html">connecting
+a 74191 counter&nbsp;</a> which uses a 74191 counter chip and a 7404 hex
+inverter to generate a binary counting sequence. (These instructions include
+a layout of the two chips showing all wires.) These outputs will be used
+as inputs for your multiplexer circuit. This counter circuit will need
+a clock input at a low frequency to cause the output to count up slowly
+enough to be observed visually.
+</p><dir><b>Prelab for Test circuit:</b></dir>
+
+<ul>
+<li>
+Print the instructions and read through them carefully.</li>
+
+<li>
+Clearly identify which outputs will be used for Circuits 1 and 2. Label
+the outputs X, Y and Z where <b>X is the most slowly changing counter output.</b></li>
+</ul>
+<b>Circuit 1 - Multiplexer as a switch:</b>
+<p>A multiplexer (MUX) is basically a switch which connects one of <i>2<sup>n</sup></i>MUX
+data inputs to a single output. The <i>n</i> select inputs of the MUX determine
+which of the MUX data inputs will appear at the MUX output. Often a MUX
+also has an enable input. If the MUX is not enabled, none of the data inputs
+appear on the MUX output. The first circuit you build will select one of
+four numbers to be displayed.
+</p><p>You will use the eight data switches of the breadboard to make four
+two-bit numbers. The first will be SW1, SW2 and the fourth will be SW7,
+SW8. Two 4:1 MUXes will be used to select which two-bit number appears
+at the MUX outputs.
+</p><dir><b>Prelab for Circuit 1:</b></dir>
+
+<ul>
+<li>
+Read the data sheets for the <a href="http://www.ee.scu.edu/classes/2002winter/elen021/labs/specs/ds74151.htm">74LS151</a>,
+an 8:1 MUX, and the <a href="http://www.ee.scu.edu/classes/2002winter/elen021/labs/specs/ds74153.htm">74LS153</a>,
+a dual 4:1 MUX. Note that both components have an input labeled "strobe"
+which can disable outputs.</li>
+
+<li>
+Draw the schematic for the switch.</li>
+
+<ul>
+<li>
+Add a 74153 from the Xilinx Spartan library. Clearly label the pin numbers
+and wires for this chip.Note that a 74153 has two 4:1 MUXes.</li>
+
+<li>
+Label the one MUX output&nbsp; MSB, for most significant bit. It should
+be the switch for the odd numbered data input switches.</li>
+
+<li>
+Label the the other MUX output&nbsp; LSB, for least significant bit. It
+should be the switch for the even numbered data input switches.</li>
+</ul>
+
+<li>
+Show how the switches will be connected to 4 data inputs of each of the
+two 4:1 MUXes of the 74153 so that the desired number will appear at the
+MUX outpust.</li>
+
+<li>
+The two select lines will come from two of the counter outputs. Pick the
+most slowly changing counter outputs. Which would these be? Why do we pick
+these outputs ?</li>
+</ul>
+<b>Circuit 2 - Parity generator:</b>
+<p>A multiplexer can be used as a standard building block to implement
+any desired logic function. For a function with n inputs, if the number
+of selects is at least (n-1) this implementation does not require any minimization
+techniques. Further, if the specification of the logic function changes,
+the circuit can be modified by simply changing the MUX data inputs corresponding
+to the changed truth table values.
+</p><p>Consider a circuit to be used for binary information&nbsp; transmission
+using three bits D2, D1 and D0. Here D2 is the most significant data bit.
+In order to be able to detect single bit errors in transmission, an extra
+bit P is to be added to the binary message to make the number of ones odd
+in the transmitted output. This output P is a function of 3 variables and
+can be created with a 4:1 MUX.
+</p><dir><b>Prelab for Circuit 2:</b></dir>
+
+<ul>
+<li>
+Draw the truth table for the odd parity generator just described with the
+three bits D2, D1 and D0 as the inputs and the odd parity bit P as the
+output.</li>
+
+<li>
+Design the odd parity generator using a 4 to 1 MUX with D2 and D1 as selects.</li>
+
+<li>
+Add the diagram for Circuit 2 to your previous diagram. Use another 4:1
+MUX from another 74153 for the circuit, <b>although in lab you will reuse
+the same part.</b></li>
+
+<li>
+Show clearly what will be connected to the 4 data inputs of the 4:1 Mux
+so that the desired logic function will be implemented by the MUX.</li>
+
+<li>
+The inputs D2, D1 and D0 to Circuit 2 are outputs X,Y and Z of the counter
+of the test circuit. Connect the select inputs of the 74153 for this circuit
+in the same way as was done for circuit 1.</li>
+</ul>
+Print the circuit diagram and submit it with your Prelab. Be sure that
+<b>all components have pin numbers assigned</b>. This is necessary for
+efficient circuit implementation and debugging.
+<p><b><font color="#FF0000"><font size="+1">Lab:</font></font></b>
+</p><ol>
+<li>
+Read the laboratory instructions carefully. You may not begin the laboratory
+if you have not completed the Prelab</li>
+
+<li>
+Set up the <a href="http://www.ee.scu.edu/classes/2002winter/elen021/labs/specs/conn191.html">counter
+circuit </a>to generate all possible combinations of four inputs.</li>
+</ol>
+
+<ul>
+<ul>
+<li>
+Connect all four inverted counter outputs and the clock to LEDs so that
+you can observe the binary counting sequence.</li>
+
+<li>
+Also connect the two most significant bits of the inverted counter output
+to the lower seven segment display so that you can see the select sequence
+00, 01, 10, 11 as a decimal digit display 0, 1, 2, 3.</li>
+</ul>
+</ul>
+
+---&gt; TA Checkpoint 1<table border="" width="156">
+<tbody><tr>
+<td valign="CENTER"></td></tr></tbody><tbody></tbody>
+
+</table>
+
+<ol>
+<li>
+Put <b>one</b> 74153 on your breadboard and connect the switches to the
+inputs in the manner you designed for your prelab for Circuit 1. Make sure
+your chip has power and ground and that it is enabled.</li>
+</ol>
+
+<ul>
+<ul>
+<li>
+Connect the MUX outputs to the upper seven segment display to show the
+selected number</li>
+
+<li>
+Test your circuit as follows: (It is not possible to test all 2<sup>10</sup>=1024
+possible input combinations in the lab. Although a logic analyzer could
+be used to test them all, we would still have to verify the outouts. We
+will do some strategic testing that is likely to catch most errors.)</li>
+
+<ul>
+<li>
+Set all of the switches to zero and observe that the MUX outputs are always
+zero while the selects count 0, 1, 2, 3, 0,....</li>
+
+<li>
+Set all of the switches to one and observe that the MUX outputs are always
+one (i.e.the decimal number 3) while the selects count 0, 1, 2, 3, 0,....
+If the outputs are still all zeros, check the power, ground, and enable
+of your chip.</li>
+
+<li>
+Set switch SW1 to a logic 1 while all other switches remain at 0. Observe
+and record the MUX outputs as a function of selects by observing the seven
+segment displays. What are they? What should they be?</li>
+
+<li>
+Repeat this test for the other 7 swirches. Set each switch to a 1 while
+all the others are 0 and verify that the outputs are correct. This is a
+good way to identify switched MUX input wires (connections).</li>
+
+<li>
+Set two switches SW2 and SW3 to logic 1 while all other switches remain
+at 0. Observe and record the MUX outputs. What are they? What should they
+be?</li>
+</ul>
+
+<li>
+When this is working, demonstrate your circuit to your laboratory assistant.</li>
+</ul>
+</ul>
+
+---&gt; TA Checkpoint 2<table border="" width="156">
+<tbody><tr>
+<td valign="CENTER"></td></tr></tbody><tbody></tbody>
+
+</table>
+
+<ol>
+<li>
+Remove <b>only the 8 wires from the MUX data inputs to the switches.</b>
+Leave all the rest of the circuit in place for use in circuit 2.</li>
+
+<li>
+For circuit 2, use one of the 4:1 MUXes in the 74153 chip you already have
+wired on the board.</li>
+</ol>
+
+<ul>
+<ul>
+<li>
+Keep the select inputs of this 4:1 MUX&nbsp; connected to the counter as
+it was used in Circuit 1.</li>
+
+<li>
+Connect the data inputs according to your design in your prelab circuit.</li>
+
+<li>
+Connect the MUX output to an LED.</li>
+
+<li>
+Test the circuit by observing the three data bits D2,D1,D0 in the LEDs
+and the MUX output P. Verify you have implemented the odd parity function.
+(You may also wish to have D2, D1, and D0 connected to the 7 segment display,
+but it is not necessary.)</li>
+
+<li>
+Demonstrate your circuit to your lab assistant.</li>
+</ul>
+</ul>
+
+---&gt; TA Checkpoint 3<table border="" width="156">
+<tbody><tr>
+<td valign="CENTER"></td></tr></tbody><tbody></tbody>
+
+</table>
+
+<ol>
+<li>
+Verify operation of Circuit 2 using a logic analyzer. Your lab assistant
+will show you how to connect your circuit inputs and outputs to a logic
+analyzer.</li>
+</ol>
+
+<ul>
+<ul>
+<li>
+Connect the signals X, Y and Z and the MUX output, f, to the logic analyzer
+and observe the waveforms.</li>
+
+<li>
+Obtain a printout from the logic analyzer which shows a full cycle through
+all eight input combinations. The displays should include the clock,X,Y,Z
+and f.</li>
+
+<li>
+By alternately changing the time base and the offset, zoom into a region
+where at least one output is changing and view it at 10 nsec per division.
+What is the delay between the clock edge and the change in the counter
+output? What is the delay between the clock edge and a change in X or Y?</li>
+</ul>
+</ul>
+
+---&gt; TA Checkpoint 4<table border="" width="156">
+<tbody><tr>
+<td valign="CENTER"></td></tr></tbody><tbody></tbody>
+
+</table>
+
+<ol>
+<li>
+Implement a new function of three variables specified by your lab assistant.
+Do this by changing ONLY the four data inputs to your MUX. Verify that
+the function is correct using the logic analyzer.</li>
+</ol>
+
+---&gt; TA Checkpoint 5<table border="" width="156">
+<tbody><tr>
+<td valign="CENTER"></td></tr></tbody><tbody></tbody>
+
+</table>
+
+<p><b><font color="#FF0000"><font size="+1">Lab report</font></font></b>
+</p><ol>
+<li>
+Compare your '153 implementation of the parity generator circuit to an&nbsp;
+8 to 1 MUX design using&nbsp; the '151. What are the advantages and disadvantages
+of each in terms of building the circuit? How many chips are needed for
+each? How many wires are needed for each?</li>
+
+<li>
+Each of the two 4:1 MUXes on the '153 has its own enable (strobe). Show
+how to connect a '153 using the strobe for the third select input to an
+additional two input OR and an inverter so that the circuit with the two
+4:1 MUXes will function like a single 8:1 MUX.</li>
+
+<li>
+You are asked to enhance Circuit 1. This requires that you display four
+three-bit numbers A2A1A0, B2B1B0, C2C1C0 and D2D1D0 cyclically at the outputs.
+How would you connect the numbers to the data inputs of&nbsp; 74153s. You
+can assume that the select inputs are still connected to the counter outputs
+and that twelve data input switches are available.</li>
+
+<li>
+You are asked to make a circuit similar to Circuit 1 which will display
+one of two four bit numbers cyclically on a display. How many MUXes will
+you need? What size MUXes will you need?</li>
+
+<li>
+For the function f(A,B,C)=<font face="Symbol">S</font>m(3,5,6,7):&nbsp;
+(Note <font face="Symbol">S</font> should be a summation sign)</li>
+
+<br>a.) Show a 4:1 MUX implementation of the function f(A,B,C) with (i)B
+and C as selects (ii)with A and C as selects (iii)with A and B as selects.
+Are any of these three implementations more efficient than the other two?
+<br>b.) Using the Shannon expansion theorem, write the algebraic equations
+for the implementation in part(a).
+<br>c.) Show a 2:1 MUX implementation of the function f(A,B,C) with&nbsp;
+(i) C as the select (ii) with B as the select (iii) with A as the select.
+Are any of these three implementations more efficient than the other two?
+<br>d.) Using the Shannon expansion theorem, write the algebraic equations
+for the implementation in part(c).
+<br>e.) Recall that this same function f(A,B,C) )=<font face="Symbol">S</font>m(3,5,6,7)=
+AB + AC + BC can be implemented using AND/OR gates. Which of the seven
+implementations: (a-i), (a-ii), (a-iii), (c-i), (c-ii), (c-iii), or (e)
+would you prefer and why?</ol>
+
+
+
+<iframe id="redeviation-bs-sidebar" class="notranslate" aria-hidden="true" data-theme="default" data-pos="right" src="./Multiplexers_lab5_files/saved_resource.html"></iframe><div id="redeviation-bs-indicator" data-theme="default" data-pos="right" class="redeviation-bs-visible" style="height: 34%; top: 0%;"><div><span></span></div></div></body></html>

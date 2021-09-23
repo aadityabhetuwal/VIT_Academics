@@ -1,0 +1,227 @@
+We move on to our final topic of ELE 475 
+which is, directory based cached 
+coherence. 
+It's a little bit of a warm up here. 
+We remember the three Cs of caches. 
+We had compulsory misses, capacity 
+misses, and conflict misses. 
+Well, 
+we're going to think about adding a new 
+miss type here, a coherence miss. 
+So our coherence miss is some other 
+cache, or some other entity, reaching 
+down into our cache and invalidating 
+something there. 
+So this is strictly different then 
+compulsory, capacity and conflict. 
+If anything it looks most closest to a 
+compulsory miss because you're 
+effectively. 
+It's like a first miss, but someone, some 
+other entity bumped it out of your cache. 
+But it's not any of those either. 
+So this communication that's coming from 
+other cores that is been in a snooping 
+protocol or symetric shared memory 
+multi-processor that other traffic comes 
+in and it will actually bump things out 
+of your cache. 
+You need to worry about this. 
+Now we're going to, we're going to take 
+these coherency misses and put them into 
+two categories. 
+True sharing, we, we talked about this 
+briefly at the end of two lectures ago, 
+or three lectures ago. 
+Well we're going to, we're going to 
+categorize this as two different 
+categories of misses. 
+True sharing misses, which we're going to 
+say, is that if were to have a cache 
+where each block length or cache line 
+size is exactly what's a one byte to the 
+minimal size you can have on your 
+machine, you would still have that miss. 
+So that's a true miss. 
+And a true miss is if you're actually 
+sharing data. 
+So if one cache, let's say, writes some 
+data, and another cache wants to go read, 
+or another processor wants to go read 
+that data, and needs to go pull it into 
+its cache, that's a true sharing misses. 
+You need to do that communication. 
+Now, 
+to contrast that, we talk about false 
+sharing, or false sharing misses. 
+And what a false sharing misses is, is 
+saying that if you were to reduce the, 
+sharing size or the block size down to 
+say, one byte or one word [COUGH] and you 
+run the same program and that miss 
+occurs, or the miss occurs when the block 
+size is let's say one, versus 
+or, or excuse me, if the miss occurs in 
+the larger block size versus when the 
+block size is one, then that is actually 
+a false sharing miss. 
+The block size was too big and you had 
+two pieces of data in the same cache line 
+that are effectively causing a sharing, 
+even though there was no true sharing 
+going on of the data. 
+It just so happens they're packed into 
+the same cache line. 
+[COUGH] Now it's a little bit more then 
+that we're also going to say that false 
+sharing can happen when data gets moved 
+around or gets invalidated but it's not 
+being, it may be shared later in the 
+program, but that exact miss was not 
+because of data being communicated. 
+So it's a little bit broader then what we 
+said last time. 
+It, it, it does still happen because 
+there is two piece data packed in to the 
+same line but effectively what I'm, what 
+I'm trying to get out here is you could 
+have data's that bounce around between 
+different caches and the same instruction 
+sequence or the same load in store 
+sequence will not cause then this is if 
+you had a very small cache line size but 
+does happen of a large cache line size. 
+So lets, lets look at a example here and 
+try to categorize these different misses. 
+So let's, let's start off here. 
+The initial conditions are X and X2, or 
+X1 and X2, which are two piece, two words 
+of data, are packed into the same cache 
+block or the same cache line. 
+P1 and P2 have both read the data, and 
+it's, it's, it's readable in both caches 
+at the beginning of time. 
+Okay so all of a sudden we do a right to 
+X1. 
+And we have to, what do we have to do? 
+Well, we're going to have to invalidate. 
+X1 and P2. 
+And this, this is a true miss because the 
+data was in both. 
+We need to pull it out of the one. 
+We need to actually invalidate it. 
+because this is actual, actual real data. 
+Okay. 
+So next thing we do is P2 goes and 
+executes a read of X2. 
+Well, 
+what you may notice here is at the 
+beginning of time X2 is in the cache of 
+P2, but it got bumped out, here. 
+If P1 never want to go right X2 so this 
+is a false sharing mess. 
+This got an exclusive into P1's cache and 
+this is going to pull it out of that 
+cache and invalidate it. 
+So recall, say false miss because X1 was 
+irrelevant to P2 for this, for this miss. 
+Okay, so now we see, another right to X1. 
+Well, P2 didn't actually touch X, X1, so 
+likewise, this is completely false 
+sharing. 
+Now we see a right to X2 well we didn't 
+see any communication going on here. 
+So this is also a false sharing miss. 
+Now finally we have something that is 
+real here. 
+We're going to read X two. 
+When we wrote X two there, we read X two 
+here, we are actually communicating data. 
+So this is true sharing. 
+And that's okay. 
+But we want to try to minimize these, 
+these false sharing patterns. 
+This is just a warm up. 
+Some mo, motivate us into directory based 
+coherence, a little bit. 
+Okay. 
+So let's, let's motivate this a little 
+bit more. 
+And let's look at something like a online 
+transaction processing workload. 
+So this is a database workload. 
+So it's a multiprocessor database 
+workload. 
+It's using threads. 
+And what we're going to see here is we 
+have. 
+We're going to run the same work load on 
+a four processor system with four 
+different cache sizes. 
+This, this data is, taken from a paper 
+from your book. 
+And. 
+What you'll notice is as you increase the 
+cache size, our false sharing and our 
+true sharing don't really change. 
+You still need to communicate data and 
+your still going to get false sharing. 
+Just because you make the cache size 
+bigger, didn't change the block size. 
+You're still going to get the same false 
+sharing patterns. 
+But, as you increase the cache size. 
+The instruction. 
+Misses the capacity misses the conflict 
+misses the cold the, the, the compulsory 
+misses we call that cold go down because 
+the cache is getting bigger, So 
+non-shared cache lines performing the, 
+the, the. 
+[COUGH]. 
+Number of memory cycles. 
+The amount of time you take memory misses 
+there, is going down. 
+But the rest of this is not changing. 
+Hm. 
+Well, okay. 
+This is, this is interesting, so the 
+second question comes up as, what happens 
+if we increase the number of cores in our 
+system? 
+So this is a relatively small system 
+here. 
+Let's, let's plot the number of cores 
+here from one to eight, at the same 
+workload. 
+And look what happens. 
+So if we, we look at this. 
+Something else is in variant here. 
+This is for a fixed cache size. 
+We're going to plot the number of 
+processors down here now. 
+The. 
+Number of memory cycles per instruction, 
+for instruction misses, complex capacity 
+misses, com, compulsory misses, doesn't 
+change, just stays the same because it's 
+basically uni-processor based. 
+But, as you add more cores you get both, 
+more true sharing and more false sharing. 
+Hmm, well this is a little scary because 
+our performance is basically going down 
+as we add more course. 
+So this is only up to eight, what happens 
+if we're, you know way out here at 100 
+course? 
+What do we think's going to happen? 
+Well, we're probably going to to be 
+dominated, our performance is going to be 
+dominated by the sharing and the false 
+sharing and these misses. 
+Huh, well, we're going to start thinking 
+about that one. 
+Figure out how to, how to solve that and 
+think about scalability of coherence 
+system. 
+

@@ -1,0 +1,35 @@
+[INFO  - 2016-06-20T02:40:41.179Z] GhostDriver - Main - running on port 56816
+[INFO  - 2016-06-20T02:40:41.288Z] Session [610cd400-3690-11e6-9a69-a36e71e3745b] - page.settings - {"XSSAuditingEnabled":false,"javascriptCanCloseWindows":true,"javascriptCanOpenWindows":true,"javascriptEnabled":true,"loadImages":true,"localToRemoteUrlAccessEnabled":false,"userAgent":"Mozilla/5.0 (Unknown; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1","webSecurityEnabled":true}
+[INFO  - 2016-06-20T02:40:41.288Z] Session [610cd400-3690-11e6-9a69-a36e71e3745b] - page.customHeaders:  - {}
+[INFO  - 2016-06-20T02:40:41.289Z] Session [610cd400-3690-11e6-9a69-a36e71e3745b] - Session.negotiatedCapabilities - {"browserName":"phantomjs","version":"2.1.1","driverName":"ghostdriver","driverVersion":"1.2.0","platform":"linux-unknown-64bit","javascriptEnabled":true,"takesScreenshot":true,"handlesAlerts":false,"databaseEnabled":false,"locationContextEnabled":false,"applicationCacheEnabled":false,"browserConnectionEnabled":false,"cssSelectorsEnabled":true,"webStorageEnabled":false,"rotatable":false,"acceptSslCerts":false,"nativeEvents":true,"proxy":{"proxyType":"direct"}}
+[INFO  - 2016-06-20T02:40:41.289Z] SessionManagerReqHand - _postNewSessionCommand - New Session Created: 610cd400-3690-11e6-9a69-a36e71e3745b
+[ERROR - 2016-06-20T02:40:45.438Z] Session [610cd400-3690-11e6-9a69-a36e71e3745b] - page.onError - msg: Warning: Failed Context Types: Required context `router` was not specified in `PageHeader`. Check the render method of `SwitcherSelection`.
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2016-06-20T02:40:45.438Z] Session [610cd400-3690-11e6-9a69-a36e71e3745b] - page.onError - stack:
+  e (https://d3njjcbhbojbot.cloudfront.net/web/md5/js/app/loader.r.rjsBundle.545a1248fb591d3df6dfc505374fa9bd.6.js:29)
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2016-06-20T02:40:45.451Z] Session [610cd400-3690-11e6-9a69-a36e71e3745b] - page.onError - msg: Warning: Failed Context Types: Required context `router` was not specified in `HeaderSearchBar`. Check the render method of `PageHeader`.
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2016-06-20T02:40:45.451Z] Session [610cd400-3690-11e6-9a69-a36e71e3745b] - page.onError - stack:
+  e (https://d3njjcbhbojbot.cloudfront.net/web/md5/js/app/loader.r.rjsBundle.545a1248fb591d3df6dfc505374fa9bd.6.js:29)
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2016-06-20T02:40:45.453Z] Session [610cd400-3690-11e6-9a69-a36e71e3745b] - page.onError - msg: Warning: Failed Context Types: Required context `router` was not specified in `UnauthenticatedAccountInfo`. Check the render method of `HeaderRightNav`.
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2016-06-20T02:40:45.453Z] Session [610cd400-3690-11e6-9a69-a36e71e3745b] - page.onError - stack:
+  e (https://d3njjcbhbojbot.cloudfront.net/web/md5/js/app/loader.r.rjsBundle.545a1248fb591d3df6dfc505374fa9bd.6.js:29)
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2016-06-20T02:40:45.460Z] Session [610cd400-3690-11e6-9a69-a36e71e3745b] - page.onError - msg: Warning: Failed Context Types: Required context `router` was not specified in `AuthenticationOption`. Check the render method of `PageHeader`.
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2016-06-20T02:40:45.460Z] Session [610cd400-3690-11e6-9a69-a36e71e3745b] - page.onError - stack:
+  e (https://d3njjcbhbojbot.cloudfront.net/web/md5/js/app/loader.r.rjsBundle.545a1248fb591d3df6dfc505374fa9bd.6.js:29)
+
+  phantomjs://platform/console++.js:263 in error
+[INFO  - 2016-06-20T02:45:41.179Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-06-20T02:45:41.180Z] SessionManagerReqHand - _cleanupWindowlessSessions - Deleted Session '610cd400-3690-11e6-9a69-a36e71e3745b', because windowless

@@ -1,0 +1,810 @@
+And let's start taking about exceptions
+and interrupts.
+And then we're going to start talking
+about superscalar two.
+So we'll start talking about out of order
+superscalars.
+So how do you actually start to execute
+instructions when they're not in
+programmatic order?
+And when you first hear about this, you're
+gonna say, well how is that possible?
+You know, you shouldn't be able to execute
+instructions out of order.
+But it's very, it's relatively easy.
+You can actually, just, you know, execute
+them out of order.
+Maybe you want to commit them in order.
+That may even be optional.
+But let's, let's all start off by talking
+about interrupts.
+So what's, what's an interrupt?
+So an interrupt is typically some external
+or internal event that happens.
+And it may be synchronous to an
+instruction or it may just be some
+external thing that happens.
+That is going to redirect your control
+flow somewhere else for a little bit of
+time and then it will come back to the
+instruction that you were asked before.
+So here's our program.
+It's executing, happily executing
+structure mean.
+I - one, then it's going to execute
+instruction i.
+Instruction i doesn't actually commit
+instead we vector over to interrupt
+handler which is also some sequence of
+instructions that process some problem
+let's say with instruction i.
+And then when it's done it'll come back,
+re-execute instruction one, or instruction
+i.
+Maybe, maybe not, we'll see why there's
+some cases that you may not actually go to
+re-execute this instruction, if it had a
+fatal fault.
+And then continue on.
+Typically, I wanted to point out that, a
+lot of times, this is done, sort of, for
+system level code, or operating system
+level code or a hypervisor level code that
+you'll jump someplace else.
+So, a good example of this is a timer
+interrupt on a processor.
+It goes off.
+It'll re-vector you to someplace else
+where you have to sort of update the
+internal time of the machine and then, you
+go back to the instruction sequence that
+you were executing before.
+So let's, let's look at some of these
+causes.
+So.
+We'll name the, first set of interrupts
+here asynchronous interrupts, or, some
+people call these excep, external events
+or external interrupts.
+And, some good examples, as I said before,
+are, devices cause interrupts.
+So something like the programmable
+interrupt timer on, X86 processor will
+cause a timer tick every once in a while,
+or every 100 times a second, is, is
+pretty, you probable other devices,
+You know, your network card gets a packet
+in on it.
+And the packet needs to be processed, so
+it needs to be read of the network and be
+put into ram somewhere.
+Hardware failures.
+So things like EEC memory errors.
+So its error correcting code memory errors
+in your main memory will sometimes cause
+interrupts to happen or asynchronous
+events to happen.
+Synchronous things sometimes people call
+these exceptions or traps.
+I'm actually calling all of these
+interrupts because from a naming
+perspective you read different
+architectural manuals they all rename
+these things slightly different and there
+is no sort of common utilization of the
+terms.
+But if you're, you're using something like
+x86 a synchronis interrupt is usually
+called either a trap or an exception.
+But that is not common across all other
+architectures are not x86.
+So some good examples of this is if you,
+try to execute an instruction, which is
+not in the ISA manual.
+It's a garbley, gobbledygook of bits on,
+on the disc.
+So it was an error code, effectively, or
+some non-valid instruction, you get an
+illegal instruction, exception.
+Or if you're trying to execute, let's say
+an operating system-level instruction.
+We haven't talked about this in great
+detail, we'll touch on this later in the
+course.
+But if you're trying to execute some
+instruction that only the operating system
+should be able to execute but you're
+executing it from your user program.
+Then, you're trying to execute something
+like a privilege instruction.
+That's a good way to have this happen.
+Earth medic overflow.
+Some architectures have it when the,
+precision of your numbers falls outside
+the scope of what you can actually
+accurately represent, you'll get an
+overflow exception, or an underflow
+exception.
+Similar sorts of things can happen in a
+floating point unit.
+So, great example of this is if you end up
+with what are called denormalized numbers,
+so in floating point numbers this means
+you basically have also lost precision in
+your floating point unit, so you, you fall
+out of the range of numbers that they can
+represent very well, and you end up in
+this other space that are called
+denormalized numbers.
+You get an exception usually.
+Sometimes other sorts of things that fall
+into this case are things like divide by
+zero.
+You try to divide by zero, you'll
+sometimes get exceptions.
+And you can do that.
+That's a great way, if you on your x86, if
+you guys want to write a program,
+Write a simple C program,
+Take some number,
+Divide it by zero.
+And then build a number program.
+You'll get a printout.
+The operating system will, you'll get an
+exception.
+The OS will print out divide by zero
+fault.
+And the program will stop.
+It will kill your program.
+Unaligned memory.
+Some architectures don't allow you to
+access memory in a unaligned manner.
+Some architectures do.
+So something like MIPS, the MIPS
+instruction set, if you go to try to
+execute a unaligned instruction sequence
+or unaligned load, will say, on the
+earlier versions of MIPS, you'll actually
+get a unaligned memory access.
+Later, actually, later MIPS have it as a
+option.
+You can either have a, have it take a trap
+or not take a trap.
+Common thing page faults.
+So we talk about paging later in this
+course.
+But, if you go try to access some piece of
+memory and the memory's not mapped in
+correctly.
+So you, you just can't, the machine
+physically can't go find memory.
+You'll take a, a trap.
+And then finally, the things like system
+calls or interrupts on x86.
+There's an instruction called int, which
+actually causes a, just an interrupt to
+occur.
+And then it takes as a parameter a number.
+So that's how system calls have
+traditionally worked on x86.
+They later replaced it with actually, an
+instruction called sys enter which, does a
+similar sort of thing with a little bit
+cleaner semantics.
+So I think we, oh actually there's one
+point I wanted to talk about asynchronous
+interrupts.
+With asynchronous interrupts, it's hard to
+know when to deliver the interrupt.
+Cuz it's not pegged to a specific
+instruction.
+If the instructions are going down the
+pipeline, you don't necessarily know
+whether to attack it to the first
+instruction that's in the pipe.
+I think it's at the sort of a fetch stage.
+I think it's at the execute stage.
+I think it's at the write back stage.
+So that's, that's a, that's a challenge.
+Another important thing to think about
+with, asynchronous interrupts is,
+sometimes multiple of them go off at the
+same time.
+So let's say your timer interrupt goes off
+at, at, time t0.
+= zero, your, network card gets a packet
+in and someone hits the keyboard exactly
+at the same time.
+Well, which, which should happen?
+Which should you actually go handle?
+Typically machines have a prioritized
+inner-request mechanism.
+So there would be some sort of priority
+encoder there which will determine which
+is the highest priority.
+Some of them, some machines will actually
+have re-programmable priority interrupt
+encoders effectively which will allow you,
+allow the system software, the operating
+system to decide what is the highest
+priority interrupt to go take in that
+case.
+Sometimes machines will just sort of make
+a decision, or the objects of the, of the
+machine will sort of make a decision, and
+say these classes of interrupts are not
+ver, or asynchronous interrupts are not
+very easy to handle so we'll sort of put
+those in these of low priority bucket, and
+then some small set you'll actually be
+alter sort of re, re-prioritize if you
+will.
+Oh.
+Oh, yeah.
+So, I wanted to talk about this.
+What actually happens, when you take a
+interrupt, from a hardware mechanism
+perspective.
+So the, this is a very idealized view, but
+from a mechanical perspective things need
+to happen in a machine.
+There's some state that needs to be
+updated.
+The first thing that needs to happen is,
+you should basically stop the program at
+some point.
+And you should try to save the program
+counter somewhere.
+Cuz if we want to come back to, let's say,
+the instruction that took the interrupt,
+We need to know where to come back to.
+But we're going to go and execute some
+other piece of code in the meantime.
+So our, we can't just save it in the
+program counter.
+We need to save it off.
+And that's typically called either an
+exceptional PC.
+So EPC that's, what its called on, on a
+MIPS, MIPS processor.
+On x86, I'm trying to remember what it
+does.
+I think it actually gets, pushed onto a
+systems stack.
+So it gets put into memory somewhere.
+And if you had something like MIPS, one of
+the tricky things here is all of your
+registers.
+Are still live from the previous
+instruction sequence here.
+So all of a sudden you, you jump into a
+new piece of code and all of your
+instructions are still, or all of your
+registers are still live,
+They have values you can't throw away.
+And you're in the interrupt exception
+handler.
+What do you do?
+Well there's, there's different,
+mechanisms to this, to, to have this
+happen.
+Some architectures, something like MIPS
+actually reserves two registers that are
+only allowed to be used by interrupt
+handlers.
+This is actually a pretty poor solution in
+my opinion.
+So they, they save off two registers.
+I believe it is, it's somewhere high, it's
+like, maybe like 28 and 29.
+Registers 28 and 29, are not allowed to be
+used by the, basically operating system,
+or the user code and it's only used by
+interrupt handlers, in the operating
+system to save off state.
+And what happens in that case is you could
+use those registers to basically take the
+other registers,
+Compute some addresses and do a store.
+Cuz if you recall on, on MIPS, you need to
+have an address to do the store to.
+So you compose the address into, let's
+say, register 28, and then use that as the
+store address.
+And you can store off all of the other
+registers into memory somewhere.
+And then you can unwind that back when
+you're, when you're going to return from
+the interrupt.
+So it's a, a complicated dance.
+Something like x86, there is some power
+mechanisms they are which actually take it
+and take a lot of your registers and put
+them on to a in memory stock for you.
+So, it's typically, well it's either a
+push A which is, push, pushes all of the
+register state onto the stack and, and pop
+A which pops it off.
+It is not actually required though.
+There's other, some operating systems
+don't actually do push A and pop A, better
+operating systems, or more modern
+operating system will actually only save
+off what is strictly needed.
+That's something, something to think
+about.
+One other important thing here.
+Typically when an interrupt occurs, you
+probably want to mask other interrupts
+from happening.
+So this is, this is a really hard problem
+to solve, is you have interrupts inside
+the interrupt handler.
+Ooh.
+Yeah, that doesn't sound like a, like a
+happy day for, for anyone.
+Cuz what if you're in interrupt handle and
+another external interrupt comes in?
+What do you, what do you do?
+You can't save the exceptional PC into the
+exceptional PC state now.
+Because you've already saved the, the old
+program counter into there.
+You can't take that second interrupt
+inside that.
+So you can't necessarily nest interrupts
+very easily.
+So what, what people do for this is, one
+solution, actually, is to take the
+exceptional PC, and put it into memory
+somewhere.
+And once you've done that,
+Then you can turn interrupts back on
+inside the interpender.
+You can take more interrupts inside the
+interpender.
+Alternatively, if you know that the
+interrupts going resolve itself very
+quickly, you can just return, you can just
+leave interrupts masks the whole time the
+interrupt handler is happening, and when
+it's done just the return from interrupt
+construction usually turns off the
+interrupt.
+Or, or, excuse me, turns back on the
+interrupts, if you will.
+So it'll, it'll re-enable interrupts.
+So it's, you got to be a little careful
+there, there's with interrupts inside of
+interrupts happening.
+So, so that's, that's a great question, so
+what do you save in the exceptional PC.
+On a interrupt.
+Oops.
+So yeah.
+That's, that's, that's there.
+So if you're, have instructions that are
+marching down the pipe in a two way in
+order superscalar we'll say.
+You're, you're gonna save the PC of the
+instruction that took the interrupt.
+Some architectures define this
+differently.
+If you go look at something like x86
+typically what gets saved in the
+exceptional pc is the next instruction to
+execute.
+So it's, it's really dependent on
+architectures.
+Some architectures will save the address
+in the exceptional pc of the next
+instruction of program order to execute.
+Some things will save the address of the
+instruction that actually took the trap
+and as far as or took the exception or the
+interrupt.
+So it's a little bit of a, a, a tradeoff
+there.
+One of, one of the things that's actually
+hard is, you have a branch that takes an
+exception.
+Do you store the target of the branch
+location in the exceptional PC?
+Or do you, yeah.
+You have to sort of resolve the branch
+first.
+So that's one reason, actually, why lots
+of architectures favor just storing the PC
+of the, instruction that took the trap and
+not the, sort of next" instruction."
+So, I, I actually favor storing the PC of
+the instruction that took the, the trap,
+and not the destination of that.
+Asynchronous interrupts similiar sort of
+thing, Sometimes the handler wants to
+resume after sort of an instruction, where
+someone might have to add PC plus four if
+you have a architecture exceptional PC
+plus four if you need to jump over the
+instruction, for instance.
+Something I didn't want so here this is
+the expression that I came up was, what
+does this look like in a pipeline?
+And when do you note actually process the
+interrupt.
+So here we have a five stage pipe.
+So this is a little bit easier pipeline.
+And we can see, this, these bubbles here
+are actually different types of interrupts
+or exceptions that can come out of the
+pipe at different locations.
+So out in front here we can have maybe, a
+PC address exception.
+What do I mean by that?
+Well, some architectures won't allow you
+to execute, let's say, code out of,
+certain regions of memory.
+So an example of this is actually in the
+64 bit extension of x86.
+The 64 bit extension of x86 there's what
+they call a memory hole.
+So between hope you'll call positive
+memory and negative memory, so the top
+that, being such.
+There's a big chunk of memory which no
+one's allowed to execute out of, or it's
+not math, it's not real memory.
+So they have a 64 bit address space, but
+they only use 42 bits of that 64 bit
+address space.
+So if you've any bits in the middle which
+are not, set correctly, you're basically
+going to be executing out of the memory
+hole, and that's an example of something
+that can cause a PC address exception.
+So your PC sort of falls off the end of
+math to memory.
+What do you do?
+You're in some piece of memory, you're in
+some address which by definition is not a
+valid address.
+Decode.
+Illegal, illegal op code.
+So it doesn't, it isn't in your ISA
+manual.
+Lots of, lots of op coding, coding space.
+Usually most architectures purposely leave
+some space in there just for legal
+instructions, or future expansion, if you
+will, and you want that to, to interrupt,
+overflows and underflows out of your ALU.
+There's a whole host, if you have a
+floating point unit here, of floating
+point exceptions.
+Overflows, underflows, and denormalized
+sorts of instructions.
+Data address exceptions.
+Well this would be if you're, let's say,
+you have an unmapped memory address.
+Or you do a underlined mode or store.
+So basically, every stage of your pipe
+here can be generating, some form of
+interrupt.
+And then there's also asynchronous
+interrupts, which we haven't drawn yet.
+Okay, so, good first question here is, how
+do we handle multiple simultaneous
+interrupts in different pipeline stages,
+happening all at the same time?
+Agree we should prioritize them.
+So, what is the oldest instruction in the
+pipeline here?
+So this is going to be the oldest
+instruction in the pipe.
+So, let's, let's think about that.
+So that means it's probably going to want
+to kill everything behind it.
+If, if there is an exception, that has
+happened here.
+So if we were sort of, multiple things
+generating exceptions here at one time.
+The oldest thing, the oldest instruction
+in the pipe, the instruction that's been
+in the pipe the longest, is going to want
+to kill all of the rest of the things.
+Going forward, though, so from a priority
+perspective,
+Which of these things are probably the
+highest priority?
+So, do you think we should be computing
+overflow errors if the instruction op code
+is illegal?
+Should be even decoding the instruction if
+the address that we try to fetch from our
+instruction memory doesn't make any sense.
+So the priority of sort of the, when you
+go to figure out where or which exception
+or which interrupt is the cause of the
+exception should go this way, from left to
+right and then the you're going to, want
+to actually kill going, going backwards.
+So let's, let's, let's skip that question
+for a second and look at the, at this
+drawing.
+So what you'll see here is we're actually
+going to just remember that we took some
+exception for a particular instruction and
+just pipe it forward.
+And then what we're going to do, is we're
+basically going to say, at the ends of the
+pipe, once we know everything that's
+happened.
+We're gonna call this the commit point.
+And that's going to feedback the other way
+killing everything.
+Now,
+Why do we put the commit point here?
+Could we put the commit point, let's say,
+in this stage of the pipe?
+In the execute stage.
+So, let's, let's define the commit point.
+The commit point is the point at which
+architectural state of the machine is
+committed to the is committed, and, now
+that may not be in the register file yet.
+Because by definition, in this point here,
+it's not in the register file.
+It doesn't get there till the write back
+stage.
+But nothing can change.
+We're not, we can't read, we can't take a
+branch, we can't redirect, we can't take
+any more exceptions.
+Well, by that definition we can't put the
+commit point here, because further
+exceptions can happen after the commit
+point, if we pull the commit point back.
+There are machines which do pull the
+commit point back.
+You will see, when we start talking about
+super, or out of order superscalars, we
+typically like to have the commit point at
+the end.
+Cuz, or near the ends.
+Because then you can sort of see if
+everything's resolved.
+You can handle your interrupts, exceptions
+and have exceptions going out on the pipe
+as long as possible.
+And if you try to pull your commit point
+early, that forces you to actually resolve
+whatever exception is going to happen for
+a particular instruction relatively early
+in the pipe.
+So if we want to full this forward a
+stage, we would have to basically check
+whether the address of a load or a store
+is valid in this pipe stage.
+That may be possible because we finished
+the, calculation of the address right
+here.
+But we haven't necessarily let's stay done
+the TOB lookup.
+But we can pull the TOB lookup earlier or
+something like that.
+That is possible.
+And, and we'll see that some architectures
+try to pull that early.
+Some architectures try to have, imprecise
+exceptions.
+This is a, a scary, scary place.
+We're not going to be talking about this
+very much.
+We're going to be talking about precise
+exceptions mostly in this class.
+But an imprecise exception is one where
+instructions are going down the pipe.
+You basically let the instruction sort of
+pass the commit point and you tag the
+exception to the wrong instruction
+effectively.
+It's not, not precise.
+You can't stop on a dime.
+Architecture is, there are some embedded
+processes that do things like that.
+And it's probably not the wisest thing to
+do if you want to write a real operating
+system.
+But like I said, yes.
+So the commit point being close to the end
+is probably a good place.
+So at least after all your exceptions are
+done.
+So by the time we get to this red dashed
+line here,
+So we're after the computation of the
+exceptional PC and everything, we know
+that we're going to be committing.
+Or we, or at least we have a thumbs up or
+a thumbs down.
+And if it's a thumbs down we kill
+everything behind here.
+One thing I did want to say is, cause.
+What does that register do?
+Well that register tells us, why did we
+take the exception.
+So it's a priority encoder, which
+priority, prioritizes, as we said, this
+direction.
+And we'll determine the cause of the, of
+the exception.
+Asynchronous interrupts.
+Hm.
+There's different places to wire this in.
+You just sort of have to tag it to
+something, but you have to make sure that
+you actually take it.
+So the simplest thing to do is just to put
+it into this big log at the end of the
+pipe here at the commit point.
+And have the asynchronous interrupt show
+up at the end of the pipe.
+Not all pipes do this.
+Some pipes will actually inject
+asynchronous interrupt at the beginning of
+the pipe, allow it to go down the end, and
+arbitrate like everything else here at the
+end stage of the pipe.
+The simplest thing to do is to have it
+come in here, and that's because otherwise
+you might drop this asynchronous interrupt
+on the ground, or not actually take the
+asynchronous interrupt.
+You want to make sure you actually have a
+chance to take it.
+Exceptional PC.
+Takes the PC and, and pipes it forward and
+saves that in a register.
+But this only gets loaded on a exception
+or interrupt happening.
+Okay, so that's, that's commit points.
+That's, that's important for out of order
+superscalars.
+Because we're going to have to start
+thinking about, where is the commit point
+of a processor?
+And it may not be where we want it.
+Or it's possible that we will not be able
+to put the commit point anywhere in the
+processor, and actually have the processor
+work.
+So today, we're going to actually look at
+a processor where it's not possible to
+have precise exceptions.
+So there is no line we can cut and say,
+this is the commit point.
+Let see, so we, we covered all this.
+Speculation.
+This is going back to like, our example of
+PC plus four.
+Do we want to assume the exception's going
+to happen?
+Or the interrupt is going to happen, or
+not?
+So we're calling it an exception for a
+reason.
+It is the exceptional case.
+It is not the common case.
+So we want to somehow predict what our
+branch vector tells us or PC4 plus four or
+fall through or PC, you know, the next
+instruction.
+We do not want to just have we don't have
+to wait till the end of the pipe to know
+whether an exception is taken or not
+before we try to go get the next
+instruction.
+One other thing When we start to go to out
+of order pipelines, we're going to start
+to need some, recovery mechanism here.
+We're going to be processing instructions
+out of order.
+So if they, we might be taking the
+interrupt for, in instruction after it,
+it's let's say, subsequent instructions
+have either committed or sort of started
+to go down the pipe.
+And you sort of get some out of order time
+questions.
+So we're going to look at a few different
+solutions for this, for recovery.
+In our, in our simple cases, we just
+basically flush the pipe,
+And kill everything behind us.
+In more complicated things.
+We're actually going to have extra
+register files that are basically going to
+be shadow register files.
+We're going to keep track of everything
+that's going on in the processor, of what
+should have happened.
+And then we're gonna dump that into our
+true architectural.
+Excuse me.
+Into our physical register file, and we'll
+look at that, maybe today, or next class.
+We should bypass.
+Bypassing is good.
+You should not have to wait to the end of
+the pipe.
+Okay so let's look at a time diagram here,
+of an add that takes an overflow.
+Instruction one here is an add and we
+speculate that it does not take a, any
+sort of exception.
+So we fetch the next instruction.
+We start sticking ads on the pipe.
+In the except in the execute stage of the
+pipe, we determine that there isn't
+overflow.
+Well as we said, as we said, we don't
+actually try to do something about this
+until the commit stage at the pipe.
+So in, in our simple pipe our commit stage
+is at the end of this memory stage.
+So we actually pipe it forward one stage.
+At that point, we restart the front of the
+pipe, and we start fetching, the, handler
+code.
+The exceptional handler code.
+And we're going to basically kill behind
+us, turn everything behind us into a
+no-op.
+So.
+We'll saying we're bypassing out of ex1
+here, into the Well, okay, let's say we go
+to this one instead.
+Or we, we can come out here, you'll see
+we're bypassing out of the memory stage,
+or the, the memory stage, back to the
+register fetch stage of instruction three.
+I think that's what you just asked about.
+What's going to happen is, we're going to
+let that bypass happen, we're going to let
+that data come around, through the bypass
+network.
+But what's going to happen is, we're, at
+that same time, we're sending the kill,
+kill signal behind us in the pipe.
+Or instruction one is going to be killing
+everything behind it in, in the pipe.
+So we're going to bypass the data around.
+It's going to get bypassed.
+It's going to end up, in, in the pipeline
+register in the cycle.
+But it's going to be killed basically at
+the end of that cycle.
+A better example is actually here.
+Let's say,
+It bypasses to instruction two from the
+execute stage to the decode stage of the
+pipe.
+That's actually gonna going to loaded into
+the pipeline register of the fetched,
+operand.
+And then it's going to go forward into the
+execute stage, ex2 here, for instruction
+two.
+So we bypassed it.
+We started executing that instruction.
+Everything was going fine.
+But then, we just come along, and we kill
+it.
+So, we're speculatively executing, it's
+called.
+So we're, it's a speculative execution
+pipeline.
+We are assuming, we're predicting that
+everything is going fine.
+And then we're going to be killing behind
+us when something goes wrong.

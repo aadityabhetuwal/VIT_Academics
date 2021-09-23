@@ -1,0 +1,368 @@
+Okay, lets get started.
+So today we're gonna be continuing our
+venture into out of order processors and
+super scours.
+And we're gonna be, start talking about
+how to fix write after write dependencies,
+and write after read dependencies in, in a
+processor pipeline.
+We're also gonna talk a little bit about
+one of the questions we had last time.
+About on a branch what do you do to the
+Reorder buffer and how do you clean up the
+state in the reorder buffer.
+So let's, let's start off, so, so, a
+little bit about what we're doing today.
+We're gonna talk about speculation
+branches.
+As I said, we're gonna review about that.
+And then answer, answer the question we
+had last time about what happens to the
+reorder buffer when you have a speculative
+branch.
+And what are good strategies there.
+Then we're going to talk about registry
+naming and how to break write after write
+and write after read dependencies.
+And then we're going to talk about memory
+disambiguation, if we have time.
+And memory disambiguation is basically
+figuring out how to have loads and stores
+execute out, or out of order relative to
+each other and figuring out how to get the
+right data for a particular load, after a
+store.
+And we call that memory disambiguation.
+Okay so let's start off by looking once
+again at our in order, in order, in order,
+in order pipeline or i4 for short and
+let's look at what happens on a branch.
+So here we have some code.
+Instruction three is a branch.
+Branches to target T here.
+And it's executing along.
+And because everything is in order we
+don't actually have to worry about, any
+form of control hazard really happening
+here.
+Or, or any, form of real, really bad
+hazard happening here if we can just
+basically reach behind us and kill all of
+the instructions, behind us.
+None of them will have committed any state
+at that point.
+So this is, this is pretty nice, so none
+of the, we did have speculative
+instructions here, these three ads, and
+they started doing stuff.
+But, they don't have a chance to get to
+the right back state of the pipe.
+So they don't even touch the physical
+register file.
+So we don't have to clean up, physical
+register file.
+We don't have to clean up any of the, the,
+the state here.
+We do need to, reset the scoreboard when
+we take, a, branch mispredict here.
+And the speculative instruction, the
+speculative state is wrong.
+But otherwise, everything, everything is
+okay.
+Okay so life gets a little more
+complicated.
+When we start to look at in order.
+Fetch, in order, instruction fetch in
+order, instruction issue out of order.
+Executing right back and out of order.
+Commit.
+So, here is, here is our pipeline diagram.
+And, what's interesting to see here, is
+here we have our branch, note that the,
+sort of, what is happening in the
+instructions moves around a little bit.
+Well, besides that, nothing, nothing much
+else is really changing here.
+We're still able to catch our speckle of
+instructions, before they write back.
+And what's key here is, we're doing
+in-order issue.
+And it's because we do the in order issue
+that the subsequent speculative
+instructions, while they are speculative,
+they're not gonna run ahead and write back
+early if you will.
+And what that basically mean is we'd have
+like a, like a, for this add instruction,
+there's no W sitting here before this
+branch hits the branch resolution spot in
+the pipe.
+And well let's say we resolve our branches
+in X0.
+And then, so this branch here can just
+redirect the front of the pipe, it can,
+squash all the subsequent instructions,
+and reset the scoreboard.
+So life, life is relatively easy.
+In order issue or, excuse me, in order
+fetch, in order issue, out of order
+writeback, in order commit.
+Gets a little more complicated here.
+Well, what's nice here is.
+We can prevent instructions from writing
+the physical register file for the same
+reason as the other pipe, because we did
+in order issue.
+The subsequent respective instructions can
+not go execute any earlier.
+And we know that, you know, it's pretty
+quick to go actually issue the or, it's
+pretty quickly after we issue the branch
+instruction that we can resolve the
+target.
+So, there's maybe, a little bit of shadow
+there, but if it's one cycle nothing is
+going to be able to the right back stage
+of the pipe.
+Now we do need to clean up the reorder
+buffer, because this pipe, starts to have,
+a reorder buffer.
+So it's not just a, scoreboard that we
+need to clean up.
+But we need to actually clean up the
+reorder buffer here.
+And, and we have, we have an option.
+We can either remove from the reorder
+buffer immediately, or we can wait until
+these other instructions sorta get to the
+commit stage to remove from the reorder
+buffer.
+And this is the question we had last time.
+And I'll address them in two more slides
+in a little more detail.
+Okay so now we start to get to out of
+order issue processors.
+So here we have in order fetch, out of
+order issue, out of order right back and
+out of order commit processor.
+And if you recall this is the processor
+that we looked at last time that which we
+said could not have precise interrupts.
+Because you can have things basically
+right early.
+Well for that same reason.
+You can have instructions that write the
+register file or write the physical
+register file early in a pipeline like
+this.
+Or actually in this pipe there is both
+architectural register file, physical
+register files all together.
+But if you take a look here, let's take a
+look at this ad.
+This ad writes the register file before
+the branch which is dependent on the
+multiply has been resolved.
+Uh-oh.
+Well we just wrote, the architectural
+register file.
+We wrote non-roll, roll-backable state, if
+you will, or state that is not able to be
+rolled back.
+And we actually committed the wrong state
+and this speculative instruction was not
+supposed to have executed in the correct
+program order.
+So this is the same problem we see with
+imprecise exceptions showing up here.
+So, you know, one thing you could do is,
+if you have a pipeline like this, you can
+try to fix this by not having any form of
+control speculation.
+You can basically stall all these
+subsequent instructions here, these three
+adds.
+And, and, actually, potentially all the
+rest of these question mark instructions
+here until the, branch has been resolved.
+But that's gonna limit your performance.
+So there's a, there's a problem with this
+form of pipeline with out of order commit
+here, is that you have no way to sort of
+roll back any state.
+Okay, so this takes us to the, our
+pinnacle pipeline that we had last time.
+In order, issue, or excuse me, in order
+such out of order issue.
+Out of order executing right back and in
+order commit.
+And let's, let's, let's take a look at
+this.
+That's sort of competing questions here
+that we have to think about.
+First thing is we see that this actually
+does a write, right here before the branch
+is known.
+But conveniently, its writing a different
+data structure.
+Its not running our architectural stage.
+Its running our physical register file.
+And just like on a, interrupt of some
+form, we can rollback the architectural
+register file into the physical register
+file.
+We can do that for a branch here also, .
+So, one of the interesting questions that
+comes up is, where do we resolve?
+The branch.
+And when do we try to kill subsequent
+instructions?
+Do we try to do that right when the branch
+gets resolved?
+Oops.
+Or do we wait'til the branch commits.
+Hmm.
+Okay, so this, this is, actually goes back
+to the question we had last time of how
+easy is it to go clean up the re-order
+buffer, and how easy is it to go clean up
+the physical register file.
+So let's take a look at this example here.
+Now, having said that, this is all doable.
+People who build pipelines actually do go
+clean up all these sort of in-flight
+instructions.
+Well, let's look at the complexity of
+that.
+So here we have, right when we know the
+branch gets resolved we actually Kill all
+of these instructions.
+And we redirect the front of the pipe to
+go fetch our target, Our, our true target.
+Well let's go look what's happening in the
+physical register file for this case.
+So in this case in the physical register
+file this mall has been in the in the
+physical register file that's a good
+value.
+We don't wanna keep that mall.
+This add here is also read in the physical
+register file.
+We don't want to keep that.
+Ugh.
+Life starts to get a lot more complicated
+here.
+In a pipeline like this, what we're really
+gonna have to do is we're gonna have to
+clean up speculative state in the physical
+register file and we're gonna have to do
+selective rollback.
+So instead of just taking the entire
+architecture register file and overwriting
+the physical register file, on rollback,
+we're gonna have to figure out which of
+these things were speculative and which of
+these things were not speculative.
+That's doable.
+Well, you probably need some structures to
+go do that, over what we've, over and
+above what we've already talked about in
+class.
+Or rather you, we would have to track
+which physical registers need to be rolled
+back on a, a speculation mis predict.
+Something a little bit easier.
+Is just a wait to the commit stage.
+So if we wait to the commit stage, we can
+see here as we commit.
+Well, we know that all of the previous
+instructions of this branch have committed
+now to the architectural register file.
+So we know the architectural register file
+is up to date, relative to the branch, so
+we can, and then these other sets of
+instructions may or may not be in the
+physical register file.
+They, if the physical register file is
+completely outdated at this point.
+So what's nice here is we can copy the
+entire architectural register file to the
+physical register file, and effectively
+roll back everything.
+Okay.
+So this, this brings us to the question
+that we had, During last class about the
+reorder buffer and, and what do you do
+with reorder pointers in this branch
+misspeculation case.
+So it's, the question really here is well.
+Do we have to wait for these instructions
+here to get to the end of the pipe, these,
+these speculative instructions to get all
+the way to the end of the pipe, to go
+clean up the reorder buffer?
+Or can we just adjust a pointer of the
+next instruction in the reorder buffer?
+And the answer, so I've spent a bunch of
+time thinking about this, is, is we should
+just be able to adjust the pointer in the
+reorder buffer to say where the next
+location is and just fill that in with
+this target instruction here and that will
+effectively clean out all of this state
+here.
+But where this gets tricky, that's, that,
+that works great in this case.
+But as I said, if you go look at this
+other case here where you actually have,
+you're trying to pre-emptively sort of
+kill things, this is not going to work in
+this case.
+Because what's really going to happen is
+we have selective roll back we're going to
+have to perform here, and just changing
+the pointer in the router buffer is not
+enough to go do that, we're going to have
+to sort of individually clean up entries
+if we wanna go do that, and that gets a
+lot more complicated.
+One other thing which we haven't talked
+about yet, and one, one motivation for why
+you may want to wait.
+To actually clean up the reorder buffer
+until un, you have, you wanna wait til the
+expected instructions reach the end of
+the, the commit stage of the pipe if you
+will.
+To clean up the reorder buffer is this
+other structures, if you have a registry
+namer, which you're gonna wanna clean up
+in that same manner.
+So when we talk about registry renaming in
+this in this lecture, and what happens is
+if you sorta think about these inflight
+speculative instructions.
+If you have more physical registers than
+architectural registers.
+It's possible that if you have to abort
+these instructions, these speculative
+instructions, you have other structures
+like a free list of physical registers,
+which you have to de-allocate somehow.
+And if you serve to a bulk deallocate
+whats a convenient place to sort of
+deallocate when it tries to commit.
+So let's look at that in a minute, but
+that's kind of what I want to get across
+so you can adjust the pointer for the
+simple case Trying to do something more
+aggressive, gets quite a bit harder,
+because you have to speculatively roll
+back the physical register file in
+addition to the rear order buffer.
+Well, the rear buffering is just a
+pointer, but the, the physical register
+you can't just do that with.
+And if you wait to the end of the pipe you
+can get you can deallocate physical
+registers a little bit easier.

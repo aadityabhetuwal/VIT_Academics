@@ -1,0 +1,230 @@
+Okay.
+So, let's take a look at our data path
+here and see where predicates thin the
+datapath.
+And we're, we're going to focus, actually,
+just on the conditional move predicate or,
+or predication instruction here.
+We're not going to look at full
+predication just yet on the datapath.
+But, it follows a similar idea.
+Okay.
+So, what's, what do we need to, to do?
+What do we, what do we add to our, sort
+of, boring nipstyle five stage pipeline to
+add this instruction.
+Hm.
+Okay.
+Instruction comes in, moves down the pipe.
+Oh, this is interesting.
+I know.
+This is a really cool trick.
+Let's just, if, if this condition is not
+true, let's just kill the right back to
+the register file.
+It's brilliant.
+We just have, we just suppress the right
+back.
+We don't have to actually change datapath
+at all, we just put an end gate in here.
+And this end gate depends on, you know,
+this condition.
+Simple, it's easy.
+Maybe this is what we should do.
+Looks simple, just add an end gate where
+the big X is, and life, life is done.
+Okay.
+Well, that looks, that looks good.
+Can we bypass this value?
+So, can we have an instruction that
+directly follows this move zero, or this
+conditional move zero, and reads rd?
+Well, where are we changing rd, or not
+changing rd?
+Where are we making that decision?
+Well, in this pipeline, because we did it
+in the write back stage, it doesn't happen
+'till down here.
+Down here, or right back stage, or this
+wire, the right back wire runs all the way
+back into the right enable on a registry
+file.
+Huh, okay.
+Well, that doesn't really help us a whole
+lot.
+Especially, if we're trying to bypass and
+we're trying to bypass out of here, our
+ALU, back around.
+Because at this point, we haven't figured
+out any way to suppress this.
+So, we don't actually, we're not able to
+actually suppress that.
+Hm.
+So, what do we, what do we think about
+this?
+So, how do we, how do we go about doing
+this?
+So, let's, let's think about how to
+actually bypass out for this conditional
+move instruction.
+Cuz condition move, it's a, just a simple
+comparison of zero which we could do that
+in one cycle.
+We don't really have to wait until the end
+of the pipe to do that.
+And we will [inaudible] to go bypass it
+into a back to back instruction.
+Okay.
+So, how do we, how do we do that?
+Well, bypassing doesn't work.
+What if, we somehow pipe forward the
+original value and the new value.
+Okay.
+So, what do I mean by this?
+So, this, this instruction is very
+interesting.
+It is much more interesting than your
+standard like add instruction.
+So, why is it interesting?
+Well, let's look at the semantics very
+closely here.
+Move zero is going to write rs to rd, or
+It's going to write rd to rd.
+I could say, why do I need to write rd to
+rd?
+Well, in the bypass path, when we provide
+this value around back to our bypass
+registers or forwarding logic here, or
+bypass luxes or for, forwarding logic, we
+need the old value of rd.
+So, the traditional, sort of, something
+sort of risk pipelined here.
+We're only going to fetch our two sources,
+and we can only write one location.
+So, we're going to fetch rs or rt, and
+then we're going to write to rd.
+Now, all of a sudden, in this instruction,
+we need to read rs, okay?
+We need to read that cuz we need to
+overwrite rd with rs if we need, if, if
+the condition is true, and we need to read
+the condition rt.
+But, aha.
+We may also need to read rd here.
+This is because when we get to this stage
+here and we're going to use this bypass
+path to forward the value of what rd is
+going to be in the future, we need the
+original rd.
+So, sort of to draw this a little bit more
+succinctly because this is pretty
+important.
+We have if, the registered value of rt
+equals zero.
+We have R of rd gets rs.
+That's the easy one.
+We can count the registers here.
+Once one source, two sources, one
+destination.
+That's simple.
+And what no one ever forgets, everyone
+always forgets is the else case here.
+And what does this else case say?
+Well, the else case is going to say,
+register rd gets register rd.
+And you might say, well r, rd already had
+rd.
+That's true, but our bypassing, or our
+forwarding logic didn't have that.
+So, we need to actually read this rd.
+So, that means we have to read one, two,
+three, and we need to write in one
+location.
+Okay.
+So, that's going to cause us some problems
+over here because all of a sudden, we had
+a register file which had two read ports,
+and we need to now have three read ports.
+So, we need to add an extra read port on
+our register file, and this can be
+expensive.
+So, if we actually want to build
+predication, it's going to have some
+costs.
+We might, if we want to build predication
+actually bypass something like a
+predicated conditional move, we're going
+to have to add another report to our
+register file.
+And, that, that actually has some cost.
+And this is especially costly if you look
+at something like a VLIW.
+So, let's, let's take, for example, a
+three way VLIW something like the, the
+Tilera processor.
+So, it's a three way, three wide VLIW.
+Each of those is going, each of those ways
+or each of those pipelines is going to
+read two, if you don't have conditional
+move, we'll say.
+And, it's going to write one value.
+So, it's going to have six read ports, and
+three write ports.
+So, it's a ten port register file.
+No, excuse me, it's a nine port register
+file to begin with.
+And of all the sudden, we add something
+like conditional move here, and we need to
+add these extra read ports.
+We're going to go from a nine port
+register file to a twelve port register
+file.
+We're going to have let's see, we're going
+to have three write ports and nine read
+ports.
+That's a, that's a hard to do.
+It's, you know, it's hard to build this
+really heavily ported register files.
+Okay.
+So, to, to sum up here, a problem,
+problems with full predication is that you
+need to add another cork to the administer
+file, you need to bypass the predicates.
+So, what I mean by that is you're
+computing predicates, and you want to use
+it in the next instruction.
+So, if we go back to this instruction
+sequence here.
+We compute these predicates and what we
+use it very carefully, a very, very
+quickly after it.
+We don't have to wait at the end of the
+pipeline for this predicates to be
+computed.
+So, the effectively its going to make a,
+make it, so that we are going to have a
+predicate register files, sitting
+somewhere here, and have a bypassing
+around the predicate register file
+forwarding of the predicates to, to get
+the, the, the predicates there are faster.
+Or, get the, the predicates to be used in
+the next instruction.
+And, you're going to have to add extra
+pipeline registers to pipe forward the old
+value cuz you might need to keep the old
+value in the bypass.
+And, in fact, actually a lot of times when
+people do these things, they actually
+always write the register file and just
+pipe forward both and at the end make the
+decision.
+And, or, or along the way they make the
+decision to go into the, the bypass or not
+but then sort of when, when the
+instruction finishes, that's going to make
+the decision.
+So, we're going to actually going to have
+to add more pipeline registers to pipe
+forward the old value that was in, in this
+case, rd.

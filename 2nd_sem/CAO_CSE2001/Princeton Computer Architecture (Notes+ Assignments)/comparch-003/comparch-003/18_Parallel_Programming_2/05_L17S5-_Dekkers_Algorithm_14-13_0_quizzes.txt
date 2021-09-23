@@ -1,0 +1,19 @@
+﻿L17S5:
+
+In Lecture Quiz 1:
+Time: 14:05
+
+Question:
+Is Deadlock the same thing as Livelock?
+
+Choices:
+
+A. Yes
+
+B. No
+
+
+
+
+
+

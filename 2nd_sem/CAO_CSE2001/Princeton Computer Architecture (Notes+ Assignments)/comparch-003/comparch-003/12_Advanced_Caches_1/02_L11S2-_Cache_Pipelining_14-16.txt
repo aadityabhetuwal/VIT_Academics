@@ -1,0 +1,317 @@
+Now, we get in the meat of today, today's
+lecture.
+And we're going to talk about all these
+different advanced cache optimizations,
+starting with pipelining the cache.
+Okay. So, here is our.
+Sketch of what happens in the cache.
+In the cache, we have a tag and we have
+the data blocks here.
+And we want to go do write into the cache.
+So, forget about the read for a second,
+But instead let's focus on the write.
+So, in the write, you're going to do a tag
+check.
+So, you're going to index into here with
+the index into your tag array, it's going
+to spit out the tag.
+You want to check the valid bit also,
+And you're going to do a comparison here.
+If it matches, that means that the data's
+already in the cache and you're doing a
+write, so you can just write the data into
+the cache.
+So, that, that sounds good.
+Some challenges here is, it really is
+sequential.
+You need to absolutely do this first
+before you do the write. Because if you
+have a different address stored in this
+location here and is blindly to the write,
+You are going to overwrite the wrong data.
+And you're just going to be very unhappy
+because we overwrote some data which
+wasn't, wasn't a portion to this, this
+particular write or is that the wrong
+address.
+So that's, that's definitely a bummer so
+do we think we will want to do this in one
+cycle?
+Anyone have, want to wager a guess here?
+Do people build machines where they do
+this in one cycle?
+Well, sure. Original machines did do this
+one cycle.
+It's possible to build, you have a nice
+combinational path that sort of come
+through out of the index through here,
+through all this logic. And then, through
+the write enable and then through here.
+It's buildable,, not great for your clock
+performance.
+So, the first optimization we're going to
+so, so, how do we reduce the, hit time for
+a write?
+And there's a couple different strategies
+for this.
+So, we can think of this as trying to do
+this over two different cycles.
+The first cycle checks the tag, we'll say,
+and the second cycle does something to the
+data.
+That's, that's, that's kind of our problem
+statement.
+What are our solutions?
+One, one solution is kind of innovative,
+is you can build a multi-ported cache, or
+cache which can simultaneously do a read
+and a write to the same address,
+And you do that.
+So you have a cache, you're doing a write.
+You blindly do the write not checking the
+tag.
+But, at the same time, you rebuild data
+that was there and you save it off.
+And if you took a tagness for the write,
+you go back and actually fix it up by
+filling that back in.
+That is an option,
+People have built such things. and so you
+just restore the old value on a tagness
+Works perfectly fine, you need a side
+buffer.
+This kinda looks like a victim cache,
+which we'll talk about later in today's
+lecture.
+But you can do a write and a read at the
+same time and it's kinda like you're
+putting the, the new data in,
+speculatively, pulling out the old data,
+the victim.
+And, if the write hits in the, the, the
+tag check, then you can just let it go and
+everything is great.
+If not, you have to basically pull that
+back out and undo it.
+It's doable.
+Not a lot of people do this, but people
+have built machines like that.
+Another solution is trying to build a
+fully associative cache.
+Now, what do I mean by fully associative
+cache?
+Well, I mean, a cache which has lines such
+that you can store it to any location in
+the cache.
+And in those structures, typically, the
+tag check and the, access are kind of done
+in parallel.
+So, because, because you don't know where
+to find the data, there's no index
+operation.
+The index operation is the tag check, or
+the cam operation, or the content
+addressable memory operation.
+You're basically doing it in parallels or,
+or you're basically doing the tag check to
+do the read anyway.
+It doesn't really hurt you to sort of do
+the tag check, check first, and then do
+the write.
+So the, it just doesn't really, hurt you.
+It's not necessarily a great design if you
+have, a very large cache.
+But for a small cache, you can definitely
+have a content addressable memory, for the
+tags,
+And then just have it so you can write
+anywhere if you have a fully associative
+cache.
+That is one way to solve this write
+problem.
+And then, we're going to look at this is
+what we're going to focus on in today's
+lecture is pipelining the write.
+So, to pipeline the write, instead of
+actually doing the write in the cycle in
+the mem, M stage of your pipeline, we're
+going to tag check the M stage.
+And then, hold the store data for some
+time in the future.
+Now, you're going to say, did we actually
+do the store then?
+Well, yes. We're going to call that
+committed state.
+So this is what we're going to focus on
+today is, how to, how to do a pipelined
+memory access to reduce our write hit
+time.
+So here, we have our five stage pipeline.
+Cough And, what we're going to do is we
+are going to the M stage for write, we're
+going to check the tag,
+And we're not going to fire up the data
+array at all.
+Now, you might say, where do you put the
+data?
+Well, we put a nice little buffer here
+COUGH which is a, basically to be stored
+buffers.
+Stores the data that's going to be stored
+in the future or a delayed cache buffer as
+we're going to call this.
+So in parallel, you check the tag, and you
+store the data here.
+And then, sometime in the future, you want
+to move this into the cache.
+But you need a convenient time to do that.
+So, one option is you wait for a dead
+cycle on the cache.
+Okay. That sounds, sounds good.
+How do you know you're going to get a dead
+cycle?
+I can't guarantee that.
+I can write a piece of code which does
+store, after store, after store, after
+store, after store, after store, after
+store, after store, after store, after
+store, in a really tight loop so you'll
+never have a dead cycle.
+A cool trick here is a subsequent store
+only has to use the tag array.
+So, if you have a store after a store, the
+first store will check the tag, and not
+use the data,
+We'll destroy the data here. And then,
+when the second store comes down the pipe,
+It'll check the tag but the data array is
+open so you can do the store at that time.
+So, there's a cool trick there.
+If you have a store, after a store, after
+a store, you could basically decouple the
+tag from the data for stores and use the
+port on the cache to do, the, the data ray
+of the cache to do the store later.
+And we'll go through this a little more
+detailed drawing here, and this is just
+kind of to redirect what was going on. You
+do the store, it checks the tags.
+Cough And it's going to store the address
+and the data.
+And at some point in the future, when
+there's a idle cycle or another store
+going on, it'll actually transition this
+data into the data array.
+That sounds good.
+Okay. So,
+Pop quiz question here.
+What happens when you do a load and
+there's data in the delayed write data
+buffer?
+You have to bypass it, yes, you need to go
+check it.
+So, you need to have something which is
+going to check, and that's actually drawn
+here. COUGH The delayed write address
+against a future, load.
+And if you get a hit there, you need to
+have this data come around and come out.
+So, we need basically to go check this
+buffer.
+One, one thing I do want to point, this is
+kind of the naive way to do this.
+More advanced processors will actually
+typically have a multi entry version of
+these delayed write data buffers because
+caches are sort of usually pipelined
+inside the cache, too.
+And I think multiple access, multiple
+cycles to actually access the data array.
+So, you might not do this until the end of
+the pipe.
+So, some of the processors that I've
+worked on, these are sort of on the
+delayed write buffers or sort of the end,
+order of maybe two to four entries big.
+So, you can abstract this and make this
+into a bigger data structure, and when you
+do loads, you obviously have to do a
+content addressable match against all of
+those entries and see if the datas in the
+delayed write data buffer.
+Okay.
+So let's go see how well this does.
+Pipelining our cache. So let's, so, so,
+we're going to use this throughout today's
+lecture,
+Ways that it makes, makes life better.
+You can either reduce the miss rate.
+So do something good from miss rate,
+you're going to do something good for
+reducing the missed penalty.
+You can reduce the hit time and this would
+be like, for instance, having a smaller
+cache reduces the hit time, or you can
+increase the bandwidth to your cache.
+But, all these things are going to factor
+into performance.
+And not all of the techniques,
+optimizations we're going to talk about
+today touch all of these.
+In fact, most of them only touch sort of
+one at a time or two at a time.
+Okay.
+So, pipeline,
+Cache caches, what do they do for us?
+Are they going to reduce the miss rate? I
+see people shaking their heads, no.
+Yeah, we didn't make anything bigger or
+smaller here.
+It's probably not going to touch the, the
+miss rate.
+Is it going to affect our miss penalty?
+So, this is, when we're missing the cache,
+How long it takes us to go to, let's say,
+the main memory or the next level of
+cache?
+Hm, no.
+It's not actually, it's not actually going
+anywhere different.
+The, effectively, this is implementing the
+exact same thing.
+Hit time, does this affect the hit time?
+What's going to affect the hit time, it's
+kind of hard to see whether this is done
+in a positive or negative direction here.
+If you compare to having the, let's say,
+tag access and data access on the same
+cycle, pipelining is actually going to
+make the hit time, hm,
+Make the hit time a little bit better
+because you're doing less in a cycle. So,
+that would, that would have us put a plus
+here. But, if you compare it to, let's
+say, not having a cache or just having a
+big, RAM there, it actually makes the hit
+time worse because we need to mux in
+multiple, extra stuff here.
+We need to basically do this extra check.
+We need to do the, associative check
+against our, delayed write buffer data so
+that actually hurts us a little bit there.
+So, okay.
+That might be a, a plus or a minus.
+The bandwidth, though, is actually getting
+better through this cache because before,
+we had to just sort of wait for this cache
+for, let's say,
+The whole time we go through tag check and
+the data check and the data write. But
+now, we can actually have two stores sort
+of happening at the same time, or the tag
+for one store and the data for a different
+store.
+So, this is really going to make the
+bandwidth better for this.
+So that's, that's where we are with
+pipeline caches.

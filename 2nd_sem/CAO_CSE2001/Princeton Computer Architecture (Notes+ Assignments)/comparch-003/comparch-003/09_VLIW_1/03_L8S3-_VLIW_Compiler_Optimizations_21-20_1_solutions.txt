@@ -1,0 +1,5 @@
+﻿L8S3 Solutions:
+
+Quiz 1: 0.125
+Quiz 2: 0.36
+Quiz 3: 1

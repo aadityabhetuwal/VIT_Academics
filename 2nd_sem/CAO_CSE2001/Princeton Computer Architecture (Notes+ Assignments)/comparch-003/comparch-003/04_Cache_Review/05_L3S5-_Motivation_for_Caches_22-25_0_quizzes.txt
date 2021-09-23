@@ -1,0 +1,18 @@
+L3S5:
+
+In Lecture Quiz 1:
+Time: 22:20
+
+Question:
+
+A program executing a loop contains what types of memory patterns?
+
+Choices:
+
+A. None of them
+
+B. Spatial only
+
+C. Temporal only
+
+D. Both Temporal and Spatial Locality

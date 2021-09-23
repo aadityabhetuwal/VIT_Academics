@@ -1,0 +1,19 @@
+L5S3:
+
+In Lecture Quiz 1:
+Time: 17:24
+
+Question:
+How do you handle multiple simultaneous interrupts in different pipeline stages happening at the same time?
+
+Choices:
+
+A. Let the oldest instruction that causes an exception kill all instruction behind in the pipeline
+
+B. Let the youngest instruction that causes an exception kill all behind instructions
+
+C. Let arbitrary instruction that causes an exception kill all behind instructions
+
+D. There is no way to handle this problem
+
+

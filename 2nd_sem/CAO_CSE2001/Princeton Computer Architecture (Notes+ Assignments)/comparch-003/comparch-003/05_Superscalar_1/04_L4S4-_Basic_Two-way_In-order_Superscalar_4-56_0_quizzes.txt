@@ -1,0 +1,19 @@
+﻿L4S4:
+
+In Lecture Quiz 1:
+Time: 3:16
+
+Question:
+What is missing from the fetch stage of the pipeline given that the two instructions are not symmetric?
+
+Choices:
+
+A. Instruction buffer
+
+B. Data cache
+
+C. Issue logic / Instruction steering
+
+D. Nothing is missing
+
+--------------------------------------------

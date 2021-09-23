@@ -1,0 +1,517 @@
+Okay, now we, now we get to move on to the
+meat of today, we're going to talk about
+non-blocking caches.
+Also known as out of order memory systems.
+Also known as lock up free caches.
+So I think the first paper that actually
+published on this called the Lockup Free
+Cache.
+Lots of people call these things
+non-blocking caches today.
+And if you think about it from a memory
+perspective it's an out of order memory
+system.
+What is non-blocking cache allow you to
+do?
+Well, it enables you to have subsequent
+memory operations occurring from the main
+process or pipeline even when you have a
+miss that was earlier in your instruction
+sequence.
+So all pipelines we looked at up to this
+point, you take it, even our out of order
+pipelines, we talked about them as
+basically saying a cache miss you just
+sort of stopped the pipe because we
+couldn't deal with having memory coming
+out of order even to our out of order
+processor pipelines.
+We didn't have enough bits to track all
+that.
+Well now we're going to talk about
+structures that allow us to track out of
+order memory.
+So, two major things this allows you to
+do.
+It allows you to have a cache hit under a
+miss, and it allows you to have a miss
+under miss.
+So what do I mean by miss under-miss?
+Well, what I mean by miss under-miss is
+you, do access.
+Like say a load.
+It some address.
+It takes a cache miss.
+And you have a load, a secondary load but
+you keep executing your program.
+You do another load and that takes a cache
+miss also and you are able to process both
+these things if you have a non-blocking
+cache which allows you to have miss under
+miss.
+One of the big points I want to get across
+today is that this is not only for out of
+order processors.
+We talked a lot about out of order
+processors.
+Believe it or not, you can actually hook
+up a non blocking cache to an in order
+processor.
+Or even a VLIW in order processor.
+Now, how do you go about doing that?
+Well.
+Two, two major ways that you can do that
+one is when you take the cache miss, you
+mark the variable, or you mark the
+register as not being there.
+So when you go to actually read the data,
+you block.
+So we'll show an example of that in, in
+few slides up from now.
+But, really what I was trying to get a
+across is you can have either of
+processors with out of order memory
+systems.
+You can have out of order processor
+without out of order memory systems.
+Both these things are, are possible.
+Okay.
+So, challenge list couple, couple big
+challenges here.
+Hurry up.
+A couple of big challenges.
+If you have multiple out of order misses,
+well, the memory system is going to return
+data sort of out of order.
+You have to deal with it somehow.
+It's possible you might end up in a
+different memory bank, and the data comes
+back, in different orders, that you, sent
+it out in.
+And this gets hard, to deal with.
+You, you sent out a cache miss for x, y,
+and z and they come back in z, y, and x,
+order, or something like that.
+And you need to make sure you're
+delivering, the right data to the right
+location in the cache, and the right data
+to the right, instruction.
+So we're going to need some big
+associative table to go figure this out.
+Second problem, major challenge here is
+lots of times you're going to have a load
+and a store to the address that you want
+to take a load and store miss to later.
+So what do I mean by that?
+Well, it's pretty that you are going to be
+doing loads sequentially through memory.
+And if the first load in a cash line
+misses,
+The second move's also going to miss, but
+they're on the same cache line.
+You don't want to send two of those out to
+the memory system at the same time cuz you
+might confuse the memory system.
+Worse, let's say if you have a load to one
+address and a store to another address.
+But the they are both in the same cache
+line.
+The load might go out to memory, you start
+gaining new memory, you do the store the
+store goes out to memory and you actually
+store on the main memory somehow but you
+bring in the original load data and they
+sort of pass in transit or something like
+that, the load data, passes the store
+data, and all of a sudden you are going to
+have the wrong data in your cache.
+You don't have it updated, and the reason
+that ends up happening the store didn't
+have anyplace to merge into.
+It couldn't actually go deposit it's data
+into the cache, for instance.
+Okay, so how do we go about handling this.
+But before we do that, let's, let's look
+at a, a timeline here.
+Time goes from left to right on this
+graph.
+At the top here we have a blocking cache.
+The blocking cache you are happily running
+the cpu you do a load we'll say or store
+doesn't matter in these systems, and you
+take cache miss, and the most basic
+blocking cache you're going to wait, and
+wait for the cache line to get filled in.
+And then you can return the data and then
+keep running the cpu, there's no overlap
+happening here.
+But we want to go fast, we want to go
+faster.
+If we have a bound blocking cache, we can
+take a hit under a miss.
+So what that means is, we're running
+along, we take a cache miss.
+This goes out to main memory.
+But we don't stop the CPU from executing.
+So let's say it is a, a load for register
+five.
+Well as long as no one looks at register
+five . Does the processor care that we
+took cache miss to register five?
+Probably not.
+Now there might be some complexities
+around if that load to register five takes
+a trap or something like that, or takes an
+interrupt.
+Then it might care, but let's say it
+doesn't for, for, for One of the reasons
+that this is actually usually safe to do
+is that you've already done all the memory
+checks and you've done.
+You're sort of passed the commit point to
+that point of the processor, because
+you're already pretty late in the
+processor pipe by the time you know you
+get a cache miss.
+So it's not too harmful.
+But then, you keep executing here and you
+take, you exit your cache again you do a
+different load, you get hit.
+That's great, you just keep executing.
+And it's only when you go to use the data
+do you stall.
+And effectively we've executed, we've
+overlapped computation with our mispenalty
+And this, this is, this is pretty nice.
+That's something else we can do is misses
+under misses.
+So a miss under miss, we're executing
+along here, we take cache miss and we send
+out something out to the main memory
+system to go get the data but we don't
+stop executing, we keep executing, we take
+another miss and we send that out to the
+main memory system.
+At some point, maybe we actually go to
+look at the data or possibly.
+Maybe we don't actually look at the data
+until here and the see if you just keeps
+executing the whole time.
+It overlaps multiple memory accesses with
+computation.
+So this can be really powerful.
+And you can do this, as I said, with
+in-order processor.
+One thing I do want to say is, usually you
+have a limited number, of outstanding
+memory accesses.
+Some small integer.
+Maybe like four or eight This diminisher
+returns as you add more and more.
+But usually this isn't sort of, thousands
+of outstanding memory accesses.
+So, let's, let's look at this, the
+structure here.
+There's a couple different names for this
+thing.
+It depends what school of computer
+architecture design you come from.
+If you are from the alpha or the Digital
+Equipment Corporation design philosophy
+you're going to call this thing a miss
+address file.
+If you come from the Intel school of
+things you're going to call it a Miss
+Status Handling Register.
+Miss Status Handling Register actually
+predates Intel goes back to I believe
+Control Data Corp.
+There's a paper from Control Data Corp.
+On Miss Status Handling Registers back in
+the like, I don't know, late'60s
+early'70s.
+Let's look in, inside of this thing and,
+and so understand whats, whats going on.
+You would have some small number of miss
+status handling registers probably an
+unregistered file.
+And you have a valid bit.
+Your going to have a block address.
+Now this block address is not the address
+and load of the store, it's the address
+and load of the store it's the address of
+the cache line That awaience level in the
+store.
+Because, well when you use this structure
+for us, we're going to use this to check
+subsequent memory accesses or subsequent
+misses against previous ones that have
+been going on.
+And we may have multiple sort of in flight
+here, we don't actually need the address
+of the, the load or the store.
+We need the address of the entire line cuz
+we need to check the entire line.
+Cuz that's what's in play.
+We have a bit here that says whether it's
+issued or not.
+Now, why, why we have that is just because
+you took a miss, doesn't mean it's
+actually out of the memory system or going
+to the memory system yet.
+So you sort of fill this in.
+And it's sits around there, until you have
+some time to go and talk to the rain
+memory.
+And hopefully that happens quickly.
+Some architectures you may not even need
+this you might just stall, until it
+actually goes out to main memory.
+But once issued you, you take that bit.
+And, and what this, what this allows you
+to do, it allows you to have multiple
+misses, which are not issued.
+So if you have a miss, under a miss, under
+a miss and it happened really quickly, you
+can fill up this table quickly, and not
+actually have to wait for it to stream out
+to main memory although request out to
+memory yet.
+That's half of it.
+And then we have a bunch of load store
+entries.
+Now with these load store entries they
+also have a valid bit.
+And they have a pointer back to one of
+these entries here.
+So this is a number which says sort of
+which entry you are in the miss status
+registry file.
+And this is for individual loads or stores
+that are occurring.
+So what allows, allows it to happen is if
+you have a load miss to address zero and
+you've a load miss to address I don't know
+ten And these both are in the same cash
+line, you can fill in this table with two
+entries and they'll actually both point
+back to the same miss status handling
+register location, they'll have different
+offsets.
+And the, the destination field, you'll
+fill, you'll fill in which register on the
+processor they're destined for.
+So what we're going to do is we're going
+to use these table such that when a load
+comes back, or excuse me, when a cache
+line comes back from main memory, we'll be
+able to check in these two tables and do
+two things.
+One, we'll be able to fill it into a cache
+somewhere.
+And two, we'll be able to return the data
+to the correct destinations..
+And we'll be able to find which piece of
+data we need, given the offset in the
+cache line.
+That, that, that's a mouthful to say.
+So this is a little bit of a complicated
+data structure here to actually work out.
+Now I want to point out where the
+associativity, associative matches versus
+indexed matches happen in these tables.
+So one of the, the things you might notice
+is that this block address, we're going to
+have to check every subsequent miss.
+Against this block address.
+So we're going to take the high, higher
+order bits of the address, check it
+against this.
+And the checks that, we don't add a new
+entry here.
+Instead we just merge it into a currently
+pending one.
+But we do have to add new load store entry
+for that, which points back over here.
+When a memory transaction comes back from
+main memory, we're going to look back in
+this table and say, uh-oh,
+Here's the one that I, I had issued.
+I need to clear it out of the table.
+And given the number of the location I'm
+clearing out a table.
+I'm going to associatively check that
+against all of the load store entries and
+wake up the ones that match.
+So, if this is entry number one and
+there's multiple number ones in here.
+All of the ones that have number ones in
+here, I need to return that data to the
+registers.
+Now when I return the data to the
+register, I have to mark the register as
+being available again.
+And the type here just basically says, you
+know, is it word, half word, bytes, and is
+it a load versus a store.
+One other thing I wanted to say is
+destination here. For loads it's going to
+be a register identifier.
+Now this might be a register identifier
+versus a virtual register identifier or a
+optical register identifier if you had a
+registry neighbor. So you have a out of
+order processor here, this might get more
+complicated.
+This is typically a physical register
+identifier, not a artificial register
+identifier.
+For stores.
+You also effectively need to track
+something in this table.
+Because you need to merge and store with
+the background data.
+So, this going to, basically, add an entry
+in here.
+It's going to sound to main memory, go get
+the background data.
+And when that comes back, it's going to
+deposit that into our cache.
+And we need to point at some other buffer.
+This is very similar, we had that future
+store buffer.
+You can have an array for those, for
+instance.
+And it'll tell you which one to go play
+the store against our cache width.
+And you can merge the return data with
+the, the store data, that we've stored
+locally.
+So this is kinda fun.
+We can have memory coming back out of
+order.
+We can have memory being issued out of
+order.
+Lot's of, lot's of fun, fun toys here and
+one of the fun things we can do is we, we
+have ability cuz the associated check here
+to check to make sure that the data coming
+back or assuming subsequent requests hit
+or miss here and, and will merge.
+So we don't have to generate more memory
+traffic or cause strange things happening
+where you have responses coming back and
+new requests going out from the same line
+and you might lose some data in flight.
+I should put up this is only one
+implementation.
+Lot's of times, what would people do is
+in, in this miss status handling register,
+there will actually be a tag field because
+main memory will not necessarily keep
+track of the entire address when you get a
+response back from main memory.
+Instead, it'll just have a tag.
+So, instead of checking against the block
+address you might check against a smaller
+tag.
+That's one way people sort of get make
+this a little bit easier.
+Another way most people do this is the
+tag, if you have a small number of cores
+might actually be which entry you are in
+this table so you don't even have to
+associative check.
+That's sort of optimization on this.
+You still need to do associative check
+when future loads and stores that miss go
+out to routinely check this table.
+I think I, I think I swapped through most
+of this, already.
+On cache miss you have to check the table
+for a matched address.
+If found you allocate a new entry that
+points to the miss handled entry register.
+If not, you have to both a load entry load
+store entry, and miss status handling
+register entry.
+One thing I did want to point out here is
+if you run out of miss status handling
+registers or load storer entries, that's
+not the end of the world.
+You can just stop the processor.
+So let's say you have eight of them and
+you run out of all eight, you have eight
+outstanding memory transactions.
+You can just stop for awhile.
+It's going to come back at some point.
+One of the loads, or one of the main
+memory accesses are going to come back.
+So you can just stall for a little bit.
+I need a return, need to find the load in
+store that's waiting for it.
+Going back to what, Berchun said it's very
+possible that a,
+The loading store that was waiting on it
+might've actually disappeared in that time
+period.
+Well, at least for a load, cuz you might
+have write after write occurs.
+That's okay, you still want to fill it in
+your cache at that point.
+And of course you can have multiple loads
+and stores.
+When the catch line is completely returned
+and you finished checking against all the
+load and store entries you would
+deallocate both load and store entries and
+mustache handling registries.
+Okay, so little bit of oops, fun here with
+in order machines so you can sort of see
+how this relatively logically fits into an
+out of order pipeline.
+If you were to fit this into an in order
+pipeline, you can its not too hard, you
+can actually add a scoreboard for each
+individual register.
+And when I say scoreboard, you're not
+tracking where the data is coming from,
+instead there's a special bit saying,
+This register is out to lunch.
+This register is out of the memory system.
+If you try to go access it, just wait or
+just stall.
+And then when the memory, cuz it's a
+variable length sort of thing, so your
+scoreboard can have this will be ready in
+five seconds." You don't know.
+It's out of the memory, the memory system.
+Unload miss here.
+You can mark the, you mark the destination
+register as busy.
+When it come back, you mark it available
+and uninstall the processor.
+But if no one actually went to go use that
+register, in the mean time while it was
+out of main memory, the main processor
+never stalls and no ones ever the wiser.
+Okay, so, I wanted to, we're almost out of
+time, so I wanted to, pick it up here for
+a second.
+So, non-blocking, caches, they can
+effectively increase, the, bandwidth to
+your, lower levels of caches, your sort
+of, L1's.
+The only thing they can do is they can
+increase the bandwidth because they can
+merge, misses to your cache.
+Now you probably would have actually
+gotten that anyway, if you had a blocking
+cache, but, the missed cache handling
+register basically, allows you to have
+multiple cache misses merge into one
+transaction.
+Your missed penalty is obviously lower
+because, going back to this picture here,
+we've overlapped the missed penalty of
+other useful work.

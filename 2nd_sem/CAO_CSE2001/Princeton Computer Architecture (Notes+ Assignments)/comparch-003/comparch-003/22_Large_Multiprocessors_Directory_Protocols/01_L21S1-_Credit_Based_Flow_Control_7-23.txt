@@ -1,0 +1,206 @@
+So today we're going to start off and it 
+is our final installment of ELE475. 
+We have to cover all of the rest of 
+computer architecture in this one 
+lecture. 
+So, there's a lot to cover. 
+A lot of things to discuss. 
+But, more seriously, today, we are going 
+to, going to be finishing up what we were 
+talking about, with interconnection 
+networks. 
+Mainly, credit based flow control. 
+A little bit about deadlock and that will 
+complete our interconnection networks. 
+And then we'll go on to more scalable 
+cash coherent systems. 
+So cash coherent systems that have more 
+than let's say eight nodes. 
+So we'll look at how to scale up to 
+thousands of nodes, and we'll touch on 
+one coherence protocol that, that works 
+for that. 
+And that's called directory based cash 
+coherence. 
+So we left of last time we were talking 
+about flow control between two separate 
+nodes in a in of action network. 
+And we talked about sort of local link 
+based or hop based full control which is 
+where we spend the end of last class 
+talking about. 
+We also mentioned this end to end full 
+control and end to end full control is 
+important a good example of this is 
+something where you have a core which is 
+trying to communicate to a memory 
+controller. 
+And you don't want to overrun the buffer 
+in the memory controller cause if you 
+overrun the buffer in the memory 
+controller your memory transactions just 
+drop on the floor. 
+so it's possible that your network 
+connection is. 
+Link level flow controlled or hop based 
+flow controlled. 
+But, you still need a end to end flow 
+control inside of your chip or your set 
+of chips in your system to be able to 
+prevent you from overrunning some other 
+buffer that's farther away. 
+Now you could, for instance, back up into 
+the network and have the local flow 
+control all the way, back up all the way 
+to the core. 
+You may now want to do that for a variety 
+of reasons. 
+One. 
+If you look at these memory protocols 
+very carefully you could end up with 
+something that actually starts to look 
+like a deadlock pretty quick as you start 
+to backup into networking get sort of 
+priorities mixed. 
+Also more, more insidiously here is that 
+as you back up this is probably not good 
+for performance you probably want to stem 
+the flow of traffic as soon as you can 
+because if you start jamming more data in 
+there your just going to increase the 
+contention on your network. 
+And the latency will shoot through the 
+roof on your network and all of a sudden 
+you're, you're sort of in a very poor 
+operating regime. 
+So it's probably better just to 
+preemptively back off and not overrun the 
+buffers that are far away. 
+So, you have to worry about end to end 
+flow control. 
+and this, this, there's lots of different 
+schemes for this. 
+Probably one of the better ones is that 
+you send some data and you wait for 
+acknowledgments to come back and you 
+count your acknowledgments and this is 
+effectively some credit based flow 
+control. 
+We talked a little bit about different 
+ways to flow control link level. 
+So just to recall here we had one Q, 
+another Q and some link in the middle. 
+This link may be pipelined. 
+And we sent data this way. 
+And at some point the receiver says oh, I 
+can't take any more data. 
+So it sends a stall wire. 
+But if you do this around your entire 
+chip, where it's all combinational. 
+Where all these little blobs here are 
+combinational logic. 
+You're critical path gets very long so 
+you can start to think about trying to 
+put registers on this path. 
+Unfortunately when you do that all of a 
+sudden. 
+This FIFO and this register can't react 
+in time, if they're, a stall signal comes 
+back. 
+So if a stall signal is asserted, it's 
+going to send the data no matter what. 
+It takes a cycle for that to show up so 
+you end up with something where you need 
+to queue this last piece of data here 
+into a buffer because this stall is not 
+seen until a cycle later. 
+And this is, we call this skid buffering. 
+And you can have similar sorts of things 
+where if you have let's say a flip flop 
+here but you don't feed into this 
+register you might need multiple entries 
+of skid buffering. 
+Now, if you have the wrong number of 
+buffers here on the receiver in your skid 
+buffering what's going to happen is you 
+actually end up dropping data. 
+So if you your protocol mean lets say two 
+buffers and instead you put one buffer 
+and you assert the storm as data is 
+trying to transmit across the link of 
+that time. 
+You're going to loose a piece of data and 
+that's, that's not very desirable. 
+So this brings us to the end of what we 
+were talking about last time which was 
+credit based flow control and credit 
+based flow control instead of having a 
+stop signal or a on off flow control 
+signal coming back or a stall signal 
+instead, 
+you keep a counter at the sender side, 
+which keeps track of how many entries 
+there are over here in the receiver side. 
+And this can take into account you know 
+thi-, this register here doesn't get 
+counted it's, it's the end point FIFO 
+space that will back up and the data can 
+be stored into. 
+So when it starts out, you, in, you, you 
+set the counter if you want full band 
+with you to be the same number as entry 
+you had in the receiver, you just have to 
+send data. 
+Whenever you send the word, you decomate 
+your counter. 
+When the counter reaches zero, you stop 
+sending because you know that. 
+All of these buff all of the round-trip 
+latency here of the, the data and the 
+responses coming back, or the credits 
+coming back. 
+If the stall signal were to be asserted, 
+or if you were not to get back credit in 
+the instantaneous cycle you would need 
+all those entries to skid into. 
+[COUGH] When a word gets read out of this 
+buffer here or out of this fifo here you 
+send back a credit and this will 
+increment your counter. 
+And depending on how you implement this 
+you could have multiple flip flops here 
+multiple flip flops there. 
+And really all this really ends up doing 
+is it ends up figuring out your credit 
+loop and how big this counter needs to 
+be. 
+One other nice benefit of this credit 
+based flow control system is you can 
+actually size the credit counter 
+different then the number of actual 
+entries. 
+Now, why would you want to do this? 
+Well, one reason is, you could actually 
+build a network which has, only, let's 
+say, half the bandwidth. 
+By reducing the number of entries over 
+here, and reducing the credit counter. 
+Now, the round trip latency is longer. 
+So then, the number of credits that you 
+can have outstanding so what's going to 
+happen is, you're going to send some 
+data. 
+And you're going to stall early, 
+wait for some credits to come back and 
+then start sending more data. 
+So you can effectively give less than 
+ideal bandwidth of cost of link but you 
+can do of less offer space on the receive 
+side and this is a lot better than the 
+other an off base for control where if 
+you don't have the right number of 
+buffers. 
+You actually end up using data so its 
+like incorrect design. 
+Here's is a performance concern. 
+

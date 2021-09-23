@@ -1,0 +1,651 @@
+So, the idea here is if we can guarantee 
+that there's no dependence between the 
+instructions, 
+we can think about having, 
+you can execute those instructions in 
+parallel. 
+And one really good way to have 
+guaranteed independence is to have 
+completely programs or completely 
+different threads. 
+And the naive approach here is we 
+interleave instructions from different 
+threads to cover latency. 
+So we send a load out here and while this 
+load is off revolving in the memory 
+system,, this is our thread one that we 
+had here before. 
+We then load into R1 and we went to go 
+use the results here, also from thread 
+one. 
+Well, by the time the data comes back 
+from memory, we know it's all, all ready 
+to go. 
+We put other work in our processor 
+pipeline. 
+And this is called multithreading. 
+Now, one of the big insights here is you 
+need to have enough other work to do and, 
+these other threads add some complexity 
+to your processor design, 
+and they may cause some locality 
+challenges. 
+So if you have, if you're trying to 
+exploit temporal locality in, let's say, 
+a cash or a translation look inside 
+buffer or some other buffer. 
+And you start putting other data axises 
+sort of in the middle here or other 
+operations in the middle, this might 
+destroy your locality. 
+But, if, let's think about this in a 
+happy happy way for right now. 
+If you can find other work to do, you can 
+just shove it in, the slots while you're, 
+while you're waiting for this load to 
+come back. 
+The most basic version of multithreading 
+is going to be some sort of very basic 
+interweaving. 
+So we run thread 1, then thread 2, then 
+thread 3, then thread 4. 
+Thread 1, thread 2, thread 3, and thread 
+4. 
+So we don't pay attention to the, 
+latencies or dependencies of the 
+instructions when we go to schedule. 
+And if you come around to a thread slot 
+and there is nothing to do, 
+let's say this load missed in the cache 
+and took a thousand cycles to come back. 
+You just don't schedule anything. 
+You have a dead cycle there. 
+One of the nice things about 
+multithreading that you can take 
+advantage of, is that you don't have to 
+worry about bypassing anymore. 
+Because if you know that you're not going 
+to be executing an instruction from the 
+same thread until a couple seconds later, 
+why do you need to have a fast bypass 
+from the ALU back to itself? 
+You just don't care. 
+So you, let's see, do we actually have an 
+example of that. 
+So here's, here's an example that say you 
+have a, a write to R1, and then a read of 
+R1. 
+What does value does this thread 2 get 
+here? 
+So, the first versions of multi threading 
+machines, 
+try to partition the register file, 
+so this is when it happened, 
+so you compile up your programs 
+differently. 
+That's not really common anymore. 
+we'll, we'll talk about an example where 
+they actually did that. 
+for instance, the 
+that was actually also a limiter to 
+threads for awhile, 
+until sort of people came up with the 
+idea of what you just suggested which is 
+somehow change the name space of the 
+registers. 
+And the way that that was actually 
+changed was 
+well, the first implementation, we'll 
+talk about in a little bit. 
+But the first implementation was on 
+Spark, actually. 
+And they used the register windows on 
+Spark, which gave you different name 
+spaces for different registers. 
+And then, then that finally evolved into 
+actually having a thread identifier and 
+having copies of the entire register 
+space, 
+so each thread had a different register 
+set. 
+And that's what we're going to show in 
+this picture here. 
+So as, as shown here, you have to copy 
+the general purpose register file four 
+times. 
+[COUGH] And you have to copy the program 
+counter four times, and then, you have a 
+incrementer out here on the front of the 
+pipe, which chooses the thread ID, or the 
+thread select. 
+And in our simple case here, we're just 
+going to keep incrementing this and 
+choose 1, 2, 3, 4. 1, 2, 3, 4. 1, 2, 3, 4 
+and just continually does that and 
+likewise that's a indexing to which 
+general purpose register file we're 
+suppose to be accessing. 
+Or which logical general purpose register 
+file because most of these architectures 
+will actually put this together in one 
+larger general purpose register file and 
+then have, this just be some addressing 
+bits that are architecturally not, not 
+visible. 
+But you bring up a good, a point that, 
+there are a couple userland threading 
+libraries out there. 
+So, it issues this notion of threading, 
+but not on a multithreaded computer 
+architecture. 
+So where you don't have this and this, 
+and there's still some advantages to that 
+cause you still, can swap between 
+different threads and actually try to 
+cover memory seek because your load to 
+use will be longer. 
+And those threading libraries, largely 
+they do try to partition the register 
+file space still. 
+So you can actually go download one of 
+these, on, you know, 
+get Linux and go run it and people still 
+use these threading libraries to go do 
+that and these usually lend thread 
+libraries. 
+The other way to go do that is actually 
+to swap out the entire register space, 
+but people typically try not to do that 
+because that, if you're trying to do fine 
+grade, interweaving and you want to save 
+your entire register space to memory, 
+that's, that's very expensive. 
+But the, the, these threading libraries 
+sort of work together with the compiler, 
+and tell the compiler don't, 
+don't use all the registers for thread 1. 
+Use half the registers for thread 1, and 
+half the registers, let's say, for thread 
+2. 
+So this is our simple multithreading 
+pipeline. 
+It's relatively small changes so far. 
+replicate the register file, 
+replicate the PC, 
+and this can help us recover utilization 
+on our ALU, for instance. 
+And what we wanted to point out that the 
+software, what this look like, is that it 
+looks likes multiple processors. 
+So if you go use something like a modern 
+day Core i7, 
+those have two hardware threads. 
+But when you go to look at it, it'll look 
+like there's twice as many cores in the 
+machine than you think there are. 
+So, for instance, if you have a four-core 
+Core i7 and you open up in Windows the 
+little 
+C, process management sort of dialogue 
+box, 
+you'll see that there's eight little bars 
+in there because there's one thread or 
+one virtual processor, or excuse me two 
+virtual processors per physical core in 
+the machine. 
+So they actually look like there's 
+multiple slower CPUs. 
+Okay, so what are the costs? 
+The easy costs, are replicating the 
+program counter and the General Purpose 
+Registers. 
+Things that start to become harder to 
+replicate, but you're going to have to 
+replicate also, is if you want to do full 
+isolation of these CPUs, is you're going 
+to have to have replication of system 
+state. 
+So things like page tables, things like 
+page table base registers. All the 
+different, system state about where the 
+interrupt handlers, so things like the 
+exceptional PC. 
+And this actually gets a little bit, hard 
+to do and some processors have a fair 
+amount of system states. 
+If you'll look at x86, there's a lot of 
+system states. 
+MIPS is relatively minimal, because it's 
+sort of exceptional PC and the interrupt 
+mask register. 
+But it can be hard, and, and, the, 
+because the TLB software maintains, so 
+you don't even have one of these, you 
+don't even have a virtual memory page 
+table base register. 
+So this something to think about is that 
+you have to replicate all the state per 
+thread. 
+So there is some cost to it, but you 
+still get to hide latencies to memory. 
+You still get to reuse ALUs and increase 
+the efficiencies of your ALUs. 
+Personally, I think these are the 
+smaller, smaller things. 
+So this is very small. 
+This is smaller. 
+It's bigger than the first one, but 
+harder to do. 
+The big things out there, 
+when you start to have temporal locality 
+conflicts and spatial locality conflicts. 
+So if you have four threads that are all 
+executing, and they're fighting for 
+space, they're fighting for capacity in 
+your cache, this can be a problem. 
+Or, let's say you have sixteen hardware 
+threads, and you have an 8-way set 
+associative cache, 
+and they always want to access, let's 
+say, index 0 in the cache. 
+This is a common thing. 
+Your stack always starts there or 
+something like that. 
+Well, you only have 8-way, associativity, 
+and if you're time multiplexing thread 1, 
+2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
+14, 15, 16 and then you move back around 
+to 1. 
+You're guaranteed that by the time you 
+come back to 1, because you only have an 
+8-way set associative cache that you've 
+bumped out the data that you needed, 
+so you get no temporal locality. 
+By the time you come back, it's not in 
+your cache, 
+so you had a, conflict. 
+You'll have a conflict that's going on in 
+your cache. 
+Okay. 
+So, so this is the negative side, is that 
+they can conflict with each other, 
+but if two threads are working together. 
+You can actually get positive cache 
+interference, or, or 
+positive interference or constructive 
+interference in the cache and it 
+definitely happens. 
+And that was actually, one of the reasons 
+that people originally did this 
+multithreading, was that if you have a 
+program where you have different threads 
+that are working on roughly the same 
+data. 
+This is actually very, very good, because 
+it will be precaching data for each 
+other. 
+[COUGH]. 
+Well, you have to make sure, 
+it's a, it's a, it's a fine line to sort 
+of walk there that when the threads fight 
+for shared resources, and when they 
+collaborate on pulling in the shared 
+resources and exploit the locality 
+structures in the processor. 
+So the, the cash is one example. Another 
+example is translation lookaside buffer 
+entries. 
+One solution to this is you can actually 
+partition the cache, or partition the 
+TLB, 
+and then you can guarantee that you do 
+not fight. 
+Unfortunately, if you go to do this and 
+you have a fixed size cache, 
+you effectively cut the cache, so let's 
+say in half or however many threads by N, 
+by N threads. 
+So, typically people don't try to 
+statically partition these things. 
+but, 
+you could think about doing that, if you 
+want no interference between the 
+different threads. 
+Okay. 
+So let's, let's look at a couple 
+different ways that you can try to 
+schedule threads, and they've gone from 
+simple to a little more complicated to 
+even more complicated over time. 
+So, simple's what we've been talking 
+about up to this point, 
+is that there's some fixed interleaving 
+of N hardware threads, and you, 
+basically, execute one instruction from 
+each thread and change to the next 
+thread. 
+So it's the, our first case. 
+So it's the fixed interleaving dates back 
+to the, the 60s and this is pretty 
+simple. 
+What's nice about this is you can remove 
+some of the interlocking and some of the 
+bypassing from your processor. 
+Next thing you can think about is, well, 
+you could try to allocate different 
+locations in your scheduling quantum to 
+different threads. 
+So for instance, 
+we know that the, 
+cyan thread here is the highest priority 
+thread. 
+It needs the most number of slots. 
+So we can do an uneven distribution. 
+And we can say, over our slots here, we 
+can actually interleave and say, well, 
+the cyan thread gets every other one 
+we'll say. 
+And then we can say, let's say the orange 
+one gets a smaller percentage and the 
+blue one gets a smaller percentage. 
+So it's a, still a fixed interleaving to 
+some extent or a fixed ordering, 
+but it is, controllable by software 
+depending, or the operating system, 
+depending on the priorities of the 
+different threads. 
+So it's a little bit more flexible in 
+hardware than the completely fixed 
+interleave, design, 
+and this does require a little bit of 
+change here, because you can't just have 
+this counter here, just sort of 
+incrementing your thread ID. 
+Instead, you need to have something else 
+here, which, sort of, is is a picker for 
+which thread you go execute, 
+but, still relatively simple. 
+And, because it's software programmable, 
+you can actually choose a time and then 
+reallocate, so the OS can change the 
+allocation for a, a different time here, 
+and, let's say, make orange a higher 
+priority instead of the cyan. 
+Then we start to go to something a little 
+more complicated, 
+so this is still relatively fixed 
+priorities. 
+You could think about something where you 
+actually have the hardware making 
+decisions about which one to go execute. 
+And you could actually even have it go as 
+far as, let's say, 
+determining if you're executing a thread, 
+which then has a long latency operation, 
+it'll switch to another thread at that 
+point. 
+So, it will try to fill in backfilled 
+work from other threads purposely when 
+one thread gets swapped out or one set of 
+thread goes to do something that's a long 
+latency operation. 
+And you could think about designs like 
+that, 
+and that is something like the HEP 
+processor, which we'll be talking about 
+in a minute or two. 
+has, is, is, was one of the first early 
+examples of that. 
+So just to recap here. 
+We're going to call this coarse-grain 
+multithreading. 
+The reason we're calling it coarse-grain 
+is because for any one cycle, 
+only one thread is running. 
+And you might scratch your side of the 
+head and say, how do you have multiple 
+threads running in one, one cycle? 
+Well, we'll show, if you go to a 
+superscalar, or multi-issue processor, 
+you could think about having the 
+different pipelines executing 
+instructions from different threads 
+simultaneously. 
+That's called simultaneous multithreading 
+and we'll talk about that in a second. 
+[COUGH] But in our core screen approach 
+here, just to, to recap, you can swap 
+threads on hardware misses, [COUGH], and 
+you can take advantage of bubbles in the 
+processor to do other work. 
+Okay, so a little bit of a history lesson 
+here. 
+the HEP processor was Burton Smith, who's 
+now at Microsoft Research. 
+he was the, the, the chief architect of 
+this back in the 80s. 
+And this processor's actually pretty 
+interesting because there was lots and 
+lots of threads, and small number of 
+processors. 
+So there is 120 threads in this machine, 
+processor. 
+Relatively modest clock rate for the 80s, 
+but what they were trying to do here is 
+they were trying to deal with memory 
+latency. 
+So this machine had a very high bandwidth 
+memory system and what would happen is 
+effectively you were allowed to have a 
+load or store every instruction and your 
+performance would never degrade if you 
+had a load and a store every instruction. 
+Because in this machine, they had 120 
+threads per processor and the memory 
+latency was less than 120 cycles. 
+So if you had to load every instruction, 
+and you have enough bandwidth to be able 
+to feed all those loads, you could 
+execute a load from each different thread 
+and none of them are each thread was 
+independent of each other. You could 
+basically go up to the memory system, 
+wait the latency, have it come back in 
+pipeline the, the latency out to memory, 
+and pipeline the memory access. And by 
+the time you were to come back and 
+execute the next instruction from that 
+thread, which would be at 120 cycles 
+later, the memory result would be there. 
+So this insight was carried forward 
+Burton went and started this company 
+called Tera, or Tera Systems which later 
+went on to buy Cray, strangely enough, 
+because I always thought Cray was a 
+bigger company than Tera, and it 
+definitely was. But we'll, we'll call it 
+a merger, but I think that's what they 
+called it, but in reality, Tera acquired 
+Cray and Tera had a similar sort of idea 
+here, 
+more processors. 
+This was, sort of, further evolution of 
+the HEP processor. 
+128 active threads per processor. 
+Lots of processors, 256 processors. 
+So lots of active programs. 
+So you had to find enough thread level 
+parallelism in your, in your program and 
+this architecture has no, no caches, 
+because they don't need it. 
+If you have enough bandwidth out to your 
+memory system, you can have a load every 
+cycle, and you can cover the latency with 
+other threads. 
+Why do you, why do you care? 
+So, some, some interesting things about 
+this is, this may not be good for power. 
+You are not exploiting locality in your 
+data references at all and you're going 
+out to the memory system every cycle. 
+And that could be far away. 
+And it is, well, it's far away in this 
+machine. 
+So that's, you got to be a little careful 
+about these machines, and then the second 
+idea here is, you have to come up with 
+lots of threads. 
+Now we're talking about having similar 
+numbers of threads in something like, 
+modern day, many core machines. 
+But there's still a fair number of 
+threads to be able to effectively use the 
+machine to its, to its best performance. 
+I wanted to say about this actually, this 
+architecture, 
+where it got mostly used, was in 
+applications that had no locality anyway 
+or no temporal or spacial locality in 
+their data references anyway. 
+And good examples of this were things 
+like data mining, 
+huge data sets, 
+arbitrary access to the data sets. 
+Not, you couldn't have a prefetcher 
+predict where your next memory reference 
+is going to be. 
+So if you were just going basically not 
+going to be able to effectively fit in a 
+cache or use a cache anyway, remove the 
+cache and go, go multithreaded. It was 
+the idea behind these machines. 
+And they actually saw some, 
+big speed ups for applications that had, 
+had data sets like that. 
+This still actually lives on today, in 
+the Cray XMT, the extreme multithreaded 
+architecture. 
+And you can go buy this machine from 
+what's nowadays called Cray Computer 
+Corp., which was Tera-eating Cray or 
+buying Cray. 
+And it's not, a modest clock speed by 
+modern day standards. 
+It's only 500 MHz, but it, they can 
+intermix these with sort of Opterons and 
+other processors because they 
+standardized on the AMD bus protocol, 
+so you can plug in AMD chips and these 
+XMT chips in the same, system. 
+Just a recap here of, like, what their 
+memory system looked like. 
+Their instruction pipelines were very 
+long, and they didn't have to bypass, 
+because you could never execute 
+instruction and a subsequent instruction 
+which would use the results. 
+And the memory operations, the memory 
+latencies were about 150 cycles and they 
+had 128 threads. 
+So, the probability they, they were 
+typically not waiting for the memory 
+system and they could effectively 
+pipeline their memory operations. 
+Another little tidbit of history here. 
+So, this is the machine I was talking 
+about that is my academic lineage a 
+little bit here. 
+when I first showed up at MIT there was 
+this machine in the corner called the MIT 
+Alewife processor, which was a 
+multiprocessor machine. 
+It went up to 128 nodes, which was a lot 
+at, in 1990. 
+And, one of the, the little tidbits about 
+this machine is, they had spark 
+processors, and a spark processor had 
+this notion of a register window. 
+What a register window is, is every time 
+you do a system call, 
+you basically change your addressing in 
+the register file. 
+So you have a larger register file, and 
+you have a smaller window of the register 
+file, and you kind of slide this window 
+across the register file on function 
+calls and function returns. 
+[COUGH] And the MIT Alewife processor 
+used this. 
+and they extended this register window 
+idea, 
+such that they could have a special 
+instruction which would actually change 
+how much the register file they were 
+looking at, at a time. 
+So as they could actually swap the entire 
+register file very quickly, and, this 
+actually allowed them to multithread very 
+effectively with four threads. 
+And this was one of the early 
+multithreaded processors and they 
+introduced this notion of thread switch 
+on remote memory access. 
+So if you had a memory access that had to 
+go to one of the other nodes in this 
+machine. So if you were on this node 
+here, and you need to go down to this 
+one, and you're going to send a message 
+over there in a multiprocessor, notion, 
+you actually had to send a message and 
+get a response back, it took a long time. 
+So you would actually switch threads at 
+that time, . 
+Multithreading lives on today, especially 
+this, in this coarse-grain multithreading 
+lives on today. 
+A good example of this is the Oracle, and 
+what used to be Sun, and before that, 
+Afara, 
+Niagara processors. 
+Afara was the name of the, startup 
+company that made this, and then Sun 
+acquired them, and then Oracle acquired 
+Sun. 
+And, the Sun Niagara processor was 
+designed for throughput computing, such 
+that you can have lots of, 
+threads running and they were all 
+independent and it was a multithreaded 
+processor. 
+So, the Niagra one had 8 cores and then 4 
+threads per core. 
+And they've, 
+turn that up over time. 
+So now they use the Niagara 3, 
+so this is what was called the, the Sun 
+T1. 
+This is the Sun T2. 
+This is the Sun T3 now. 
+they have 16 cores where they have 8 
+threads per core, 
+so a lot of parallelism going on here and 
+this coarse-grain multithreading, goes 
+on. 
+So here's our, a dye photo of the Niagara 
+3 processor. 
+We can see the different cores you might 
+look in this picture. 
+And say. 
+there is, what looks to be 16 cores and I 
+say 16 cores on the slide here, but one 
+of the interesting things is they 
+actually sort of conjoin two cores 
+together, internally. 
+It's a strange sort of design idea that 
+they do, is that they mix the threads and 
+the cores together and they share, I 
+think it was floating point unit between 
+the two cores. 
+So, these cores are, to some extent, 
+conjoined cores together. 
+

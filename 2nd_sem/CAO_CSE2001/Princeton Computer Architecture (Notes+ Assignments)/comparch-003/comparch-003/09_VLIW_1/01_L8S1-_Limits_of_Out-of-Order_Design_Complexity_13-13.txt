@@ -1,0 +1,355 @@
+So we're going to be continuing today
+talking about VLIW or Very Long
+Instruction Word processors.
+This is a alternative way to exploit
+parallelism in a processor, but instead of
+doing scheduling dynamically, as we've
+been talking about in out-of-order
+processors, and super scalars, we're
+looking at ways to do it statically in the
+compiler and in architectures which can
+exploit that.
+But let's now start talk about Very Long
+Instructions Word in processors.
+So we've been talking about the
+superscalar processors.
+The superscalar processors have a fair
+amount of complexity in them.
+Especially out of order processors.
+Where does this complexity come from and
+can we remove all that complexity?
+So, that's what we're going to be talking
+about today.
+So here's where I drew a picture where I
+have the issue width of a superscalar
+processor.
+And, we represent that as W.
+And then we have the lifetime of an
+instruction.
+So that's sort of, gives you a matrix of
+things in flight in the processor.
+Now these may be sitting in your
+instruction queue.
+We're not going to count if they actually,
+let's say, get all the way to the reorder
+buffer, cuz by the time they get all the
+way to the reorder buffer they probably,
+depending on how you build your processor,
+you probably don't need to continually
+check those against the other instructions
+that are coming.
+You've already broadcast that back to
+either your reservation station or your
+instruction queue to issue a few further
+instructions.
+But if you think about the complexity here
+of what you're really doing when you try
+to go issue an instruction.
+You're trying to take these inflight
+instructions, and you have to look up,
+basically, against them, or in your
+instruction window, all of the
+instructions, when they complete against
+basically all of the other instructions,
+all the registers.
+Now, we built some structures that make
+this so you don't have to do a complete
+all to all check.
+So, example, structures that we create to
+help out with this.
+First of all, the scoreboard.
+Instead of keeping track of where
+everything is.
+Sort of our original design, where we had
+portions of, or which register destination
+sort of flowing down the pipe.
+And then we did an all to all compare.
+Instead, we just keep track of the
+location and latency of the most recent
+write to a register.
+And it turns something from a all to all
+compare into a index lookup based on the
+register.
+So that's a little bit nicer, but if you
+think about what's happening in the issue
+queue, we're still doing a as a
+instruction retires, It's going to
+basically broadcast the registers that get
+completed against the instruction que, and
+try to wake up instructions.
+And see which ones are ready to go.
+And, that roughly as I said.
+Scales, scales like this.
+Cause you're gonna be returning multiple
+instructions per cycle.
+And you know, let's say you have a bunch
+of stuff in the instruction queue.
+You are going to have to check all of
+those and this can get painful.
+Let's, let's take a look at first sort of
+the complexity of this for in order
+machine.
+So in order machine is, is not so bad.
+L is kind of the pipeline length.
+You have your width but you just basically
+have to have a scoreboard to figure this
+out, and as we said that's an index based
+structure.
+Now when you start to go out of order,
+you, you start to have the sort of
+complexity of all the results that come
+back have to be broadcast against either
+if you were distributing instructions to
+all the reservation stations or if you
+have a, a single instruction queue, you
+have to check against all the possible
+instructions to go issue.
+And what's interesting is one of the big
+challenges of building these structures is
+not actually quite what you would think.
+It's, there's a interesting challenge that
+you have too many things that could wake
+up in one cycle.
+So let's say you have a single
+instruction, or say all of the
+instructions in your instruction queue are
+waiting at register five to become valid.
+All of a sudden, instruction some add,
+let's say, writes register five, and it,
+it enters the re-order buffer.
+So it gets to the end of the pipe.
+Well, now, all of a sudden, you have to
+wake up all these instructions and choose
+the, some instructions that are the width
+of your machine, that can go issue.
+Also, you need, still need to make sure
+that you can satisfy all of the different
+requirements in the machine of functional
+unit mixes.
+So, if you have, you know, say, two, two
+adds.
+Two multiplies and one load and store, you
+can't just go pick randomly from there.
+You need to pick exactly that mix.
+So this becomes a big mess of
+combinational logic and this is why front
+ends of processors can actually in out of
+word processors can start to get long and
+longer.
+You get more and more stages in there to
+do this and as we talked about last time
+in like the Pentium four there's actually
+multiple stages out in front there to be
+able to do this and unfortunately you have
+to pipe line that which makes this even
+more challenging.
+So, so roughly If you look at sort of the
+out-of-order control logic here, it's sort
+of Growing somewhere between the width
+squared, the width cubed.
+And this is, this is not, not very good.
+Sometimes, there are a couple, circuit
+level tricks that can help you.
+So if you go look at people who actually
+do full custom logic for designs of
+processors, they'll make something that
+they call Pickers.
+And what a picker is, is its actually a,
+instead of using straight combination of
+logic to go compute what instructions
+ready to go execute.
+You will instead have a much more analog
+circuit in there, where you will basically
+have some custom, analog circuit there
+which is almost a CAM, or a continual
+addressable memory.
+It's not quiet a CAM, its more of a
+circuit which will choose what instruction
+is ready to go and it is typically, you
+wanna have some heuristic that is the
+oldest instruction.
+This is to prevent deadlocks.
+You don't really want to issue arbitrarily
+instructions, arbitrary instructions.
+You want to issue the oldest instructions
+cuz you want to make forward progress in
+the machine.
+So, what we are trying to get out here is,
+this is a lot of hardware complexity.
+It's growing, as the width of the machine,
+and some things actually makes this even
+worse.
+So, here, I have a little not here, that
+as you increase the width of your machine,
+let's say you have a, you got a three wide
+machine, and all of a sudden, you want to
+go for, let's say, a four or five wire
+machine, typically, we need also a larger
+instruction queue, or instruction window
+to look across, in order to find enough
+parallelism to keep the machine busy.
+So as you go wider, you also typically
+have to make the machine sort of deeper or
+at least make your instruction queue
+deeper to find enough parallelism to feed
+your functional units.
+Hm.
+That's not good.
+So as this causes the, you know, our,
+these sort of blow up factors here.
+And, you can build these things, but
+they're hard.
+So are there alternatives?
+Yes.
+But let's, before we, we move onto the
+other alternatives, let's look at the sort
+of complexity of this in, a real
+processor.
+So here we have a di-photo, or
+di-micrograph of a MIPS R10,000 Processor.
+This was used in workstations by SGI for
+many years.
+It's a, real out of order superscalar, and
+one of the interesting things is if you go
+look at how much area is dedicated just to
+control logic.
+It's pretty substantial.
+So in this processor here, here's our
+actual data path, it's relatively modest.
+Cache, instruction cache, data cache,
+those are pretty big structures you can
+see those.
+We have you know, some other let's say,
+the data tags, instruction tags the T.O.B
+you know, those are big, big-ish sort of
+things, and that all this stuff here is
+quite large.
+Let's look at what's inside of here.
+We have sort of next instruction sorts of
+things.
+We have a free list for the we had talked
+about this right.
+We talked about the free list for the,
+which register is free if you will, to
+reuse in your out of order processor.
+We have a big thing that just does
+registry namer.
+The we have different queue here, so this
+is a distributed instruction queues, or a
+distributed reservation station processor.
+So there's one just for address
+calculation instructions, integer
+instructions and floating point
+instructions.
+But the interesting to see here is the
+prob, the, the, the percentage of this
+just dies.
+It's actually just doing compute, let's
+say this integer data path, the floating
+point data path, the floating point
+multiplier.
+Is sorta pales in comparison to all the
+overhead.
+So this is just sort of a get this, get
+this idea across.
+Another problem with out of order super-
+scalars, or superscalars in general, is
+thinking about how do we express
+parallelism.
+And I alluded to this in a previous
+lecture, but it's worth repeating.
+So, let's, let's take a look at what's
+happens for codes, sequential codes on a
+out of order superscalar.
+We start off here with some pieces of C
+code.
+We put it into our fancy superscalar
+compiler.
+That generates some sort of data flow
+graph.
+And probably also con, control flow graph
+inside the compiler.
+So there's sort of instructions, there's,
+dependencies between the different
+instructions, and the compiler right now
+is trying to find independent operations,
+because it's going to come up with a
+schedule.
+Unfortunately, you have to come up with a
+sequential schedule, because the
+instruction sets on sequential processors
+require you to come up with some order.
+Even though, it's very possible, that
+there is no one perfect order.
+It's also possible that, you know, instead
+of over-constraining the problem here, why
+are we coming up with some, some ordering
+when we don't need to?
+But, you know, in our, in our sequential,
+I say we have to come up with that.
+We write out to disk somehow, or you know,
+save a file with this, this code.
+And then we have to go and actually try to
+execute it.
+Now what's funny, as I always get a
+chuckle out of this, is the compiler knew
+what the dependencies were.
+And then we have our superscalar processor
+here, which goes and takes apart the
+sequential code and tries to reorder the
+instructions, and tries to find parallels
+in the instruction sequence, but the
+compiler knew that.
+But we have like a breakdown here in the
+middle that we just weren't able, not able
+to express that between the compiler and
+the processor.
+Compiler knew about the parallelism.
+Compiler knew about all the ordering and
+the requirements.
+It had to come up with some sequential
+code sequence, provides it to the
+processor.
+The processor takes those, those, that
+sequential code sequence, back apart, does
+out of order scheduling like we did on the
+exam, on the midterm.
+And it's gonna, you know, we built a bunch
+of hardware here, which has high
+complexity, as we were talking about on
+the combination of logic, checking the
+dependencies.
+And then, it comes up with some schedule.
+This is done via our reservation stations,
+or our instruction queues, And somethings
+going to fire and it's going to come up
+with some schedule.
+And it's going to execute those
+instructions by preserving read after
+write dependencies.
+And hopefully if our superscaler processor
+is fancy we have some registry neighbor we
+can break some of the other dependencies
+also.
+The write after write and the write after
+read dependencies, and come up with some
+schedule that's high performance.
+Now there's no guarantee that this
+schedule is what the compiler would have
+done if it was smarter, or if could
+somehow express parallelism across this
+interface.
+But, you know, it does something.
+And what's, what's funny about this is
+there's a whole lot of power that's being
+wasted.
+It's a whole lot of effort that's being
+wasted in the processor.
+There's a lot of effort of designers of
+the processor, that is, are effectively
+designing all these circuits to take apart
+the sequential code sequence and do
+something useful with it.
+So it's a lot of, a lot of work being done
+there.
+Is there a better way?
